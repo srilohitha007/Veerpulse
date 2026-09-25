@@ -1,0 +1,3481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wellness Scan | VeerPulse</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* =========================
+           WELLNESS SCAN PAGE
+        ========================== */
+        .scan-wrapper {
+            width: 100%;
+            max-width: 1180px;
+        }
+        .scan-intro {
+            background: #eef6f6;
+            border-left: 4px solid #16858c;
+            border-radius: 10px;
+            padding: 16px 18px;
+            margin-bottom: 22px;
+            color: #526a70;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+        /* =========================
+           MAIN CAMERA / RESULT GRID
+        ========================== */
+        .scan-main-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+            gap: 22px;
+            margin-bottom: 22px;
+            align-items: start;
+        }
+        .scan-camera-panel,
+        .scan-results-panel {
+            min-width: 0;
+            background: white;
+            border: 1px solid #e7ebef;
+            border-radius: 14px;
+            padding: 22px;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.05);
+        }
+        /* =========================
+           CAMERA WINDOW
+        ========================== */
+        .camera-window {
+            width: 100%;
+            height: 390px;
+            margin-top: 18px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 14px;
+            background: #102b4f;
+        }
+        #camera-video {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+            z-index: 1;
+            transform: scaleX(-1);
+            background: #102b4f;
+        }
+        .camera-placeholder {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            background:
+                linear-gradient(
+                    145deg,
+                    #102b4f,
+                    #174c70
+                );
+        }
+        .camera-icon {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.12);
+            font-size: 27px;
+        }
+        .camera-placeholder strong {
+            display: block;
+            color: white;
+            margin-bottom: 5px;
+        }
+        .camera-placeholder p {
+            margin: 0;
+            font-size: 11px;
+            color: #bfd0dc;
+        }
+        /* =========================
+           FACE POSITION GUIDE
+        ========================== */
+        .face-position-guide {
+            position: absolute;
+            inset: 0;
+            z-index: 4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+        .face-oval-wrap {
+            position: relative;
+            width: 180px;
+            height: 235px;
+            border-radius: 50%;
+            box-shadow: 0 0 0 999px rgba(0,0,0,0.08);
+        }
+        .face-oval-svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+            display: block;
+        }
+        .face-oval-base {
+            fill: none;
+            stroke: rgba(255,255,255,0.90);
+            stroke-width: 3;
+            stroke-dasharray: 8 8;
+            transition: stroke 0.25s ease,
+                        stroke-dasharray 0.25s ease,
+                        opacity 0.25s ease;
+        }
+        .face-oval-progress {
+            fill: none;
+            stroke: #2ed573;
+            stroke-width: 5;
+            stroke-linecap: round;
+            stroke-dasharray: 0 1000;
+            stroke-dashoffset: 0;
+            filter: drop-shadow(0 0 5px rgba(46,213,115,0.70));
+            transform: none;
+            transition: stroke-dasharray 0.25s linear,
+                        opacity 0.25s ease;
+            opacity: 0;
+        }
+        .face-oval-wrap.aligned .face-oval-base {
+            stroke: rgba(46,213,115,0.95);
+            stroke-dasharray: 5 5;
+        }
+        .face-oval-wrap.scanning .face-oval-base {
+            stroke: rgba(255,255,255,0.35);
+            stroke-dasharray: none;
+        }
+        .face-oval-wrap.scanning .face-oval-progress,
+        .face-oval-wrap.complete .face-oval-progress {
+            opacity: 1;
+        }
+        .face-oval-wrap.complete .face-oval-base {
+            stroke: rgba(46,213,115,0.35);
+            stroke-dasharray: none;
+        }
+        .oval-progress-label {
+            position: absolute;
+            left: 50%;
+            bottom: 22px;
+            transform: translateX(-50%);
+            min-width: 64px;
+            padding: 6px 10px;
+            border-radius: 20px;
+            background: rgba(15, 43, 79, 0.82);
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .face-oval-wrap.scanning .oval-progress-label,
+        .face-oval-wrap.complete .oval-progress-label {
+            opacity: 1;
+        }
+        .face-position-guide span {
+            margin-top: 14px;
+            padding: 6px 11px;
+            border-radius: 20px;
+            background: rgba(15, 43, 79, 0.78);
+            color: white;
+            font-size: 10px;
+        }
+        /* =========================
+           CAMERA BADGES
+        ========================== */
+        .camera-status,
+        .camera-quality {
+            position: absolute;
+            top: 14px;
+            z-index: 5;
+            padding: 6px 11px;
+            border-radius: 20px;
+            background: rgba(15, 43, 79, 0.78);
+            border: 1px solid rgba(255,255,255,0.14);
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        .camera-status {
+            left: 14px;
+        }
+        .camera-quality {
+            right: 14px;
+        }
+        /* =========================
+           CAMERA INSTRUCTIONS
+        ========================== */
+        .scan-instructions {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .instruction-item {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 11px;
+            background: #f7f9fb;
+            border: 1px solid #e6ebef;
+            border-radius: 9px;
+            text-align: center;
+            font-size: 10px;
+            color: #718090;
+        }
+        /* =========================
+           CAMERA BUTTONS
+        ========================== */
+        .scan-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .scan-btn {
+            width: 100%;
+            border: none;
+            border-radius: 9px;
+            padding: 13px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .camera-btn {
+            background: #163b65;
+            color: white;
+        }
+        .camera-btn:hover {
+            background: #102f52;
+        }
+        .measure-btn {
+            background: #16858c;
+            color: white;
+        }
+        .measure-btn:hover {
+            background: #116f75;
+        }
+        /* =========================
+           RESULT PANEL
+        ========================== */
+        .measurement-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 14px;
+            background: #f7f9fb;
+            border-radius: 9px;
+            margin-bottom: 18px;
+        }
+        .measurement-status span {
+            font-size: 11px;
+            color: #7a8794;
+        }
+        .measurement-status strong {
+            padding: 5px 10px;
+            border-radius: 20px;
+            background: #edf3f7;
+            color: #5e7083;
+            font-size: 10px;
+            white-space: nowrap;
+        }
+        .vitals-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 13px;
+        }
+        .vital-card {
+            min-width: 0;
+            padding: 15px;
+            background: #f8fafb;
+            border: 1px solid #e6ebef;
+            border-radius: 11px;
+        }
+        .vital-card span {
+            display: block;
+            color: #7a8794;
+            font-size: 10px;
+            margin-bottom: 8px;
+        }
+        .vital-value {
+            display: flex;
+            align-items: baseline;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        .vital-value strong {
+            color: #163b65;
+            font-size: 21px;
+        }
+        .vital-value small {
+            color: #8c97a3;
+            font-size: 10px;
+        }
+        .vital-card p {
+            margin: 6px 0 0;
+            color: #8a95a1;
+            font-size: 9px;
+            line-height: 1.5;
+        }
+        .stress-card {
+            border-left: 3px solid #d89a24;
+        }
+        /* =========================
+           SIGNAL QUALITY
+        ========================== */
+        .quality-box {
+            margin-top: 15px;
+            padding: 14px;
+            background: #eef6f6;
+            border-radius: 10px;
+        }
+        .quality-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 7px;
+            font-size: 11px;
+        }
+        .quality-row span {
+            color: #64777c;
+        }
+        .quality-row strong {
+            color: #16858c;
+        }
+        .quality-track {
+            height: 6px;
+            background: #d9e8e8;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        .quality-fill {
+            width: 0%;
+            height: 100%;
+            background: #16858c;
+            transition: width 0.3s ease;
+        }
+        /* =========================
+           MEASUREMENT META
+        ========================== */
+        .measurement-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .meta-box {
+            min-width: 0;
+            padding: 12px;
+            background: #f7f9fb;
+            border-radius: 9px;
+        }
+        .meta-box span {
+            display: block;
+            font-size: 9px;
+            color: #84909c;
+            margin-bottom: 5px;
+        }
+        .meta-box strong {
+            font-size: 11px;
+            color: #34485d;
+        }
+        .confidence-box {
+            margin-top: 12px;
+            padding: 13px 14px;
+            background: #f7f9fb;
+            border: 1px solid #e6ebef;
+            border-radius: 10px;
+        }
+        .confidence-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .confidence-row span {
+            color: #64777c;
+            font-size: 10px;
+        }
+        .confidence-row strong {
+            color: #163b65;
+            font-size: 11px;
+        }
+        .confidence-note {
+            margin: 6px 0 0;
+            color: #89949f;
+            font-size: 9px;
+            line-height: 1.5;
+        }
+        .save-trends-btn {
+            width: 100%;
+            margin-top: 16px;
+            padding: 12px;
+            border: none;
+            border-radius: 9px;
+            background: #edf3f7;
+            color: #6d7c8b;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: not-allowed;
+        }
+        .save-trends-btn.ready {
+            background: #16858c;
+            color: white;
+            cursor: pointer;
+        }
+        .save-trends-btn.ready:hover {
+            background: #116f75;
+        }
+        /* =========================
+           MEASUREMENT FLOW
+        ========================== */
+        .scan-process-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+        }
+        .process-card {
+            min-width: 0;
+            padding: 17px;
+            background: #f7f9fb;
+            border: 1px solid #e6ebef;
+            border-radius: 10px;
+        }
+        .process-number {
+            width: 27px;
+            height: 27px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: #163b65;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .process-card strong {
+            color: #2a3e53;
+            font-size: 12px;
+        }
+        .process-card p {
+            margin: 6px 0 0;
+            color: #84909c;
+            font-size: 10px;
+            line-height: 1.5;
+        }
+        /* =========================
+           WEARABLE DATA
+        ========================== */
+        .wearable-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 15px;
+        }
+        .wearable-card {
+            min-width: 0;
+            padding: 17px;
+            background: #f7f9fb;
+            border: 1px solid #e6ebef;
+            border-radius: 10px;
+        }
+        .wearable-card span {
+            display: block;
+            color: #7b8794;
+            font-size: 10px;
+            margin-bottom: 7px;
+        }
+        .wearable-card strong {
+            color: #163b65;
+            font-size: 13px;
+        }
+        .wearable-card p {
+            margin: 5px 0 0;
+            color: #89949f;
+            font-size: 10px;
+            line-height: 1.5;
+        }
+        /* =========================
+           DISCLAIMER
+        ========================== */
+        .scan-disclaimer {
+            margin-top: 18px;
+            padding: 15px 17px;
+            background: #fff8e8;
+            border-left: 4px solid #d89a24;
+            border-radius: 9px;
+            color: #70644b;
+            font-size: 11px;
+            line-height: 1.7;
+        }
+        /* =========================
+           RESPONSIVE
+        ========================== */
+        @media (max-width: 1000px) {
+            .scan-main-grid {
+                grid-template-columns: 1fr;
+            }
+            .scan-process-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        @media (max-width: 650px) {
+            .camera-window {
+                height: 340px;
+            }
+            .face-oval-wrap {
+                width: 155px;
+                height: 205px;
+            }
+            .vitals-grid,
+            .scan-controls,
+            .scan-instructions,
+            .scan-process-grid,
+            .wearable-grid,
+            .measurement-meta {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="dashboard-page">
+<div class="dashboard-layout">
+    <!-- SHARED PERSONNEL SIDEBAR -->
+    {% include 'partials/personnel_sidebar.html' %}
+<!-- MAIN CONTENT -->
+    <main class="dashboard-main">
+        <div class="scan-wrapper">
+            <!-- HEADER -->
+            <header class="dashboard-header">
+                <div>
+                    <p class="dashboard-label">
+                        Optional Camera-Based Wellness Measurement
+                    </p>
+                    <h1>
+                        Wellness Scan
+                    </h1>
+                </div>
+            </header>
+            <!-- INTRO -->
+            <div class="scan-intro">
+                Use your camera for a short voluntary wellness measurement.
+                This experimental 45-second scan estimates pulse and, when supported by
+                a repeatable signal, breathing rate. Video is processed in this
+                browser; only usable results are sent when you choose Save.
+                Please sit still, face the camera directly and ensure that
+                your face is clearly illuminated.
+            </div>
+            <!-- CAMERA + RESULTS -->
+            <section class="scan-main-grid">
+                <!-- CAMERA PANEL -->
+                <div class="scan-camera-panel">
+                    <div class="panel-heading">
+                        <div>
+                            <p class="panel-label">
+                                Live Measurement
+                            </p>
+                            <h2>
+                                Face Wellness Scan
+                            </h2>
+                        </div>
+                    </div>
+                    <div class="camera-window"
+                         id="camera-window">
+                        <video
+                            id="camera-video"
+                            autoplay
+                            playsinline
+                            muted>
+                        </video>
+                        <canvas
+                            id="pulse-canvas"
+                            width="160"
+                            height="120"
+                            style="display: none;">
+                        </canvas>
+                        <div class="camera-placeholder"
+                             id="camera-placeholder">
+                            <div class="camera-icon">
+                                ◉
+                            </div>
+                            <strong>
+                                Camera Preview
+                            </strong>
+                            <p>
+                                The camera starts automatically
+                            </p>
+                        </div>
+                        <div class="face-position-guide">
+                            <div class="face-oval-wrap"
+                                 id="face-oval-wrap">
+                                <svg class="face-oval-svg"
+                                     viewBox="0 0 180 235"
+                                     aria-hidden="true">
+                                    <ellipse
+                                        class="face-oval-base"
+                                        cx="90"
+                                        cy="117.5"
+                                        rx="86"
+                                        ry="113.5">
+                                    </ellipse>
+                                    <path
+                                        class="face-oval-progress"
+                                        id="face-oval-progress"
+                                        d="
+                                            M 90 4
+                                            A 86 113.5 0 0 0 4 117.5
+                                            A 86 113.5 0 0 0 90 231
+                                            A 86 113.5 0 0 0 176 117.5
+                                            A 86 113.5 0 0 0 90 4
+                                        ">
+                                    </path>
+                                </svg>
+                                <div class="oval-progress-label"
+                                     id="oval-progress-label">
+                                    0%
+                                </div>
+                            </div>
+                            <span id="face-guide-text">
+                                Position your face inside the guide
+                            </span>
+                        </div>
+                        <span class="camera-status"
+                              id="camera-status">
+                            Starting Camera…
+                        </span>
+                        <span class="camera-quality"
+                              id="camera-face-quality">
+                            Face Lock: Waiting
+                        </span>
+                    </div>
+                    <!-- CAMERA CONDITIONS -->
+                    <div class="scan-instructions">
+                        <div class="instruction-item">
+                            Keep your face still
+                        </div>
+                        <div class="instruction-item">
+                            Use good lighting
+                        </div>
+                        <div class="instruction-item">
+                            Look directly at camera
+                        </div>
+                    </div>
+                    <!-- CAMERA BUTTONS -->
+                    <div class="scan-controls">
+                            <button
+                            type="button"
+                            class="scan-btn camera-btn"
+                            id="camera-toggle-btn"
+                            onclick="toggleCamera()">
+                            Stop Camera
+                        </button>
+                        <button
+    type="button"
+    class="scan-btn measure-btn"
+    onclick="startWellnessScan()">
+    Start 45-Sec Scan
+</button>
+                    </div>
+                </div>
+                                <!-- RESULTS PANEL -->
+                <div class="scan-results-panel">
+                    <div class="panel-heading">
+                        <div>
+                            <p class="panel-label">
+                                Camera Measurement
+                            </p>
+                            <h2>
+                                Face Scan Results
+                            </h2>
+                        </div>
+                    </div>
+                  <div class="measurement-status">
+    <span>
+        Measurement Status
+    </span>
+    <strong id="measurement-status-value">
+        Waiting for Scan
+    </strong>
+</div>
+                    <div class="vitals-grid">
+                        <div class="vital-card">
+                            <span>
+                                Heart Rate
+                            </span>
+                            <div class="vital-value">
+                                <strong id="heart-rate-value">—</strong>
+                                <small>BPM</small>
+                            </div>
+                            <p id="heart-rate-note">
+                                Experimental camera-derived pulse estimate.
+                                Not for medical use.
+                            </p>
+                        </div>
+                        <div class="vital-card">
+                            <span>
+                                Heart Rate Variability
+                            </span>
+                            <div class="vital-value">
+                                <strong id="hrv-value">—</strong>
+                                <small>ms</small>
+                            </div>
+                            <p id="hrv-note">
+                                RMSSD is shown only when a stable pulse waveform provides enough usable beat intervals.
+                            </p>
+                        </div>
+                        <div class="vital-card">
+                            <span>
+                                Breathing Rate
+                            </span>
+                            <div class="vital-value">
+                                <strong id="breathing-rate-value">—</strong>
+                                <small>/ min</small>
+                            </div>
+                            <p id="breathing-rate-note">
+                                Experimental camera-derived respiratory estimate.
+                                Not for medical use.
+                            </p>
+                        </div>
+                        <div class="vital-card">
+                            <span>
+                                Estimated Blood Pressure *
+                            </span>
+                            <div class="vital-value">
+                                <strong>—</strong>
+                                <small>mmHg</small>
+                            </div>
+                            <p>
+                                Requires a validated measurement engine/device. Not calculated by this scan.
+                            </p>
+                        </div>
+                        <div class="vital-card stress-card">
+                            <span>
+                                Physiological Stress Index *
+                            </span>
+                            <div class="vital-value">
+                                <strong id="stress-value">—</strong>
+                            </div>
+                            <p id="stress-note">
+                                Experimental facial-stress cue score. Uses within-scan facial landmark changes only; not a diagnosis.
+                            </p>
+                        </div>
+                        <div class="vital-card">
+                            <span>
+                                Cardiac Workload
+                            </span>
+                            <div class="vital-value">
+                                <strong id="cardiac-workload-value">—</strong>
+                            </div>
+                            <p id="cardiac-workload-note">
+                                Requires validated systolic blood pressure. Facial expression alone cannot provide cardiac workload.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="quality-box">
+                    <div class="quality-row">
+    <span>
+        Signal Quality
+    </span>
+    <strong id="signal-quality-value">
+        Not Measured
+    </strong>
+</div>
+                <div class="quality-track">
+    <div
+        class="quality-fill"
+        id="signal-quality-fill">
+    </div>
+</div>
+                    </div>
+                    <div class="confidence-box">
+                        <div class="confidence-row">
+                            <span>
+                                Signal Confidence
+                            </span>
+                            <strong id="measurement-confidence-value">
+                                Not Available
+                            </strong>
+                        </div>
+                        <p class="confidence-note">
+                            SQI describes signal evidence; it is not a probability of accuracy.
+                            Experimental camera-derived wellness measurement. Not for medical use.
+                        </p>
+                    </div>
+                    <div class="measurement-meta">
+                        <div class="meta-box">
+                            <span>
+                                Measurement Time
+                            </span>
+                        <strong id="measurement-time-value">
+    —
+</strong>
+                        </div>
+                        <div class="meta-box">
+                            <span>
+                                Scan Duration
+                            </span>
+                        <strong id="scan-duration-value">
+    —
+</strong>
+                        </div>
+                    </div>
+                    <div class="meta-box">
+                        <span>Usable Signal Duration</span>
+                        <strong id="usable-duration-value">—</strong>
+                    </div>
+                    <p class="confidence-note" id="measurement-reason" role="status" aria-live="polite">
+                        Each metric is checked separately. Insufficient signal returns no value.
+                    </p>
+                    <button
+                        type="button"
+                        class="save-trends-btn"
+                        id="save-trends-btn"
+                        onclick="saveMeasurementToTrends()"
+                        disabled>
+                        Save Valid Measurement to My Trends
+                    </button>
+                </div>
+            </section>
+            <!-- HOW IT WORKS -->
+            <section class="dashboard-panel explain-panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="panel-label">
+                            Measurement Flow
+                        </p>
+                        <h2>
+                            How the Wellness Scan Works
+                        </h2>
+                    </div>
+                </div>
+                <div class="scan-process-grid">
+                    <div class="process-card">
+                        <div class="process-number">
+                            1
+                        </div>
+                        <strong>
+                            Camera Capture
+                        </strong>
+                        <p>
+                            The user voluntarily positions their face
+                            in front of the camera.
+                        </p>
+                    </div>
+                    <div class="process-card">
+                        <div class="process-number">
+                            2
+                        </div>
+                        <strong>
+                            Signal Analysis
+                        </strong>
+                        <p>
+                            Facial video may be processed using
+                            camera-based physiological signal technology.
+                        </p>
+                    </div>
+                    <div class="process-card">
+                        <div class="process-number">
+                            3
+                        </div>
+                        <strong>
+                            Wellness Indicators
+                        </strong>
+                        <p>
+                            Supported physiological indicators are
+                            calculated by the measurement engine.
+                        </p>
+                    </div>
+                    <div class="process-card">
+                        <div class="process-number">
+                            4
+                        </div>
+                        <strong>
+                            Trend Comparison
+                        </strong>
+                        <p>
+                            Valid measurements may be compared against
+                            the person's own historical baseline.
+                        </p>
+                    </div>
+                </div>
+            </section>
+            <!-- OPTIONAL WEARABLE DATA -->
+            <section class="dashboard-panel explain-panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="panel-label">
+                            Optional Additional Data
+                        </p>
+                        <h2>
+                            Wearable Wellness Information
+                        </h2>
+                    </div>
+                </div>
+                <div class="wearable-grid">
+                    <div class="wearable-card">
+                        <span>
+                            Sleep History
+                        </span>
+                        <strong>
+                            Optional Wearable Source
+                        </strong>
+                        <p>
+                            Sleep duration and recovery history cannot be
+                            determined from a short face scan and may later
+                            be obtained from an authorized wearable device.
+                        </p>
+                    </div>
+                    <div class="wearable-card">
+                        <span>
+                            Activity History
+                        </span>
+                        <strong>
+                            Optional Wearable Source
+                        </strong>
+                        <p>
+                            Steps, activity and longer-term movement trends
+                            may later be imported with user consent.
+                        </p>
+                    </div>
+                </div>
+                <div class="scan-disclaimer">
+                    <strong>Important:</strong>
+                    Wellness Scan is intended for wellness trend support,
+                    not medical diagnosis.
+                    Experimental camera-derived wellness measurement. Not for medical use.
+                    Pulse and breathing estimates depend on optical signal quality.
+                    This scan does not calculate HRV, blood pressure, SpO2,
+                    physiological stress or cardiac workload.
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js" crossorigin="anonymous"></script>
+<script>
+"use strict";
+/* VeerPulse experimental optical measurements. No medical interpretation.
+ * POS: Wang et al., DOI 10.1109/TBME.2016.2609282.
+ * CHROM: de Haan & Jeanne, DOI 10.1109/TBME.2013.2266196.
+ * SQI thresholds below are engineering gates, not validated accuracy scores.
+ */
+const VP = (() => {
+  /*
+   * VeerPulse optical pipeline v3.0
+   *
+   * Browser-native implementation written for VeerPulse.
+   * Algorithmic design follows established rPPG ideas used by the referenced
+   * Contactless-Health-Monitoring project: multiple facial ROIs, POS/CHROM/PBV
+   * candidates, spectral-quality selection, HR/HRV, and respiration support
+   * from pulse-amplitude and IBI modulation.
+   *
+   * It deliberately does NOT estimate blood pressure or invent a stress label.
+   * The referenced project uses a separately trained Random-Forest stress model;
+   * that model is not reproduced here.
+   */
+  const C = Object.freeze({
+    version:"VP-optical-3.3",
+    seconds:45,
+    settle:3,
+    maxGap:0.22,
+    minFPS:12,
+    hrLow:0.67,
+    hrHigh:3.0,
+    rrLow:0.10,
+    rrHigh:0.60,
+    hrWindow:16,
+    hrStep:4,
+    rrWindow:24,
+    rrStep:6
+  });
+
+  const clamp = (x,a=0,b=1) => Math.max(a,Math.min(b,x));
+  const mean = a => a.length ? a.reduce((s,x)=>s+x,0)/a.length : 0;
+  const median = a => {
+    if(!a.length)return 0;
+    const b=[...a].sort((x,y)=>x-y);
+    return (b[Math.floor((b.length-1)/2)]+b[Math.floor(b.length/2)])/2;
+  };
+  const sd = a => {
+    if(!a.length)return 0;
+    const m=mean(a);
+    return Math.sqrt(mean(a.map(x=>(x-m)**2)));
+  };
+  const rounded=(v,n=3)=>Number.isFinite(v)?Number(v.toFixed(n)):null;
+  const names=['Forehead','Left cheek','Right cheek'];
+
+  function detrend(a) {
+    const n=a.length,m=mean(a),mid=(n-1)/2;
+    let xy=0,xx=0;
+    for(let i=0;i<n;i++){xy+=(i-mid)*(a[i]-m);xx+=(i-mid)**2;}
+    return a.map((v,i)=>v-m-(xx?xy/xx:0)*(i-mid));
+  }
+
+  function biquad(a,fs,hz,high) {
+    const w=2*Math.PI*hz/fs,co=Math.cos(w),al=Math.sin(w)/Math.SQRT2;
+    const a0=1+al,a1=-2*co/a0,a2=(1-al)/a0;
+    const b0=(high?(1+co):(1-co))/(2*a0),b1=(high?-2:2)*b0,b2=b0;
+    let x1=a[0]||0,x2=x1,y1=high?0:x1,y2=y1;
+    return a.map(x=>{
+      const y=b0*x+b1*x1+b2*x2-a1*y1-a2*y2;
+      x2=x1;x1=x;y2=y1;y1=y;
+      return y;
+    });
+  }
+
+  function bandpass(a,fs,lo,hi) {
+    if(a.length<8)return a.map(()=>0);
+    const n=a.length,p=Math.min(n-1,Math.ceil(3*fs/Math.max(lo,0.05)));
+    let b=[];
+    for(let i=p;i>0;i--)b.push(2*a[0]-a[i]);
+    b.push(...a);
+    for(let i=1;i<=p;i++)b.push(2*a[n-1]-a[n-1-i]);
+    for(let k=0;k<2;k++)b=biquad(biquad(b,fs,lo,true),fs,hi,false).reverse();
+    return b.slice(p,p+n);
+  }
+
+  function fft(re,im,inverse=false) {
+    const n=re.length;
+    for(let i=1,j=0;i<n;i++){
+      let bit=n>>1;
+      for(;j&bit;bit>>=1)j^=bit;
+      j^=bit;
+      if(i<j){[re[i],re[j]]=[re[j],re[i]];[im[i],im[j]]=[im[j],im[i]];}
+    }
+    for(let len=2;len<=n;len<<=1){
+      const ang=(inverse?2:-2)*Math.PI/len,ur=Math.cos(ang),ui=Math.sin(ang);
+      for(let i=0;i<n;i+=len){
+        let wr=1,wi=0;
+        for(let j=0;j<len/2;j++){
+          const k=i+j,l=k+len/2;
+          const tr=wr*re[l]-wi*im[l],ti=wr*im[l]+wi*re[l];
+          re[l]=re[k]-tr;im[l]=im[k]-ti;
+          re[k]+=tr;im[k]+=ti;
+          [wr,wi]=[wr*ur-wi*ui,wr*ui+wi*ur];
+        }
+      }
+    }
+    if(inverse)for(let i=0;i<n;i++){re[i]/=n;im[i]/=n;}
+  }
+
+  function windowedPower(a,size) {
+    const re=new Float64Array(size),im=new Float64Array(size);
+    let energy=0;
+    for(let i=0;i<a.length;i++){
+      const w=a.length>1?0.5-0.5*Math.cos(2*Math.PI*i/(a.length-1)):1;
+      re[i]=a[i]*w;
+      energy+=w*w;
+    }
+    fft(re,im);
+    const scale=Math.max(energy,1e-12);
+    return Array.from({length:size/2+1},(_,k)=>(re[k]*re[k]+im[k]*im[k])/scale);
+  }
+
+  function spectrum(a,fs,lo,hi) {
+    // Full-window spectral resolution blended with an overlapping Welch-style
+    // estimate. This is less sensitive to one short lighting/motion burst.
+    const d=detrend(a),n=d.length;
+    let size=1;
+    while(size<n*4)size*=2;
+
+    const k0=Math.max(1,Math.floor(lo*size/fs));
+    const k1=Math.min(size/2,Math.ceil(hi*size/fs));
+    const full=windowedPower(d,size);
+
+    const segLen=Math.min(n,Math.max(Math.round(8*fs),Math.floor(n*0.70)));
+    const starts=segLen<n?[0,Math.floor((n-segLen)/2),n-segLen]:[0];
+    const welch=new Array(size/2+1).fill(0);
+
+    for(const start of [...new Set(starts)]){
+      const p=windowedPower(d.slice(start,start+segLen),size);
+      for(let k=k0;k<=k1;k++)welch[k]+=p[k];
+    }
+    const divisor=Math.max(1,[...new Set(starts)].length);
+    for(let k=k0;k<=k1;k++)welch[k]/=divisor;
+
+    let fullTotal=0,welchTotal=0;
+    for(let k=k0;k<=k1;k++){fullTotal+=full[k];welchTotal+=welch[k];}
+
+    const bins=[];
+    for(let k=k0;k<=k1;k++){
+      const pf=full[k]/Math.max(fullTotal,1e-24);
+      const pw=welch[k]/Math.max(welchTotal,1e-24);
+      bins.push({f:k*fs/size,p:0.60*pf+0.40*pw});
+    }
+    return {bins,res:fs/n,step:fs/size};
+  }
+
+  function autocorr(a,lag) {
+    let xy=0,xx=0,yy=0;
+    for(let i=0;i<a.length-lag;i++){
+      xy+=a[i]*a[i+lag];xx+=a[i]**2;yy+=a[i+lag]**2;
+    }
+    return xx*yy>1e-24?xy/Math.sqrt(xx*yy):0;
+  }
+
+  function correlation(a,b) {
+    if(a.length!==b.length)return 0;
+    const x=detrend(a),y=detrend(b);
+    let xy=0,xx=0,yy=0;
+    for(let i=0;i<x.length;i++){xy+=x[i]*y[i];xx+=x[i]**2;yy+=y[i]**2;}
+    return xx*yy>1e-24?Math.abs(xy/Math.sqrt(xx*yy)):0;
+  }
+
+  function solve3(A,b) {
+    const m=A.map((r,i)=>[r[0],r[1],r[2],b[i]]);
+    for(let c=0;c<3;c++){
+      let pivot=c;
+      for(let r=c+1;r<3;r++)if(Math.abs(m[r][c])>Math.abs(m[pivot][c]))pivot=r;
+      if(Math.abs(m[pivot][c])<1e-10)return null;
+      [m[c],m[pivot]]=[m[pivot],m[c]];
+      const div=m[c][c];
+      for(let j=c;j<4;j++)m[c][j]/=div;
+      for(let r=0;r<3;r++){
+        if(r===c)continue;
+        const factor=m[r][c];
+        for(let j=c;j<4;j++)m[r][j]-=factor*m[c][j];
+      }
+    }
+    return [m[0][3],m[1][3],m[2][3]];
+  }
+
+  function pbvSignal(norm) {
+    const vars=[0,1,2].map(k=>{
+      const col=norm.map(v=>v[k]);
+      const s=sd(col);
+      return s*s;
+    });
+    const denom=Math.sqrt(vars[0]+vars[1]+vars[2]);
+    if(denom<1e-12)return null;
+    const signature=vars.map(v=>Math.sqrt(v)/denom);
+
+    const Q=Array.from({length:3},()=>[0,0,0]);
+    for(const v of norm){
+      for(let r=0;r<3;r++)for(let c=0;c<3;c++)Q[r][c]+=v[r]*v[c]/norm.length;
+    }
+    const trace=Q[0][0]+Q[1][1]+Q[2][2];
+    const reg=Math.max(1e-7,trace*1e-6);
+    for(let i=0;i<3;i++)Q[i][i]+=reg;
+
+    const W=solve3(Q,signature);
+    if(!W)return null;
+    const scale=signature[0]*W[0]+signature[1]*W[1]+signature[2]*W[2];
+    if(Math.abs(scale)<1e-10)return null;
+    return norm.map(v=>(v[0]*W[0]+v[1]*W[1]+v[2]*W[2])/scale);
+  }
+
+  function pulse(rgb,fs,method) {
+    const n=rgb.length,L=Math.max(8,Math.round(1.6*fs));
+    const step=method==='POS'?1:Math.max(1,Math.floor(L/2));
+    const out=Array(n).fill(0),weights=Array(n).fill(0),starts=[];
+    for(let start=0;start+L<=n;start+=step)starts.push(start);
+    if(n>=L && starts[starts.length-1]!==n-L)starts.push(n-L);
+
+    for(const start of starts){
+      const seg=rgb.slice(start,start+L);
+      const m=[0,1,2].map(k=>mean(seg.map(v=>v[k])));
+      if(m.some(x=>x<=0))continue;
+      const norm=seg.map(v=>v.map((x,k)=>x/m[k]));
+      let h=null;
+
+      if(method==='POS'){
+        const x=norm.map(v=>v[1]-v[2]);
+        const y=norm.map(v=>v[1]+v[2]-2*v[0]);
+        const sy=sd(y);
+        if(sy<1e-12)continue;
+        const alpha=sd(x)/sy;
+        h=x.map((v,i)=>v+alpha*y[i]);
+      }else if(method==='CHROM'){
+        const x=bandpass(norm.map(v=>3*v[0]-2*v[1]),fs,0.5,4);
+        const y=bandpass(norm.map(v=>1.5*v[0]+v[1]-1.5*v[2]),fs,0.5,4);
+        const sy=sd(y);
+        if(sy<1e-12)continue;
+        const alpha=sd(x)/sy;
+        h=x.map((v,i)=>v-alpha*y[i]);
+      }else if(method==='PBV'){
+        h=pbvSignal(norm);
+        if(!h)continue;
+      }
+
+      const hm=mean(h);
+      for(let i=0;i<L;i++){
+        const w=method==='POS'?1:0.5-0.5*Math.cos(2*Math.PI*i/(L-1));
+        out[start+i]+=(h[i]-hm)*w;
+        weights[start+i]+=w;
+      }
+    }
+
+    return bandpass(
+      detrend(out.map((v,i)=>weights[i]?v/weights[i]:0)),
+      fs,0.5,4
+    );
+  }
+
+  function envelope(a) {
+    const pad=Math.min(a.length-1,180);
+    const b=a.slice(1,pad+1).reverse().concat(a,a.slice(-pad-1,-1).reverse());
+    let n=1;while(n<b.length)n*=2;
+    const re=new Float64Array(n),im=new Float64Array(n);
+    re.set(b);fft(re,im);
+    for(let i=1;i<n/2;i++){re[i]*=2;im[i]*=2;}
+    for(let i=n/2+1;i<n;i++){re[i]=0;im[i]=0;}
+    fft(re,im,true);
+    return a.map((_,i)=>Math.hypot(re[i+pad],im[i+pad]));
+  }
+
+  function weightedMedian(items,value=x=>x.rate,weight=x=>x.weight??1) {
+    const a=items
+      .filter(x=>Number.isFinite(value(x)) && weight(x)>0)
+      .sort((x,y)=>value(x)-value(y));
+    const half=a.reduce((s,x)=>s+weight(x),0)/2;
+    let sum=0;
+    for(const x of a){sum+=weight(x);if(sum>=half)return value(x);}
+    return null;
+  }
+
+  function unionSeconds(intervals) {
+    const a=intervals.slice().sort((x,y)=>x[0]-y[0]);
+    let total=0,end=-Infinity;
+    for(const [lo,hi] of a){
+      total+=Math.max(0,hi-Math.max(end,lo));
+      end=Math.max(end,hi);
+    }
+    return total;
+  }
+
+  function coherence(a,b,fs,f) {
+    const block=Math.floor(Math.min(a.length,b.length)/4);
+    if(block<8)return 0;
+    let xyR=0,xyI=0,xx=0,yy=0;
+    for(let k=0;k<4;k++){
+      const x=detrend(a.slice(k*block,(k+1)*block));
+      const y=detrend(b.slice(k*block,(k+1)*block));
+      let ar=0,ai=0,br=0,bi=0;
+      for(let i=0;i<block;i++){
+        const w=0.5-0.5*Math.cos(2*Math.PI*i/(block-1));
+        const co=Math.cos(2*Math.PI*f*i/fs),si=Math.sin(2*Math.PI*f*i/fs);
+        ar+=w*x[i]*co;ai+=w*x[i]*si;
+        br+=w*y[i]*co;bi+=w*y[i]*si;
+      }
+      xyR+=ar*br+ai*bi;xyI+=ai*br-ar*bi;
+      xx+=ar*ar+ai*ai;yy+=br*br+bi*bi;
+    }
+    return xx*yy>1e-24?clamp((xyR*xyR+xyI*xyI)/(xx*yy)):0;
+  }
+
+  function candidateSpectrum(signal,fs,lo,hi,resp=false) {
+    const a=detrend(signal),duration=a.length/fs;
+    if(a.length<16 || sd(a)<1e-7)
+      return {candidates:[],reason:'No measurable periodic component'};
+
+    const spec=spectrum(a,fs,lo,hi),bins=spec.bins,res=spec.res;
+    const radius=1.25*res,total=bins.reduce((s,b)=>s+b.p,0),local=[];
+    const noiseShare=Math.min(0.5,2*radius/(hi-lo));
+
+    for(let i=1;i<bins.length-1;i++){
+      const b=bins[i];
+      if(b.p<=bins[i-1].p || b.p<bins[i+1].p)continue;
+
+      const background=bins
+        .filter(q=>Math.abs(q.f-b.f)>2*res)
+        .map(q=>q.p);
+
+      const prominence=b.p/Math.max(median(background),1e-20);
+      const energy=bins
+        .filter(q=>Math.abs(q.f-b.f)<radius)
+        .reduce((s,q)=>s+q.p,0);
+      const concentration=energy/Math.max(total,1e-20);
+      const ac=autocorr(a,Math.max(1,Math.round(fs/b.f)));
+
+      const left=Math.log(Math.max(bins[i-1].p,1e-25));
+      const mid=Math.log(Math.max(b.p,1e-25));
+      const right=Math.log(Math.max(bins[i+1].p,1e-25));
+      const curve=left-2*mid+right;
+      const delta=Math.abs(curve)>1e-12
+        ? clamp(0.5*(left-right)/curve,-0.5,0.5)
+        : 0;
+
+      const f=b.f+delta*spec.step;
+      const boundary=f<=lo+0.35*res || f>=hi-0.35*res;
+      const snr=10*Math.log10(energy/Math.max(total-energy,1e-20));
+      const pQ=clamp(Math.log10(Math.max(1,prominence))/1.5);
+      const cQ=clamp((concentration-noiseShare)/Math.max(0.10,0.65-noiseShare));
+      const spectral=0.38*pQ+0.37*cQ+0.25*clamp((ac+0.10)/0.90);
+
+      local.push({
+        rate:60*f,f,power:b.p,prominence,concentration,snr,ac,spectral,
+        resolutionBPM:60*res,boundary,cycles:f*duration,
+        harmonic:'none',blocked:false
+      });
+    }
+
+    local.sort((x,y)=>y.power-x.power);
+
+    for(const high of local){
+      const low=local.find(q=>
+        q.f<high.f*0.72 &&
+        Math.abs(2*q.f-high.f)<1.25*res &&
+        q.prominence>=3 &&
+        q.power>0.10*high.power
+      );
+      if(!low)continue;
+      const full=autocorr(a,Math.round(fs/low.f));
+      const half=autocorr(a,Math.round(fs/high.f));
+      if(full>0.45 && full-half>0.12 && low.concentration>0.08){
+        high.blocked=true;
+        high.harmonic='resolved as second harmonic';
+        low.harmonic='fundamental supported by waveform period';
+      }else if(high.power>0.70*local[0].power && low.power>0.22*local[0].power){
+        high.harmonic='unresolved half/double alternative';
+        low.harmonic='unresolved half/double alternative';
+      }
+    }
+
+    const minProminence=resp?2.0:2.1;
+    const minConcentration=Math.max(resp?0.17:0.075,noiseShare*1.10);
+    const minSpectral=resp?0.24:0.23;
+
+    const candidates=local.filter(q=>
+      !q.blocked &&
+      !q.boundary &&
+      q.prominence>=minProminence &&
+      q.concentration>=minConcentration &&
+      q.spectral>=minSpectral &&
+      (!resp || q.cycles>=3.0)
+    );
+
+    candidates.sort((x,y)=>y.spectral-x.spectral || y.snr-x.snr);
+
+    return {
+      candidates:candidates.slice(0,4),
+      local:local.slice(0,5),
+      reason:candidates.length?'':'No periodic peak passed the signal-quality checks'
+    };
+  }
+
+  function nuisanceEvidence(signal,u,fs,rate,resp=false) {
+    const lo=resp?C.rrLow:C.hrLow,hi=resp?C.rrHigh:C.hrHigh;
+    const results=[];
+    let penalty=0,hard=false;
+
+    for(const key of ['x','y','scale','bg']){
+      if(u.some(v=>!Number.isFinite(v[key])))continue;
+      const raw=u.map(v=>v[key]);
+      const nuisance=bandpass(detrend(raw),fs,lo,hi);
+      const base=key==='bg'?mean(raw):mean(u.map(v=>v.scale));
+      const amplitude=sd(nuisance)/Math.max(base,1e-6);
+      const floor=key==='bg'?0.003:0.004;
+      if(amplitude<floor)continue;
+
+      const spec=candidateSpectrum(nuisance,fs,lo,hi,resp);
+      const nearest=spec.candidates.find(q=>
+        Math.abs(q.rate-rate)<=Math.max(resp?2.5:4,60*fs/u.length)
+      );
+      const co=coherence(signal,nuisance,fs,rate/60);
+      const corr=correlation(signal,nuisance);
+      const overlap=!!nearest && co>0.62;
+      const subtleBreathing=resp && (key==='y' || key==='scale') && amplitude<0.02;
+      const strong=amplitude>(key==='bg'?0.018:0.030);
+      const veto=!subtleBreathing && strong && overlap && co>0.88 && corr>0.85;
+      const risk=subtleBreathing?0:overlap?clamp(amplitude/(key==='bg'?0.04:0.06))*0.30:0;
+
+      hard||=veto;
+      penalty=Math.max(penalty,risk);
+      results.push({
+        source:key,amplitude:rounded(amplitude),coherence:rounded(co),
+        correlation:rounded(corr),sameFrequency:overlap,hardReject:veto
+      });
+    }
+    return {hard,penalty,channels:results};
+  }
+
+  function makeSegments(records,region,fs) {
+    const eligible=records.filter(r=>r.t>=C.settle);
+    const valid=eligible.filter(r=>r.regions[region]?.ok);
+    const raw=[];
+    let part=[];
+
+    for(const row of valid){
+      if(part.length && row.t-part[part.length-1].t>C.maxGap){
+        raw.push(part);
+        part=[];
+      }
+      part.push(row);
+    }
+    if(part.length)raw.push(part);
+
+    const globalCoverage=valid.length/Math.max(1,eligible.length);
+    const segments=[];
+
+    for(const rows of raw){
+      if(rows.length<2 || rows.at(-1).t-rows[0].t<16)continue;
+      const start=rows[0].t,end=rows.at(-1).t,u=[];
+      let j=0;
+
+      for(let t=start;t<=end;t+=1/fs){
+        while(j<rows.length-2 && rows[j+1].t<t)j++;
+        const a=rows[j],b=rows[j+1],w=(t-a.t)/(b.t-a.t);
+        const ra=a.regions[region],rb=b.regions[region];
+        const interpolate=key=>
+          Number.isFinite(a[key]) && Number.isFinite(b[key])
+            ? a[key]+w*(b[key]-a[key])
+            : null;
+
+        u.push({
+          t,
+          rgb:ra.rgb.map((v,k)=>v+w*(rb.rgb[k]-v)),
+          lum:ra.lum+w*(rb.lum-ra.lum),
+          x:interpolate('x'),
+          y:interpolate('y'),
+          scale:interpolate('scale'),
+          bg:interpolate('bg'),
+          motion:interpolate('motionQ')??0,
+          light:clamp(1-(ra.clipping??0)/0.08)
+            *clamp((ra.lum-20)/25)
+            *clamp((245-ra.lum)/25)
+        });
+      }
+
+      const coverage=clamp(rows.length/Math.max(1,(end-start)*fs));
+      segments.push({
+        u,start,seconds:end-start,coverage,globalCoverage,region,
+        pos:null,chrom:null,pbv:null
+      });
+    }
+
+    return {
+      segments,
+      globalCoverage,
+      allDurations:raw.filter(a=>a.length>1)
+        .map(a=>rounded(a.at(-1).t-a[0].t,1))
+    };
+  }
+
+  function windowRanges(segment,fs,seconds,edge) {
+    const length=Math.round(seconds*fs);
+    const trim=Math.round(edge*fs);
+    const hop=Math.round((seconds===C.hrWindow?C.hrStep:C.rrStep)*fs);
+    const ranges=[];
+    for(let i=trim;i+length<=segment.u.length-trim;i+=hop)
+      ranges.push([i,i+length]);
+    return ranges;
+  }
+
+  function observation(candidate,method,window,u,segment,fs,resp=false) {
+    const artifact=nuisanceEvidence(window.signal,u,fs,candidate.rate,resp);
+    const base=candidate.spectral*(1-artifact.penalty);
+    const snrQ=clamp((candidate.snr+10)/14);
+    return {
+      ...candidate,
+      method,
+      window:window.id,
+      start:u[0].t,
+      end:u.at(-1).t,
+      region:segment.region,
+      coverage:Math.min(segment.coverage,segment.globalCoverage),
+      globalCoverage:segment.globalCoverage,
+      motion:mean(u.map(v=>v.motion)),
+      lighting:mean(u.map(v=>v.light)),
+      artifact,
+      weight:artifact.hard?0:(0.78*base+0.22*snrQ)
+        *Math.max(0.35,segment.coverage)
+        *(method==='POS'?1:method==='CHROM'?0.98:0.96),
+      quality:0.78*base+0.22*snrQ,
+      waveform:window.signal,
+      sampleRate:fs
+    };
+  }
+
+  function diagnosticCandidate(q) {
+    return {
+      bpm:rounded(q.rate,2),
+      quality:rounded(q.quality??q.spectral),
+      weight:rounded(q.weight??q.spectral),
+      snrDB:rounded(q.snr,2),
+      concentration:rounded(q.concentration),
+      prominence:rounded(q.prominence,1),
+      autocorrelation:rounded(q.ac),
+      resolutionBPM:rounded(q.resolutionBPM,2),
+      cycles:rounded(q.cycles,1),
+      boundary:!!q.boundary,
+      blocked:!!q.blocked,
+      harmonic:q.harmonic,
+      artifact:q.artifact||null
+    };
+  }
+
+  function collectPulse(regionData,fs,diagnostic) {
+    const pool=[],windows=[];
+    for(const segment of regionData.segments){
+      const rgb=segment.u.map(v=>v.rgb);
+      segment.pos=pulse(rgb,fs,'POS');
+      segment.chrom=pulse(rgb,fs,'CHROM');
+      segment.pbv=pulse(rgb,fs,'PBV');
+
+      for(const [i,end] of windowRanges(segment,fs,C.hrWindow,1.0)){
+        const u=segment.u.slice(i,end);
+        const id=u[0].t.toFixed(3);
+        const entry={
+          id,start:rounded(u[0].t,1),
+          POS:[],CHROM:[],PBV:[],reasons:{},excludedPeaks:{}
+        };
+        windows.push(id);
+
+        for(const [method,full] of [
+          ['POS',segment.pos],
+          ['CHROM',segment.chrom],
+          ['PBV',segment.pbv]
+        ]){
+          const signal=full.slice(i,end);
+          const s=candidateSpectrum(signal,fs,C.hrLow,C.hrHigh);
+          const candidates=s.candidates
+            .map(q=>observation(q,method,{id,signal},u,segment,fs,false));
+
+          entry[method]=candidates.map(diagnosticCandidate);
+          entry.reasons[method]=s.reason;
+          entry.excludedPeaks[method]=(s.local||[])
+            .filter(q=>!s.candidates.includes(q))
+            .map(diagnosticCandidate);
+
+          pool.push(...candidates.filter(q=>q.weight>0));
+        }
+        diagnostic.hrWindows.push(entry);
+      }
+    }
+    return {pool,windows,segments:regionData.segments};
+  }
+
+  function trackCandidates(pool,windowIDs,tolerance) {
+    const usable=pool.filter(q=>q.weight>0),tracks=[];
+    for(const seed of usable){
+      let center=seed.rate,selected=[];
+      for(let pass=0;pass<2;pass++){
+        selected=[];
+        for(const id of windowIDs){
+          const matching=usable.filter(q=>
+            q.window===id && Math.abs(q.rate-center)<=tolerance
+          );
+          if(!matching.length)continue;
+          matching.sort((a,b)=>b.weight-a.weight);
+          const best=matching[0];
+          const confirmed=matching.some(q=>
+            q.method!==best.method && Math.abs(q.rate-best.rate)<=6
+          );
+          selected.push({
+            ...best,
+            confirmed,
+            weight:best.weight*(confirmed?1.06:1)
+          });
+        }
+        if(!selected.length)break;
+        center=weightedMedian(selected);
+      }
+
+      if(!selected.length)continue;
+      const mad=weightedMedian(selected,q=>Math.abs(q.rate-center));
+      const fraction=selected.length/Math.max(1,windowIDs.length);
+      const quality=mean(selected.map(q=>q.quality));
+      const span=Math.max(...selected.map(q=>q.start))-Math.min(...selected.map(q=>q.start));
+      const seconds=unionSeconds(selected.map(q=>[q.start,q.end]));
+      const confirmation=mean(selected.map(q=>q.confirmed?1:0));
+      const uncertainty=clamp(1-mad/tolerance);
+      const temporal=0.58*fraction+0.42*uncertainty;
+      const snrDB=mean(selected.map(q=>q.snr));
+      const snrQ=clamp((snrDB+10)/14);
+      const rank=(0.72*quality+0.18*temporal+0.10*snrQ)
+        *(0.72+0.28*fraction)+0.03*confirmation;
+
+      tracks.push({
+        rate:center,mad,fraction,quality,span,seconds,confirmation,temporal,
+        snrDB,rank,selected,windows:selected.length,
+        coverage:mean(selected.map(q=>q.coverage)),
+        motion:mean(selected.map(q=>q.motion)),
+        lighting:mean(selected.map(q=>q.lighting)),
+        ambiguousFraction:mean(selected.map(q=>
+          q.harmonic.startsWith('unresolved')?1:0
+        ))
+      });
+    }
+
+    tracks.sort((a,b)=>b.rank-a.rank);
+    return tracks
+      .filter((q,i)=>!tracks.slice(0,i)
+        .some(p=>Math.abs(p.rate-q.rate)<tolerance))
+      .slice(0,4);
+  }
+
+  function summarizeTrack(t) {
+    return t?{
+      bpm:rounded(t.rate,2),
+      windows:t.windows,
+      windowBPM:t.selected.map(q=>rounded(q.rate,2)),
+      weightedMAD:rounded(t.mad,2),
+      acceptedWindowFraction:rounded(t.fraction),
+      timeSpanSeconds:rounded(t.span,1),
+      usableSeconds:rounded(t.seconds,1),
+      quality:rounded(t.quality),
+      methodAgreement:rounded(t.confirmation),
+      snrDB:rounded(t.snrDB,2),
+      rank:rounded(t.rank)
+    }:null;
+  }
+
+  function resultFailure(reason,details={}) {
+    return {ok:false,rate:null,sqi:0,seconds:0,reason,hrv:null,...details};
+  }
+
+  function peakSeries(signal,fs,hr,sign=1) {
+    const d=bandpass(detrend(signal),fs,C.hrLow,C.hrHigh);
+    const sdev=sd(d);
+    if(sdev<1e-8)return [];
+    const z=d.map(v=>sign*(v-mean(d))/sdev);
+    const period=60/Math.max(40,Math.min(180,hr));
+    const minDistance=Math.max(1,Math.round(0.45*period*fs));
+    const candidates=[];
+
+    for(let i=1;i<z.length-1;i++){
+      if(z[i]<0.05 || z[i]<z[i-1] || z[i]<=z[i+1])continue;
+      if(!candidates.length || i-candidates.at(-1)>=minDistance)candidates.push(i);
+      else if(z[i]>z[candidates.at(-1)])candidates[candidates.length-1]=i;
+    }
+    return candidates;
+  }
+
+  function computeHRV(signal,fs,hr) {
+    if(!signal || signal.length<Math.round(18*fs))
+      return {ok:false,reason:'Too little continuous pulse signal for HRV'};
+
+    const choices=[1,-1].map(sign=>{
+      const peaks=peakSeries(signal,fs,hr,sign);
+      const intervals=[];
+      for(let i=1;i<peaks.length;i++){
+        const rr=(peaks[i]-peaks[i-1])/fs;
+        if(rr>=0.33 && rr<=1.50)intervals.push(rr);
+      }
+      const med=median(intervals);
+      const bpm=med?60/med:0;
+      return {peaks,intervals,score:intervals.length-Math.abs(bpm-hr)/8};
+    }).sort((a,b)=>b.score-a.score);
+
+    let intervals=choices[0].intervals;
+    if(intervals.length<8)
+      return {ok:false,reason:'Not enough stable beat intervals for HRV'};
+
+    const med=median(intervals);
+    intervals=intervals.filter(v=>
+      Math.abs(v-med)<=Math.max(0.18,0.25*med)
+    );
+    if(intervals.length<8)
+      return {ok:false,reason:'Beat intervals were too irregular for a stable short-window HRV estimate'};
+
+    const ms=intervals.map(v=>1000*v);
+    const diffs=[];
+    for(let i=1;i<ms.length;i++)diffs.push(ms[i]-ms[i-1]);
+
+    const m=mean(ms);
+    const sdnn=Math.sqrt(
+      ms.reduce((s,v)=>s+(v-m)**2,0)/Math.max(1,ms.length-1)
+    );
+    const rmssd=Math.sqrt(mean(diffs.map(v=>v*v)));
+
+    if(!Number.isFinite(rmssd) || !Number.isFinite(sdnn))
+      return {ok:false,reason:'HRV calculation was unstable'};
+
+    return {
+      ok:true,
+      rmssd:Math.round(rmssd),
+      sdnn:Math.round(sdnn),
+      beats:intervals.length+1,
+      reason:''
+    };
+  }
+
+  function selectHeartRate(all,diagnostics,fs) {
+    const tracks=[];
+
+    for(let region=0;region<all.length;region++){
+      const item=all[region];
+      const found=trackCandidates(item.pool,item.windows,10);
+      diagnostics.regions[region].hrTracks=found.map(t=>({
+        ...summarizeTrack(t),
+        checks:{
+          twoWindows:t.windows>=2,
+          usableDuration:t.seconds>=16,
+          dispersion:t.mad<=10,
+          windowCoverage:t.fraction>=0.30,
+          spectralQuality:t.quality>=0.30
+        }
+      }));
+
+      for(const t of found){
+        if(
+          t.windows>=2 &&
+          t.seconds>=16 &&
+          t.mad<=10 &&
+          t.fraction>=0.30 &&
+          t.quality>=0.30
+        ) tracks.push({...t,region});
+      }
+    }
+
+    if(!tracks.length){
+      const anyCandidate=all.some(v=>v.pool.length);
+      return resultFailure(
+        anyCandidate
+          ? 'Pulse-like signal was detected, but it was not stable across enough of the scan'
+          : 'No pulse candidate survived spectral and artifact checks'
+      );
+    }
+
+    const groups=tracks.map(seed=>{
+      const members=[];
+      for(let region=0;region<3;region++){
+        const choices=tracks
+          .filter(t=>t.region===region && Math.abs(t.rate-seed.rate)<=9)
+          .sort((a,b)=>b.rank-a.rank);
+        if(choices.length)members.push(choices[0]);
+      }
+      const best=members.slice().sort((a,b)=>b.rank-a.rank)[0];
+      return {
+        members,best,
+        rate:weightedMedian(members,t=>t.rate,t=>Math.max(0.01,t.rank)),
+        rank:best.rank+0.05*(members.length-1)
+      };
+    }).sort((a,b)=>b.rank-a.rank);
+
+    const chosen=groups[0],b=chosen.best;
+    const rival=groups.find(g=>Math.abs(g.rate-chosen.rate)>14);
+
+    diagnostics.hrSelection={
+      candidate:rounded(chosen.rate,2),
+      bestRegion:names[b.region],
+      supportingRegions:chosen.members.map(t=>names[t.region]),
+      methods:[...new Set(b.selected.map(q=>q.method))],
+      snrDB:rounded(b.snrDB,2),
+      rival:rival?{bpm:rounded(rival.rate,2),rank:rounded(rival.rank)}:null,
+      rank:rounded(chosen.rank)
+    };
+
+    if(
+      rival &&
+      rival.rank>chosen.rank-0.025 &&
+      rival.best.quality>0.62 &&
+      b.quality<0.66
+    ){
+      return resultFailure(
+        'Two similarly strong pulse frequencies remain; move less and improve lighting'
+      );
+    }
+
+    const regional=chosen.members.filter(t=>
+      t.quality>=0.36 && t.coverage>=0.45
+    ).length>=2;
+
+    const crossMethod=
+      b.confirmation>=0.30 &&
+      b.windows>=2 &&
+      b.quality>=0.38;
+
+    const strongSingle=
+      b.quality>=0.52 &&
+      b.snrDB>=-7 &&
+      b.fraction>=0.45 &&
+      b.seconds>=18 &&
+      b.coverage>=0.50 &&
+      b.mad<=8;
+
+    const route=regional
+      ? 'Agreement between facial skin regions'
+      : crossMethod
+        ? 'Agreement between POS / CHROM / PBV candidates'
+        : strongSingle
+          ? 'Best high-quality rPPG candidate'
+          : null;
+
+    if(!route){
+      return resultFailure(
+        'A pulse candidate exists, but its quality is still too weak for a reliable display',
+        {seconds:b.seconds}
+      );
+    }
+
+    const snrQ=clamp((b.snrDB+10)/14);
+    const confirmation=regional?1:Math.max(0.35,b.confirmation);
+    let sqi=Math.round(100*(
+      0.18*b.coverage+
+      0.10*b.motion+
+      0.10*b.lighting+
+      0.26*b.quality+
+      0.18*b.temporal+
+      0.10*confirmation+
+      0.08*snrQ
+    ));
+    if(!regional)sqi=Math.min(sqi,84);
+
+    if(sqi<48){
+      return resultFailure(
+        'Combined pulse evidence remains below the display threshold',
+        {sqi,seconds:b.seconds}
+      );
+    }
+
+    const methodCounts={};
+    for(const q of b.selected)methodCounts[q.method]=(methodCounts[q.method]||0)+1;
+    const bestMethod=Object.entries(methodCounts)
+      .sort((a,b)=>b[1]-a[1])[0]?.[0]||'POS';
+
+    const segments=(all[b.region].segments||[])
+      .slice().sort((a,b)=>b.seconds-a.seconds);
+
+    let hrv={ok:false,reason:'No long continuous signal was available for HRV'};
+    if(segments.length){
+      const seg=segments[0];
+      const signal=bestMethod==='CHROM'?seg.chrom:bestMethod==='PBV'?seg.pbv:seg.pos;
+      hrv=computeHRV(signal,fs,chosen.rate);
+    }
+
+    diagnostics.hrSelection.route=route;
+    diagnostics.hrSelection.sqi=sqi;
+    diagnostics.hrSelection.bestMethod=bestMethod;
+    diagnostics.hrSelection.hrv=hrv;
+
+    return {
+      ok:true,
+      rate:Math.round(chosen.rate),
+      sqi,
+      seconds:b.seconds,
+      regions:chosen.members.length,
+      windows:b.windows,
+      confidence:sqi>=78?'Good signal evidence':'Moderate signal evidence',
+      reason:'',
+      selection:route,
+      method:bestMethod,
+      hrv
+    };
+  }
+
+  function carrierQuality(signal,fs) {
+    const length=Math.round(8*fs),hop=Math.round(4*fs),qualities=[];
+    for(let i=0;i+length<=signal.length;i+=hop){
+      const c=candidateSpectrum(
+        signal.slice(i,i+length),fs,C.hrLow,C.hrHigh
+      ).candidates;
+      qualities.push(c.length?Math.max(...c.map(q=>q.spectral)):0);
+    }
+    return qualities.length?mean(qualities):0;
+  }
+
+  function respiratoryCarriers(u,fs) {
+    const means=[0,1,2].map(k=>mean(u.map(v=>v.rgb[k])));
+    const rgb=u.map(v=>v.rgb.map((x,k)=>x/means[k]));
+
+    const px=bandpass(rgb.map(v=>v[1]-v[2]),fs,0.5,4);
+    const py=bandpass(rgb.map(v=>v[1]+v[2]-2*v[0]),fs,0.5,4);
+    const cx=bandpass(rgb.map(v=>3*v[0]-2*v[1]),fs,0.5,4);
+    const cy=bandpass(rgb.map(v=>1.5*v[0]+v[1]-1.5*v[2]),fs,0.5,4);
+
+    const pa=sd(px)/Math.max(sd(py),1e-12);
+    const ca=sd(cx)/Math.max(sd(cy),1e-12);
+
+    return {
+      POS:px.map((x,i)=>x+pa*py[i]),
+      CHROM:cx.map((x,i)=>x-ca*cy[i])
+    };
+  }
+
+  function respiratoryIBI(signal,fs) {
+    const filtered=bandpass(detrend(signal),fs,C.hrLow,C.hrHigh);
+    if(filtered.length<Math.round(20*fs) || sd(filtered)<1e-7)
+      return {candidates:[],reason:'Pulse carrier too short or weak for IBI support'};
+
+    const approxSpec=candidateSpectrum(filtered,fs,C.hrLow,C.hrHigh);
+    const approxHR=approxSpec.candidates[0]?.rate||75;
+    const signs=[1,-1];
+    let best=null;
+
+    for(const sign of signs){
+      const peaks=peakSeries(filtered,fs,approxHR,sign);
+      const intervals=[],times=[];
+      for(let i=1;i<peaks.length;i++){
+        const ibi=(peaks[i]-peaks[i-1])/fs;
+        if(ibi>=0.33 && ibi<=1.50){
+          intervals.push(ibi);
+          times.push((peaks[i]+peaks[i-1])/(2*fs));
+        }
+      }
+      const score=intervals.length;
+      if(!best || score>best.score)best={intervals,times,score,beats:peaks.length};
+    }
+
+    if(!best || best.intervals.length<9)
+      return {candidates:[],reason:'Too few stable beat intervals for IBI breathing support'};
+
+    const med=median(best.intervals);
+    const mad=median(best.intervals.map(v=>Math.abs(v-med)))||0.02;
+    const kept=best.intervals
+      .map((v,i)=>({v,t:best.times[i]}))
+      .filter(x=>Math.abs(x.v-med)<=Math.max(0.20,3.5*mad));
+
+    if(kept.length<8 || kept.at(-1).t-kept[0].t<18)
+      return {candidates:[],reason:'IBI series too short after artifact removal'};
+
+    const targetFs=4,start=kept[0].t,end=kept.at(-1).t;
+    const resampled=[];
+    let j=0;
+
+    for(let t=start;t<=end;t+=1/targetFs){
+      while(j<kept.length-2 && kept[j+1].t<t)j++;
+      const a=kept[j],b=kept[Math.min(j+1,kept.length-1)];
+      const w=b.t>a.t?clamp((t-a.t)/(b.t-a.t)):0;
+      resampled.push(a.v+w*(b.v-a.v));
+    }
+
+    const tach=bandpass(detrend(resampled),targetFs,0.07,0.75);
+    const spec=candidateSpectrum(tach,targetFs,C.rrLow,C.rrHigh,true);
+
+    return {
+      candidates:spec.candidates,
+      reason:spec.reason,
+      beats:best.beats,
+      intervals:kept.length,
+      seconds:end-start
+    };
+  }
+
+  function collectRespiration(regionData,fs,diagnostic) {
+    const pool=[],windows=[],motion=[],ibi=[];
+
+    for(const segment of regionData.segments){
+      if(segment.seconds<C.rrWindow+2)continue;
+
+      const colour=bandpass(
+        detrend(segment.u.map(v=>
+          Math.log(v.rgb[1]/Math.sqrt(v.rgb[0]*v.rgb[2]))
+        )),
+        fs,0.07,0.75
+      );
+
+      const carriers=respiratoryCarriers(segment.u,fs);
+      const envelopes={
+        POS:envelope(carriers.POS),
+        CHROM:envelope(carriers.CHROM)
+      };
+      const amplitudes={
+        POS:bandpass(detrend(envelopes.POS),fs,0.07,0.75),
+        CHROM:bandpass(detrend(envelopes.CHROM),fs,0.07,0.75)
+      };
+
+      for(const method of ['POS','CHROM']){
+        const support=respiratoryIBI(carriers[method],fs);
+        for(const q of support.candidates){
+          ibi.push({
+            rate:q.rate,
+            quality:q.spectral,
+            snr:q.snr,
+            method,
+            region:segment.region,
+            seconds:support.seconds
+          });
+        }
+      }
+
+      for(const [i,end] of windowRanges(segment,fs,C.rrWindow,2)){
+        const u=segment.u.slice(i,end),id=u[0].t.toFixed(3);
+        const entry={
+          id,start:rounded(u[0].t,1),channels:{},carrierQuality:{}
+        };
+        windows.push(id);
+
+        const channels=[['Colour',colour.slice(i,end),0.92]];
+
+        for(const method of ['POS','CHROM']){
+          const carrier=carriers[method].slice(i,end);
+          const quality=carrierQuality(carrier,fs);
+          const a=amplitudes[method].slice(i,end);
+          const modulation=sd(a)/Math.max(
+            mean(envelopes[method].slice(i,end)),1e-12
+          );
+          entry.carrierQuality[method]={
+            quality:rounded(quality),
+            modulation:rounded(modulation)
+          };
+
+          if(quality>=0.25 && modulation>=0.012 && modulation<=1.0)
+            channels.push([
+              `${method} amplitude`,
+              a,
+              0.72+0.28*quality
+            ]);
+          else
+            entry.channels[`${method} amplitude`]={
+              candidates:[],
+              reason:quality<0.25
+                ? 'Weak local pulse carrier'
+                : 'Amplitude modulation outside usable range'
+            };
+        }
+
+        for(const [method,signal,factor] of channels){
+          const s=candidateSpectrum(
+            signal,fs,C.rrLow,C.rrHigh,true
+          );
+          const candidates=s.candidates.map(q=>
+            observation(q,method,{id,signal},u,segment,fs,true)
+          );
+          for(const q of candidates){
+            q.quality*=factor;
+            q.weight*=factor;
+            q.family=method==='Colour'?'colour':'amplitude';
+          }
+          entry.channels[method]={
+            candidates:candidates.map(diagnosticCandidate),
+            reason:s.reason,
+            excludedPeaks:(s.local||[])
+              .filter(q=>!s.candidates.includes(q))
+              .map(diagnosticCandidate)
+          };
+          pool.push(...candidates.filter(q=>q.weight>0));
+        }
+
+        const geometry=[];
+        for(const key of ['y','scale']){
+          if(u.some(v=>!Number.isFinite(v[key])))continue;
+          const signal=bandpass(
+            detrend(u.map(v=>v[key])),fs,0.07,0.75
+          );
+          const relative=sd(signal)/Math.max(
+            mean(u.map(v=>v.scale)),1e-6
+          );
+          if(relative<0.0004 || relative>0.025)continue;
+
+          const s=candidateSpectrum(
+            signal,fs,C.rrLow,C.rrHigh,true
+          );
+          for(const q of s.candidates){
+            geometry.push({
+              ...q,method:key,window:id,
+              start:u[0].t,end:u.at(-1).t,relative
+            });
+          }
+        }
+
+        motion.push(...geometry);
+        entry.channels['Motion support']={
+          candidates:geometry.map(diagnosticCandidate),
+          reason:geometry.length
+            ? 'Supporting evidence only'
+            : 'No repeatable bounded vertical/scale component'
+        };
+
+        diagnostic.rrWindows.push(entry);
+      }
+    }
+    return {pool,windows,motion,ibi};
+  }
+
+  function selectRespiration(all,diagnostics) {
+    const qualified=[];
+
+    for(let region=0;region<all.length;region++){
+      const item=all[region];
+      diagnostics.regions[region].rrTracks={};
+
+      for(const family of ['amplitude','colour']){
+        const tracks=trackCandidates(
+          item.pool.filter(q=>q.family===family),
+          item.windows,
+          4
+        );
+
+        diagnostics.regions[region].rrTracks[family]=tracks.map(t=>({
+          ...summarizeTrack(t),
+          checks:{
+            usableWindow:t.windows>=1,
+            dispersion:t.mad<=3.5,
+            opticalQuality:t.quality>=0.27
+          }
+        }));
+
+        for(const t of tracks){
+          if(
+            t.windows>=1 &&
+            t.mad<=3.5 &&
+            t.quality>=0.27 &&
+            t.seconds>=20
+          ){
+            qualified.push({...t,region,family});
+          }
+        }
+      }
+    }
+
+    const amplitudes=qualified
+      .filter(t=>t.family==='amplitude')
+      .sort((a,b)=>b.rank-a.rank);
+
+    if(!amplitudes.length){
+      return resultFailure(
+        'No repeatable breathing-related amplitude modulation was found'
+      );
+    }
+
+    const motion=all.flatMap(v=>v.motion||[]);
+    const ibi=all.flatMap(v=>v.ibi||[]);
+    const choices=[];
+
+    for(const a of amplitudes){
+      const optical=qualified.filter(t=>
+        t!==a &&
+        Math.abs(t.rate-a.rate)<=4 &&
+        (t.family==='colour' || t.region!==a.region)
+      );
+
+      const ibiMatching=ibi.filter(q=>
+        Math.abs(q.rate-a.rate)<=4 &&
+        q.quality>=0.25
+      );
+
+      const motionMatching=motion.filter(q=>
+        Math.abs(q.rate-a.rate)<=4 &&
+        q.spectral>=0.30
+      );
+
+      const corroborated=
+        optical.length>0 ||
+        ibiMatching.length>0 ||
+        motionMatching.length>=2;
+
+      const strongStandalone=
+        a.quality>=0.52 &&
+        a.fraction>=0.30 &&
+        a.seconds>=22 &&
+        a.mad<=2.8 &&
+        a.snrDB>=-8;
+
+      const rank=
+        a.rank+
+        (optical.length?0.07:0)+
+        (ibiMatching.length?0.05:0)+
+        (motionMatching.length>=2?0.03:0);
+
+      choices.push({
+        a,optical,ibiMatching,motionMatching,
+        corroborated,strongStandalone,rank
+      });
+    }
+
+    choices.sort((a,b)=>b.rank-a.rank);
+    let chosen=choices.find(c=>c.corroborated || c.strongStandalone);
+
+    if(!chosen){
+      return resultFailure(
+        'A breathing candidate exists, but the optical evidence is too weak to display it'
+      );
+    }
+
+    // Respiration amplitude envelopes can occasionally lock onto a
+    // subharmonic (for example ~9/min when the actual repeating cycle is near
+    // ~18/min). Before accepting a very low or very high rate, compare the
+    // 2x / 0.5x alternative and require independent support before switching.
+    let harmonicResolution='none';
+
+    if(chosen.a.rate<13){
+      const doubled=choices
+        .filter(c=>
+          c!==chosen &&
+          c.a.rate>=chosen.a.rate*1.75 &&
+          c.a.rate<=chosen.a.rate*2.25 &&
+          (c.corroborated || c.strongStandalone)
+        )
+        .sort((a,b)=>b.rank-a.rank)[0];
+
+      if(doubled){
+        const independentSupport=
+          doubled.optical.length>0 ||
+          doubled.ibiMatching.length>0 ||
+          doubled.motionMatching.length>=2;
+
+        const comparableEvidence=
+          doubled.rank>=chosen.rank*0.72 &&
+          doubled.a.quality>=chosen.a.quality*0.72;
+
+        if(independentSupport && comparableEvidence){
+          harmonicResolution=
+            `Low-frequency subharmonic ${rounded(chosen.a.rate,1)}/min replaced by supported ${rounded(doubled.a.rate,1)}/min candidate`;
+          chosen=doubled;
+        }
+      }
+    }else if(chosen.a.rate>24){
+      const halved=choices
+        .filter(c=>
+          c!==chosen &&
+          c.a.rate>=chosen.a.rate*0.44 &&
+          c.a.rate<=chosen.a.rate*0.57 &&
+          (c.corroborated || c.strongStandalone)
+        )
+        .sort((a,b)=>b.rank-a.rank)[0];
+
+      if(halved){
+        const independentSupport=
+          halved.optical.length>0 ||
+          halved.ibiMatching.length>0 ||
+          halved.motionMatching.length>=2;
+
+        const comparableEvidence=
+          halved.rank>=chosen.rank*0.78 &&
+          halved.a.quality>=chosen.a.quality*0.75;
+
+        if(independentSupport && comparableEvidence){
+          harmonicResolution=
+            `High-frequency double candidate ${rounded(chosen.a.rate,1)}/min replaced by supported ${rounded(halved.a.rate,1)}/min candidate`;
+          chosen=halved;
+        }
+      }
+    }
+
+    const best=chosen.a;
+    const opticalSupport=[best,...chosen.optical];
+    const rate=weightedMedian(
+      opticalSupport,
+      t=>t.rate,
+      t=>Math.max(0.01,t.rank)
+    );
+
+    const opposing=choices.find(c=>{
+      if(c===chosen || Math.abs(c.a.rate-rate)<=5)return false;
+      const ratio=Math.max(c.a.rate,rate)/Math.max(0.1,Math.min(c.a.rate,rate));
+      const harmonicRelated=ratio>=1.75 && ratio<=2.25;
+      return !harmonicRelated &&
+        c.rank>chosen.rank-0.035 &&
+        c.a.quality>0.58;
+    });
+    if(opposing){
+      return resultFailure(
+        'Two breathing frequencies have similar optical support'
+      );
+    }
+
+    const snrQ=clamp((best.snrDB+10)/14);
+    let sqi=Math.round(100*(
+      0.18*best.coverage+
+      0.10*best.motion+
+      0.10*best.lighting+
+      0.28*best.quality+
+      0.20*best.temporal+
+      0.08*snrQ+
+      0.06*(chosen.corroborated?1:0.55)
+    ));
+
+    if(chosen.ibiMatching.length)sqi=Math.min(100,sqi+3);
+    if(chosen.optical.length)sqi=Math.min(100,sqi+3);
+    if(!chosen.corroborated)sqi=Math.min(sqi,76);
+
+    if(sqi<45){
+      return resultFailure(
+        'Combined breathing evidence remains below the display threshold',
+        {sqi,seconds:best.seconds}
+      );
+    }
+
+    diagnostics.rrSelection={
+      candidate:rounded(rate,2),
+      route:chosen.corroborated
+        ? 'Amplitude modulation with optical / IBI corroboration'
+        : 'Strong repeatable amplitude modulation',
+      opticalChannels:opticalSupport.map(t=>
+        `${names[t.region]} ${t.family}`
+      ),
+      ibiCandidates:chosen.ibiMatching.map(q=>({
+        method:q.method,bpm:rounded(q.rate,2),quality:rounded(q.quality)
+      })),
+      motionSupport:chosen.motionMatching.length>=2,
+      harmonicResolution,
+      sqi
+    };
+
+    const regions=new Set(opticalSupport.map(t=>t.region)).size;
+
+    return {
+      ok:true,
+      rate:Math.round(rate),
+      sqi,
+      seconds:best.seconds,
+      regions,
+      windows:best.windows,
+      confidence:sqi>=78?'Good signal evidence':'Moderate signal evidence',
+      reason:'',
+      selection:diagnostics.rrSelection.route
+    };
+  }
+
+  function captureDiagnostics(records) {
+    const dt=records.slice(1)
+      .map((r,i)=>r.t-records[i].t)
+      .filter(v=>v>0);
+    const duration=records.length>1
+      ? records.at(-1).t-records[0].t
+      : 0;
+    const rows=records.filter(r=>r.t>=C.settle);
+
+    return {
+      version:C.version,
+      thresholds:{...C},
+      capture:{
+        actualFPS:duration>0?rounded((records.length-1)/duration,2):0,
+        medianFPS:dt.length?rounded(1/median(dt),2):0,
+        maxFrameGapSeconds:rounded(Math.max(0,...dt)),
+        frames:records.length,
+        usableFramePercentage:rounded(
+          100*rows.filter(r=>r.regions.some(q=>q?.ok)).length/
+          Math.max(1,rows.length),1
+        )
+      },
+      regions:names.map((name,k)=>{
+        const valid=rows.filter(r=>r.regions[k]?.ok),rejected={};
+        for(const r of rows){
+          if(!r.regions[k]?.ok){
+            const reason=r.regions[k]?.reason||r.reason||
+              'ROI missing / tracking unavailable';
+            rejected[reason]=(rejected[reason]||0)+1;
+          }
+        }
+        return {
+          name,
+          usableFramePercentage:rounded(
+            100*valid.length/Math.max(1,rows.length),1
+          ),
+          rejectedFrames:rejected,
+          meanSampledPixels:rounded(
+            mean(valid.map(r=>r.regions[k].count||0)),0
+          ),
+          hrWindows:[],
+          rrWindows:[]
+        };
+      }),
+      hrSelection:null,
+      rrSelection:null,
+      final:null
+    };
+  }
+
+  function analyze(records) {
+    const diagnostics=captureDiagnostics(records);
+    const medianFPS=diagnostics.capture.medianFPS||0;
+    const fs=Math.min(30,Math.round(medianFPS));
+    diagnostics.capture.resampleFPS=fs;
+
+    if(fs<C.minFPS){
+      const r={
+        hr:resultFailure('Camera delivered too few distinct frames'),
+        rr:resultFailure('Camera delivered too few distinct frames'),
+        fs,diagnostics
+      };
+      diagnostics.final={hr:r.hr,rr:r.rr};
+      return r;
+    }
+
+    const hrData=[],rrData=[];
+    for(let k=0;k<3;k++){
+      const region=makeSegments(records,k,fs);
+      const d=diagnostics.regions[k];
+      d.continuousSegmentsSeconds=region.allDurations;
+      hrData.push(collectPulse(region,fs,d));
+      rrData.push(collectRespiration(region,fs,d));
+    }
+
+    const hr=selectHeartRate(hrData,diagnostics,fs);
+    const rr=selectRespiration(rrData,diagnostics);
+    diagnostics.final={hr,rr};
+    return {hr,rr,fs,diagnostics};
+  }
+
+  return {
+    C,clamp,mean,median,sd,detrend,bandpass,spectrum,pulse,envelope,
+    weightedMedian,candidateSpectrum,nuisanceEvidence,makeSegments,
+    trackCandidates,captureDiagnostics,analyze
+  };
+})();
+
+/* =====================================================================
+ * VeerPulse Wellness Scan controller v4.0
+ *
+ * What changed relative to v3.x (behaviour only; VP pipeline untouched):
+ *
+ *  - Camera starts automatically on page open. No "Start Camera" gate.
+ *  - Explicit state machine:
+ *      IDLE -> SEARCHING -> STABILIZING -> SCANNING <-> PAUSED -> COMPLETED
+ *  - Progress represents VALID SIGNAL TIME, not wall-clock time.
+ *  - Small movement, blinking, slight rotation and minor re-framing no
+ *    longer reset the scan. Bad frames must persist past a grace period
+ *    before the scan PAUSES, and accumulated progress is preserved.
+ *  - Face box / ROI polygons are exponentially smoothed and the same face
+ *    is tracked frame to frame instead of being re-validated from scratch.
+ *  - Head pose drives DYNAMIC ROI SELECTION (the idea borrowed from the
+ *    Contactless-Health-Monitoring reference): a cheek that rotates away
+ *    from the camera is dropped for that frame instead of failing the scan.
+ *  - stopWellnessScan() is the single cleanup path and resets EVERYTHING,
+ *    so no green/100% oval can survive a camera stop.
+ *  - No value is ever fabricated. HR/BR remain "—" unless VP's quality
+ *    gates pass.
+ * ===================================================================== */
+
+const $ = id => document.getElementById(id);
+const video = $('camera-video'), canvas = $('pulse-canvas');
+const pixels = canvas.getContext('2d',{willReadFrequently:true});
+const trackingCanvas = document.createElement('canvas');
+const trackingPixels = trackingCanvas.getContext('2d');
+
+const SCAN = Object.freeze({
+  requiredValidSeconds : VP.C.seconds,  // 45 s of USABLE signal
+  maxSessionSeconds    : 150,           // wall-clock ceiling for one session
+  minSalvageSeconds    : 22,            // analyse anyway if we got at least this
+  stabiliseMs          : 1500,          // STABILIZING dwell before capture
+  faceCoastMs          : 800,           // keep last face this long without a detection
+  pauseAfterBadMs      : 800,           // consecutive bad time before pausing
+  resumeAfterGoodMs    : 400,           // hysteresis on the way back in
+  lostResetMs          : 25000,         // only now is the session truly lost
+  frameStallMs         : 1800,          // camera frames considered stalled
+  smoothAlpha          : 0.35,          // exponential smoothing of face geometry
+  cheekYaw             : 0.26,          // yaw beyond this hides the far cheek
+  maxPoseYaw           : 0.46,
+  maxPoseRoll          : 0.46,
+  maxRecords           : 30*200
+});
+
+function diagnosticsEnabled() {
+  return window.VeerPulseDebug===true || ['localhost','127.0.0.1','[::1]'].includes(window.location.hostname) ||
+    new URLSearchParams(window.location.search).get('vpdebug')==='1';
+}
+function logSignalDiagnostics(report,status) {
+  if(!diagnosticsEnabled())return;
+  // Development-only summaries: no video, raw RGB arrays, face coordinates,
+  // personnel identifiers, or backend requests are included.
+  const snapshot=JSON.parse(JSON.stringify({...report,status,tracker:state.mode,
+    camera:{width:video.videoWidth||0,height:video.videoHeight||0},scanSerial:state.serial}));
+  window.VeerPulseDiagnostics=snapshot;
+  window.VeerPulseDiagnosticsJSON=JSON.stringify(snapshot,null,2);
+  console.groupCollapsed('VeerPulse Signal Diagnostics');
+  console.log('Actual FPS:',snapshot.capture.actualFPS,'Usable frames (%):',snapshot.capture.usableFramePercentage);
+  console.table(snapshot.regions.map(r=>({ROI:r.name,usableFrames:r.usableFramePercentage,
+    POS:r.hrWindows.flatMap(w=>w.POS).map(c=>c.bpm).join(', '),
+    CHROM:r.hrWindows.flatMap(w=>w.CHROM).map(c=>c.bpm).join(', '),
+    acceptedWindows:r.hrTracks?.[0]?.windows||0,HR:r.hrTracks?.[0]?.bpm??null})));
+  console.log('Selected HR:',snapshot.hrSelection,'Respiration:',snapshot.rrSelection);
+  console.log('Complete diagnostic JSON:',window.VeerPulseDiagnosticsJSON);
+  console.groupEnd();
+}
+
+const state = {
+  // camera / tracker
+  stream:null,tracker:null,mode:null,busy:false,trackAt:0,trackSent:0,trackGeneration:0,
+  starting:false,cameraSerial:0,
+  // scan state machine
+  phase:'IDLE',
+  // face tracking continuity
+  face:null,rawFace:null,motionLevel:0,faceOk:false,lastReason:'',
+  goodSince:null,badSince:null,roiPolygons:null,roiAt:0,
+  // capture
+  records:[],validSignalTime:0,lastSampleT:null,
+  scanStartWall:0,startMedia:0,
+  priorRGB:[null,null,null],cooldown:[0,0,0],
+  // frame loop
+  frameID:null,frameKind:null,lastMedia:-1,lastFrameNumber:-1,lastFrameWall:0,timer:null,
+  // results
+  processing:false,result:null,serial:0,saving:false,saved:false
+};
+
+const isCapturing = () => state.phase==='SCANNING' || state.phase==='PAUSED';
+
+/* ------------------------------------------------------------------ *
+ * UI primitives (unchanged visual language)
+ * ------------------------------------------------------------------ */
+function setOvalProgress(percent) {
+  const p=VP.clamp(percent,0,100),path=$('face-oval-progress');
+  const length=path.getTotalLength();
+  path.style.strokeDasharray=`${length*p/100} ${length}`;
+  path.style.strokeDashoffset='0';
+  $('oval-progress-label').textContent=`${Math.round(p)}%`;
+}
+function setFaceGuideState(kind,message) {
+  const guide=$('face-oval-wrap');
+  guide.classList.remove('aligned','scanning','complete');
+  if(kind)guide.classList.add(kind);
+  if(message!=null)$('face-guide-text').textContent=message;
+}
+function updateButtons() {
+  const measure=document.querySelector('.measure-btn');
+  measure.disabled=!state.stream || state.processing || state.saving || isCapturing();
+  measure.textContent=
+    state.processing?'Analysing…':
+    state.phase==='SCANNING'?'Scanning…':
+    state.phase==='PAUSED'?'Paused — Hold Still':
+    state.phase==='COMPLETED'?'Start New 45-Sec Scan':
+    'Start 45-Sec Scan';
+
+  const camera=document.querySelector('.camera-btn');
+  camera.disabled=state.starting || state.processing || state.saving;
+  camera.textContent=state.starting
+    ? 'Starting Camera…'
+    : state.stream
+      ? 'Stop Camera'
+      : 'Restart Camera';
+
+  const save=$('save-trends-btn');
+  const usable=!!state.result && (state.result.hr.ok || state.result.rr.ok);
+  save.disabled=!usable || isCapturing() || state.processing || state.saving || state.saved;
+  save.classList.toggle('ready',!save.disabled);
+  save.textContent=state.saving?'Saving…':state.saved?'Saved to My Trends':'Save Valid Measurement to My Trends';
+}
+function clearMeasurement() {
+  state.result=null;state.saved=false;
+  for(const id of ['heart-rate-value','hrv-value','breathing-rate-value','stress-value','cardiac-workload-value','measurement-time-value','scan-duration-value','usable-duration-value'])$(id).textContent='—';
+  $('heart-rate-note').textContent='Experimental camera-derived pulse estimate. Not for medical use.';
+  $('hrv-note').textContent='RMSSD is shown only when a stable pulse waveform provides enough usable beat intervals.';
+  $('breathing-rate-note').textContent='Experimental camera-derived respiratory estimate. Not for medical use.';
+  $('stress-note').textContent='Experimental facial-stress cue score. Uses within-scan facial landmark changes only; not a diagnosis.';
+  $('cardiac-workload-note').textContent='Requires validated systolic blood pressure. Facial expression alone cannot provide cardiac workload.';
+  $('measurement-status-value').textContent='Waiting for Scan';
+  $('signal-quality-value').textContent='Not Measured';
+  $('signal-quality-fill').style.width='0%';
+  $('measurement-confidence-value').textContent='Not Available';
+  $('measurement-reason').textContent='Each metric is checked separately. No value is supplied when evidence is insufficient.';
+  updateButtons();
+}
+
+/* ------------------------------------------------------------------ *
+ * Session / cleanup
+ * ------------------------------------------------------------------ */
+function stopFrames() {
+  if(state.frameID!==null){
+    try{
+      if(state.frameKind==='video')video.cancelVideoFrameCallback(state.frameID);
+      else cancelAnimationFrame(state.frameID);
+    }catch(_){}
+  }
+  state.frameID=null;
+}
+
+// Clears capture buffers and progress but keeps the camera running.
+function resetScanSession(phase,message) {
+  state.serial++;
+  state.records=[];state.validSignalTime=0;state.lastSampleT=null;
+  state.priorRGB=[null,null,null];state.cooldown=[0,0,0];
+  state.startMedia=0;state.scanStartWall=0;state.processing=false;
+  state.goodSince=null;state.badSince=null;
+  state.phase=phase||'SEARCHING';
+  clearMeasurement();
+  setOvalProgress(0);
+  if(message)$('measurement-reason').textContent=message;
+  updateButtons();
+}
+
+/* Single reliable cleanup path. Called by Stop Camera, page unload,
+ * camera errors and stream end. Resets EVERY piece of scan UI state so a
+ * completed green oval can never survive a camera stop. */
+function stopWellnessScan(status,reason) {
+  // 1 + 2: frame callback and timers
+  stopFrames();
+  if(state.timer)clearInterval(state.timer);
+  state.timer=null;
+  // 3 + 4: media tracks and video element
+  state.cameraSerial++;
+  if(state.stream){try{state.stream.getTracks().forEach(t=>t.stop());}catch(_){}}
+  state.stream=null;
+  try{video.pause();}catch(_){}
+  video.srcObject=null;
+  video.style.display='none';
+  $('camera-placeholder').style.display='flex';
+  // 5 + 6: signal buffers and tracking state
+  state.records=[];state.validSignalTime=0;state.lastSampleT=null;
+  state.priorRGB=[null,null,null];state.cooldown=[0,0,0];
+  state.face=null;state.rawFace=null;state.roiPolygons=null;state.motionLevel=0;
+  state.faceOk=false;state.goodSince=null;state.badSince=null;state.busy=false;
+  state.lastMedia=-1;state.lastFrameNumber=-1;state.lastReason='';
+  // 7-11: progress, values, oval, confidence, state machine
+  state.phase='IDLE';state.processing=false;state.serial++;
+  clearMeasurement();
+  setOvalProgress(0);
+  setFaceGuideState('','Position your face inside the guide');
+  $('camera-status').textContent=status||'Camera Stopped';
+  $('camera-face-quality').textContent='Face Lock: Waiting';
+  if(reason)$('measurement-reason').textContent=reason;
+  updateButtons();
+}
+
+// Only for genuinely fatal capture problems, never for movement.
+function failScan(reason) {
+  if(!isCapturing() && !state.processing)return;
+  const diagnostic=VP.captureDiagnostics(state.records);
+  diagnostic.final={hr:{ok:false,rate:null,reason},rr:{ok:false,rate:null,reason}};
+  logSignalDiagnostics(diagnostic,'Aborted');
+  resetScanSession('SEARCHING');
+  $('measurement-status-value').textContent='Rejected — Retry';
+  $('measurement-reason').textContent=reason;
+  $('signal-quality-value').textContent='Insufficient Signal';
+  $('camera-status').textContent='Scan Rejected';
+  setFaceGuideState('',`${reason}. Scanning restarts automatically.`);
+  updateButtons();
+}
+
+/* ------------------------------------------------------------------ *
+ * Face geometry, pose and tracking continuity
+ * ------------------------------------------------------------------ */
+function pointDistance(a,b) {
+  if(!a || !b)return NaN;
+  return Math.hypot(a.x-b.x,a.y-b.y);
+}
+function eyeAspect(points, ids) {
+  const [left,right,top1,top2,bottom1,bottom2]=ids;
+  const width=pointDistance(points[left],points[right]);
+  if(!Number.isFinite(width) || width<1e-6)return null;
+  const v1=pointDistance(points[top1],points[bottom1]);
+  const v2=pointDistance(points[top2],points[bottom2]);
+  return (v1+v2)/(2*width);
+}
+function facialExpressionMetrics(face) {
+  const p=face?.points;
+  if(!p || p.length<468)return null;
+
+  const interocular=pointDistance(p[33],p[263]);
+  if(!Number.isFinite(interocular) || interocular<1e-6)return null;
+
+  // MediaPipe Face Mesh geometry. These are movement cues, not emotion labels.
+  const leftEye=eyeAspect(p,[33,133,159,158,145,153]);
+  const rightEye=eyeAspect(p,[362,263,386,385,374,380]);
+
+  const browLeft=pointDistance(p[105],p[159])/interocular;
+  const browRight=pointDistance(p[334],p[386])/interocular;
+
+  const mouthOpen=pointDistance(p[13],p[14])/interocular;
+  const mouthWidth=pointDistance(p[78],p[308])/interocular;
+
+  const jawOpen=pointDistance(p[13],p[152])/interocular;
+
+  const values=[leftEye,rightEye,browLeft,browRight,mouthOpen,mouthWidth,jawOpen];
+  if(values.some(v=>!Number.isFinite(v)))return null;
+
+  return {
+    eyeOpen:(leftEye+rightEye)/2,
+    browEye:(browLeft+browRight)/2,
+    mouthOpen,
+    mouthWidth,
+    jawOpen
+  };
+}
+function medianAbsoluteDeviation(values) {
+  if(!values.length)return 0;
+  const m=VP.median(values);
+  return VP.median(values.map(v=>Math.abs(v-m)));
+}
+function facialStressCue(records) {
+  const usable=records
+    .filter(r=>r.expression && r.t>=VP.C.settle)
+    .map(r=>({t:r.t,...r.expression}));
+
+  if(usable.length<40){
+    return {ok:false,score:null,level:'Not Available',quality:0,
+      reason:'Too few stable facial-landmark samples'};
+  }
+
+  // Use the first neutral-looking portion of the SAME scan as the person's
+  // own geometric reference. This reduces dependence on face shape and avoids
+  // comparing one person to another.
+  const baselineEnd=VP.C.settle+6;
+  const baseline=usable.filter(v=>v.t<=baselineEnd);
+  const analysis=usable.filter(v=>v.t>baselineEnd);
+
+  if(baseline.length<15 || analysis.length<25){
+    return {ok:false,score:null,level:'Not Available',quality:0,
+      reason:'Not enough stable neutral-reference and analysis frames'};
+  }
+
+  const keys=['eyeOpen','browEye','mouthOpen','mouthWidth'];
+  const base={},spread={};
+
+  for(const key of keys){
+    const vals=baseline.map(v=>v[key]);
+    base[key]=VP.median(vals);
+    spread[key]=Math.max(
+      medianAbsoluteDeviation(vals)*1.4826,
+      Math.abs(base[key])*0.015,
+      1e-5
+    );
+  }
+
+  const frameScores=analysis.map(v=>{
+    // Directional cues:
+    // - eye narrowing
+    // - brow lowering toward the eyes
+    // - lip/jaw compression relative to the person's own first seconds
+    // These are "tension/activation" cues only, not a claim about emotion.
+    const eyeNarrow=VP.clamp(
+      (base.eyeOpen-v.eyeOpen)/Math.max(base.eyeOpen*0.18,spread.eyeOpen*3),0,1);
+    const browLower=VP.clamp(
+      (base.browEye-v.browEye)/Math.max(base.browEye*0.14,spread.browEye*3),0,1);
+    const lipCompression=VP.clamp(
+      (base.mouthOpen-v.mouthOpen)/Math.max(base.mouthOpen*0.30,spread.mouthOpen*3),0,1);
+    const mouthTightening=VP.clamp(
+      (base.mouthWidth-v.mouthWidth)/Math.max(base.mouthWidth*0.10,spread.mouthWidth*3),0,1);
+
+    return 100*(0.35*eyeNarrow+0.35*browLower+0.20*lipCompression+0.10*mouthTightening);
+  });
+
+  // Median makes the score resistant to blinks and one-frame tracking errors.
+  const score=Math.round(VP.median(frameScores));
+  const coverage=usable.length/Math.max(1,records.length);
+  const quality=Math.round(100*VP.clamp(coverage));
+
+  const level=
+    score<25?'Low facial-tension cues':
+    score<50?'Moderate facial-tension cues':
+    'Elevated facial-tension cues';
+
+  return {
+    ok:quality>=55,score,level,quality,
+    reason:quality>=55?'':'Facial-landmark coverage was too low for a stable cue score'
+  };
+}
+function computeCardiacWorkload(hr, systolicBP) {
+  // True rate-pressure product (RPP) requires systolic blood pressure:
+  // RPP = heart rate × systolic BP.
+  // We intentionally do NOT estimate systolic BP from facial expression.
+  if(!Number.isFinite(hr) || !Number.isFinite(systolicBP))return null;
+  if(hr<30 || hr>220 || systolicBP<70 || systolicBP>250)return null;
+  return {rpp:Math.round(hr*systolicBP),hr:Math.round(hr),sbp:Math.round(systolicBP)};
+}
+
+function meshFace(points) {
+  if(!points || points.length<468)return null;
+  const xs=points.map(p=>p.x),ys=points.map(p=>p.y);
+  const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  const eyes=Math.hypot(points[263].x-points[33].x,points[263].y-points[33].y);
+  if(!(eyes>1e-6))return null;
+  const eyeMid=(points[33].x+points[263].x)/2;
+  // Continuous pose estimates instead of a hard boolean reject.
+  const yaw=(points[1].x-eyeMid)/eyes;
+  const roll=(points[263].y-points[33].y)/eyes;
+  const poseQ=VP.clamp(1-Math.max(
+    Math.abs(yaw)/SCAN.maxPoseYaw,
+    Math.abs(roll)/SCAN.maxPoseRoll
+  ));
+  return {x:(x0+x1)/2,y:(y0+y1)/2,w:x1-x0,h:y1-y0,points,yaw,roll,poseQ};
+}
+function detectionFace(d,native=false) {
+  if(!d?.boundingBox)return null;
+  const b=d.boundingBox;
+  let x=native?(b.x+b.width/2)/trackingCanvas.width:Number(b.xCenter);
+  let y=native?(b.y+b.height/2)/trackingCanvas.height:Number(b.yCenter);
+  let w=native?b.width/trackingCanvas.width:Number(b.width);
+  let h=native?b.height/trackingCanvas.height:Number(b.height);
+  if(!native && w>1){x/=trackingCanvas.width;y/=trackingCanvas.height;w/=trackingCanvas.width;h/=trackingCanvas.height;}
+  if(![x,y,w,h].every(Number.isFinite) || w<=0 || h<=0)return null;
+  return {x,y,w,h,points:null,yaw:0,roll:0,poseQ:1};
+}
+
+/* Tracking continuity: when more than one face is visible, keep following
+ * the one we were already measuring instead of dropping the session. */
+function pickFace(list,mapper) {
+  const faces=(list||[]).map(mapper).filter(Boolean);
+  if(!faces.length)return null;
+  if(faces.length===1)return faces[0];
+  const ref=state.face;
+  if(ref){
+    return faces.slice().sort((a,b)=>
+      Math.hypot(a.x-ref.x,a.y-ref.y)-Math.hypot(b.x-ref.x,b.y-ref.y))[0];
+  }
+  return faces.slice().sort((a,b)=>b.w*b.h-a.w*a.h)[0];
+}
+
+/* Evaluates one detection. It never touches progress and never aborts.
+ * It only maintains the rolling face-quality state that the state machine
+ * reads. Position limits are deliberately generous: the oval is a visual
+ * guide, not a pixel-perfect boundary. */
+function onFaceDetection(raw,now) {
+  if(!raw){
+    // Do NOT clear state.face here: it coasts until it goes stale, which is
+    // what keeps a single missed detection from disturbing the scan.
+    state.faceOk=false;
+    state.goodSince=null;
+    state.badSince??=now;
+    state.lastReason='Face lost — recentre in the guide';
+    return;
+  }
+
+  let movement=0;
+  const prev=state.rawFace;
+  if(prev){
+    const shift=Math.hypot(raw.x-prev.x,raw.y-prev.y)/Math.max(raw.w,0.1);
+    const scale=Math.abs(Math.log(raw.w/Math.max(prev.w,1e-3)));
+    movement=shift+scale;
+  }
+  state.rawFace={x:raw.x,y:raw.y,w:raw.w,h:raw.h};
+  state.motionLevel=prev?0.65*state.motionLevel+0.35*movement:movement;
+
+  // Exponential smoothing of the tracked face:
+  // smoothed = alpha*new + (1-alpha)*old
+  const a=SCAN.smoothAlpha;
+  const restart=!state.face || movement>0.45 || now-state.face.at>SCAN.faceCoastMs;
+  const sm=restart
+    ? {x:raw.x,y:raw.y,w:raw.w,h:raw.h}
+    : {
+        x:state.face.x+a*(raw.x-state.face.x),
+        y:state.face.y+a*(raw.y-state.face.y),
+        w:state.face.w+a*(raw.w-state.face.w),
+        h:state.face.h+a*(raw.h-state.face.h)
+      };
+
+  const motionQ=VP.clamp(1-state.motionLevel/0.14);
+  const poseQ=Number.isFinite(raw.poseQ)?raw.poseQ:1;
+
+  let reason='';
+  if(sm.x<0.18 || sm.x>0.82 || sm.y<0.13 || sm.y>0.87)
+    reason='Centre your face in the guide';
+  else if(sm.w<0.12 || sm.w>0.86 || sm.h<0.15)
+    reason='Move slightly closer or farther';
+  else if(sm.x-sm.w/2<-0.12 || sm.x+sm.w/2>1.12 || sm.y-sm.h/2<-0.14)
+    reason='Part of your face is outside the frame';
+  else if(poseQ<0.22)
+    reason='Look more directly at the camera';
+  else if(motionQ<0.18)
+    reason='Hold still for a moment';
+
+  state.face={...sm,points:raw.points,yaw:raw.yaw||0,roll:raw.roll||0,
+    poseQ,motionQ,at:now};
+
+  if(reason){
+    state.faceOk=false;state.goodSince=null;state.badSince??=now;
+    state.lastReason=reason;
+  }else{
+    state.faceOk=true;state.badSince=null;state.goodSince??=now;
+    // ROI polygons are smoothed to suppress landmark jitter; large movement
+    // snaps them to the new position rather than dragging a stale ROI.
+    const polygons=faceROIs(state.face);
+    const beta=1-Math.exp(-Math.max(1,now-state.roiAt)/120);
+    state.roiPolygons=(state.roiPolygons && movement<0.06)
+      ? polygons.map((poly,k)=>poly.map((p,i)=>{
+          const old=state.roiPolygons[k]?.[i];
+          return old?{x:old.x+beta*(p.x-old.x),y:old.y+beta*(p.y-old.y)}:p;
+        }))
+      : polygons;
+    state.roiAt=now;
+  }
+}
+
+async function initializeTracker() {
+  if(state.tracker)return;
+  // Face Mesh adds actual anatomical landmarks; the existing box detector
+  // and native FaceDetector remain browser-compatible fallback paths.
+  const choices=[];
+  if(typeof FaceMesh!=='undefined')choices.push(['mesh',()=>new FaceMesh({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/${f}`})]);
+  if(typeof FaceDetection!=='undefined')choices.push(['mediapipe',()=>new FaceDetection({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${f}`})]);
+  if('FaceDetector' in window)choices.push(['native',()=>new window.FaceDetector({fastMode:true,maxDetectedFaces:3})]);
+  for(const [mode,make] of choices){
+    let tracker;
+    try{
+      tracker=make();
+      if(mode==='mesh')tracker.setOptions({maxNumFaces:2,refineLandmarks:false,minDetectionConfidence:0.55,minTrackingConfidence:0.55});
+      if(mode==='mediapipe')tracker.setOptions({model:'short',minDetectionConfidence:0.55});
+      if(mode!=='native'){
+        tracker.onResults(r=>{
+          if(state.tracker!==tracker || !state.stream || state.trackGeneration!==state.cameraSerial)return;
+          const faces=mode==='mesh'?r.multiFaceLandmarks:r.detections;
+          onFaceDetection(
+            pickFace(faces,f=>mode==='mesh'?meshFace(f):detectionFace(f)),
+            state.trackSent
+          );
+        });
+        if(tracker.initialize)await tracker.initialize();
+      }
+      state.tracker=tracker;state.mode=mode;return;
+    }catch(error){try{await tracker?.close?.();}catch(_){} }
+  }
+  throw new Error('Face tracking could not load. Check the connection/browser, then retry.');
+}
+
+async function trackFace(now) {
+  if(state.busy || !state.tracker || now-state.trackAt<80 || video.readyState<2)return;
+  state.busy=true;state.trackAt=now;state.trackSent=now;state.trackGeneration=state.cameraSerial;
+  const generation=state.cameraSerial;
+  try{
+    trackingPixels.drawImage(video,0,0,trackingCanvas.width,trackingCanvas.height);
+    if(state.mode==='native'){
+      const found=await state.tracker.detect(trackingCanvas);
+      if(generation===state.cameraSerial)
+        onFaceDetection(pickFace(found,f=>detectionFace(f,true)),now);
+    }else await state.tracker.send({image:trackingCanvas});
+  }catch(error){if(generation===state.cameraSerial)onFaceDetection(null,now);}
+  finally{state.busy=false;}
+}
+
+/* ------------------------------------------------------------------ *
+ * ROI extraction
+ * ------------------------------------------------------------------ */
+function shrink(poly,factor=0.78) {
+  const cx=VP.mean(poly.map(p=>p.x)),cy=VP.mean(poly.map(p=>p.y));
+  return poly.map(p=>({x:cx+(p.x-cx)*factor,y:cy+(p.y-cy)*factor}));
+}
+function faceROIs(face) {
+  if(face.points){
+    const p=face.points;
+    return [[109,10,338,337,151,108],[50,101,205,187,123],[280,330,425,411,352]]
+      .map(ids=>shrink(ids.map(i=>p[i])));
+  }
+  const x=face.x-face.w/2,y=face.y-face.h/2;
+  return [[0.30,0.14,0.40,0.13],[0.14,0.53,0.22,0.18],[0.64,0.53,0.22,0.18]]
+    .map(([a,b,c,d])=>[{x:x+a*face.w,y:y+b*face.h},{x:x+(a+c)*face.w,y:y+b*face.h},
+      {x:x+(a+c)*face.w,y:y+(b+d)*face.h},{x:x+a*face.w,y:y+(b+d)*face.h}]);
+}
+/* Dynamic ROI visibility from head pose (idea adapted from the
+ * Contactless-Health-Monitoring reference). A cheek rotating away from the
+ * camera is excluded for that frame; the forehead and near cheek keep the
+ * scan running instead of the whole frame being thrown away. */
+function roiVisible(index,face) {
+  if(index===0)return true;              // forehead survives moderate yaw
+  const yaw=face.yaw||0;
+  if(index===1 && yaw>SCAN.cheekYaw)return false;
+  if(index===2 && yaw<-SCAN.cheekYaw)return false;
+  return true;
+}
+function inside(x,y,poly) {
+  let yes=false;
+  for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+    const a=poly[i],b=poly[j];
+    if((a.y>y)!==(b.y>y) && x<(b.x-a.x)*(y-a.y)/(b.y-a.y)+a.x)yes=!yes;
+  }
+  return yes;
+}
+function readRegion(data,polygon) {
+  if(polygon.some(p=>p.x<0 || p.x>1 || p.y<0 || p.y>1))return null;
+  const w=canvas.width,h=canvas.height,p=polygon.map(v=>({x:v.x*w,y:v.y*h}));
+  const xmin=Math.floor(Math.min(...p.map(v=>v.x))),xmax=Math.ceil(Math.max(...p.map(v=>v.x)));
+  const ymin=Math.floor(Math.min(...p.map(v=>v.y))),ymax=Math.ceil(Math.max(...p.map(v=>v.y)));
+  const rgb=[0,0,0];let count=0,clipped=0,lum=0;
+  for(let y=ymin;y<ymax;y+=2)for(let x=xmin;x<xmax;x+=2){
+    if(!inside(x+0.5,y+0.5,p))continue;
+    const i=(y*w+x)*4,r=data[i],g=data[i+1],b=data[i+2];
+    const l=0.2126*r+0.7152*g+0.0722*b;
+    count++;lum+=l;rgb[0]+=r;rgb[1]+=g;rgb[2]+=b;
+    if(Math.min(r,g,b)<=2 || Math.max(r,g,b)>=253)clipped++;
+  }
+  if(count<80)return null;
+  return {rgb:rgb.map(v=>v/count),lum:lum/count,clipping:clipped/count,count};
+}
+function backgroundLuminance(data,face) {
+  // Two fixed corner patches, excluded if the tracked face overlaps them.
+  const regions=[[0.02,0.03,0.08,0.10],[0.90,0.03,0.08,0.10]],values=[];
+  for(const [x,y,w,h] of regions){
+    if(x+w>face.x-face.w/2 && x<face.x+face.w/2 && y+h>face.y-face.h/2 && y<face.y+face.h/2)continue;
+    const r=readRegion(data,[{x,y},{x:x+w,y},{x:x+w,y:y+h},{x,y:y+h}]);
+    if(r)values.push(r.lum);
+  }
+  return values.length?VP.mean(values):null;
+}
+
+/* ------------------------------------------------------------------ *
+ * Capture
+ * ------------------------------------------------------------------ */
+function sampleFrame(media,now) {
+  const t=media-state.startMedia,face=state.face;
+  if(t<-0.05){
+    // Media clock restarted: the buffer is no longer coherent.
+    resetScanSession('SEARCHING','The camera timeline restarted, so a fresh scan will begin automatically.');
+    return;
+  }
+
+  const dt=state.lastSampleT==null?0:VP.clamp(t-state.lastSampleT,0,0.25);
+  state.lastSampleT=t;
+
+  const row={t,regions:[null,null,null],x:face?.x??0,y:face?.y??0,scale:face?.w??0,
+    bg:null,motionQ:0,lightQ:0,expression:facialExpressionMetrics(face)};
+
+  if(face && now-face.at<=SCAN.faceCoastMs/2){
+    pixels.drawImage(video,0,0,canvas.width,canvas.height);
+    const data=pixels.getImageData(0,0,canvas.width,canvas.height).data;
+    row.motionQ=face.motionQ;row.bg=backgroundLuminance(data,face);
+    row.regions=(state.roiPolygons||faceROIs(face)).map((polygon,k)=>{
+      if(!roiVisible(k,face))
+        return {ok:false,reason:'Skin region rotated away from the camera'};
+      const v=readRegion(data,polygon);if(!v)return null;
+      let reason='';
+      if(v.lum<25)reason='Underexposed skin region';
+      else if(v.lum>235 || v.clipping>0.08)reason='Overexposure / RGB clipping';
+      const previous=state.priorRGB[k];
+      if(previous){
+        const jump=VP.mean(v.rgb.map((x,c)=>Math.abs(x-previous[c])/Math.max(previous[c],15)));
+        if(jump>0.045){state.cooldown[k]=t+0.65;reason='Exposure changed — waiting for it to settle';}
+      }
+      // Update last OBSERVED RGB even after rejection: no rejection latch.
+      state.priorRGB[k]=v.rgb;
+      if(t<state.cooldown[k])reason='Exposure changed — waiting for it to settle';
+      if(face.motionQ<0.15)reason='Motion-contaminated frame';
+      if(reason)state.lastReason=reason;
+      return {...v,ok:!reason,reason};
+    });
+    row.lightQ=VP.mean(row.regions.map(v=>v&&v.ok!==false&&Number.isFinite(v.clipping)
+      ?VP.clamp(1-v.clipping/0.08)*VP.clamp((v.lum-20)/25)*VP.clamp((245-v.lum)/25):0));
+  }else{
+    state.lastReason='Face tracking is stale or temporarily lost';
+    row.reason=state.lastReason;
+  }
+
+  state.records.push(row);
+  if(state.records.length>SCAN.maxRecords)
+    state.records.splice(0,state.records.length-SCAN.maxRecords);
+
+  // PROGRESS = valid signal time. It only advances while the scan is
+  // actually running on usable skin pixels, and it never runs backwards.
+  const usable=row.regions.some(v=>v?.ok);
+  if(state.phase==='SCANNING' && usable && t>=VP.C.settle)
+    state.validSignalTime+=dt;
+}
+
+function scheduleFrame() {
+  if(!state.stream)return;
+  if('requestVideoFrameCallback' in video){
+    state.frameKind='video';state.frameID=video.requestVideoFrameCallback((now,meta)=>onFrame(now,meta.mediaTime,meta.presentedFrames));
+  }else{
+    state.frameKind='animation';state.frameID=requestAnimationFrame(now=>{
+      const count=video.getVideoPlaybackQuality?.().totalVideoFrames??video.webkitDecodedFrameCount;
+      onFrame(now,now/1000,count);
+    });
+  }
+}
+function onFrame(now,media,frameNumber) {
+  state.frameID=null;if(!state.stream)return;
+  const distinct=frameNumber==null?state.frameKind==='video':frameNumber>state.lastFrameNumber;
+  if(distinct && media>state.lastMedia+0.0001 && video.readyState>=2){
+    state.lastMedia=media;state.lastFrameNumber=frameNumber??state.lastFrameNumber;state.lastFrameWall=now;
+    if(isCapturing()){
+      try{sampleFrame(media,now);}
+      catch(error){failScan('Could not read the current camera frame');}
+    }
+    void trackFace(now);
+  }
+  scheduleFrame();
+}
+
+/* ------------------------------------------------------------------ *
+ * State machine
+ * ------------------------------------------------------------------ */
+function beginCapture() {
+  state.serial++;
+  state.records=[];state.validSignalTime=0;state.lastSampleT=null;
+  state.priorRGB=[null,null,null];state.cooldown=[0,0,0];
+  state.result=null;state.saved=false;state.lastReason='';
+  clearMeasurement();
+  state.scanStartWall=performance.now();
+  state.startMedia=state.lastMedia>=0?state.lastMedia:video.currentTime;
+  state.phase='SCANNING';
+  setOvalProgress(0);
+  $('measurement-status-value').textContent='Measuring…';
+  $('measurement-reason').textContent='Breathe naturally. Progress counts usable signal time, so brief movement pauses the scan instead of restarting it.';
+  updateButtons();
+}
+
+function tick() {
+  if(!state.stream)return;
+  const now=performance.now();
+
+  const stalled=now-state.lastFrameWall>SCAN.frameStallMs;
+  const fresh=!!state.face && now-state.face.at<=SCAN.faceCoastMs;
+  const good=fresh && state.faceOk && !stalled;
+
+  if(!good){
+    state.goodSince=null;
+    state.badSince??=now;
+    if(stalled)state.lastReason='Waiting for camera frames';
+    else if(!fresh)state.lastReason='Face lost — recentre in the guide';
+  }
+  const badFor=good?0:now-(state.badSince??now);
+  const goodFor=good?now-(state.goodSince??now):0;
+
+  switch(state.phase){
+    case 'SEARCHING':
+      if(good)state.phase='STABILIZING';
+      break;
+
+    case 'STABILIZING':
+      if(!good && badFor>SCAN.pauseAfterBadMs)state.phase='SEARCHING';
+      else if(good && goodFor>=SCAN.stabiliseMs)beginCapture();
+      break;
+
+    case 'SCANNING':
+      // A single bad frame, a blink or a small turn does nothing here.
+      if(!good && badFor>SCAN.pauseAfterBadMs)state.phase='PAUSED';
+      break;
+
+    case 'PAUSED':
+      if(good && goodFor>=SCAN.resumeAfterGoodMs)state.phase='SCANNING';
+      else if(badFor>SCAN.lostResetMs){
+        resetScanSession('SEARCHING','Face tracking was lost for too long, so a fresh scan will start automatically.');
+      }
+      break;
+  }
+
+  if(isCapturing()){
+    if(state.validSignalTime>=SCAN.requiredValidSeconds){
+      finishScan();
+      return;
+    }
+    if((now-state.scanStartWall)/1000>SCAN.maxSessionSeconds){
+      if(state.validSignalTime>=SCAN.minSalvageSeconds){
+        finishScan();
+      }else{
+        resetScanSession('SEARCHING','Not enough usable signal was collected in time. A fresh scan starts automatically — improve lighting and hold still.');
+      }
+      return;
+    }
+  }
+
+  paintLiveState(good,fresh);
+}
+
+function paintLiveState(good,fresh) {
+  if(state.processing)return;
+
+  $('camera-face-quality').textContent='Face Lock: '+(
+    good?(isCapturing()?'Stable':'Checking'):fresh?'Unstable':'Waiting');
+
+  if(state.phase==='COMPLETED')return;
+
+  const percent=100*state.validSignalTime/SCAN.requiredValidSeconds;
+  if(isCapturing()){
+    setOvalProgress(percent);
+    $('scan-duration-value').textContent=
+      `${Math.min(SCAN.requiredValidSeconds,Math.floor(state.validSignalTime))} / ${SCAN.requiredValidSeconds} seconds`;
+
+    const from=Math.max(VP.C.settle,(state.lastSampleT??0)-5);
+    const recent=state.records.filter(r=>r.t>=from);
+    const accepted=recent.filter(r=>r.regions.some(v=>v?.ok)).length;
+    const ratio=recent.length?accepted/recent.length:0;
+    $('signal-quality-fill').style.width=`${Math.round(ratio*100)}%`;
+    $('signal-quality-value').textContent=recent.length
+      ? `Capture: ${Math.round(ratio*100)}% with usable skin`
+      : 'Camera settling';
+    $('measurement-confidence-value').textContent='Not assessed yet';
+  }
+
+  switch(state.phase){
+    case 'SEARCHING':
+      setFaceGuideState('',fresh?state.lastReason:'Position your face inside the guide');
+      $('camera-status').textContent='Looking for a Face';
+      break;
+    case 'STABILIZING':
+      setFaceGuideState('aligned','Face aligned — hold still');
+      $('camera-status').textContent='Stabilising';
+      break;
+    case 'SCANNING':
+      setFaceGuideState('scanning','Face locked — keep still and breathe naturally');
+      $('camera-status').textContent='Scanning — Keep Still';
+      $('measurement-status-value').textContent='Measuring…';
+      break;
+    case 'PAUSED':
+      setFaceGuideState('scanning',`${state.lastReason} — progress is kept`);
+      $('camera-status').textContent='Paused — Progress Kept';
+      $('measurement-status-value').textContent='Paused — Signal Too Weak';
+      $('measurement-reason').textContent=`Scanning paused: ${state.lastReason}. Completed progress is preserved and capture resumes on its own.`;
+      break;
+    default:
+      $('camera-status').textContent=state.stream?'Camera Active':'Camera Stopped';
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Camera lifecycle
+ * ------------------------------------------------------------------ */
+async function startCamera() {
+  if(state.starting || state.stream || state.processing || state.saving)return;
+  state.starting=true;
+  stopFrames();
+  if(state.timer)clearInterval(state.timer);
+  state.timer=null;
+  state.cameraSerial++;
+  clearMeasurement();setOvalProgress(0);
+  $('camera-status').textContent='Starting camera…';updateButtons();
+  const generation=state.cameraSerial;
+  try{
+    if(!navigator.mediaDevices?.getUserMedia)throw new Error('Camera access requires HTTPS or localhost and a supported browser.');
+    await initializeTracker();
+    const stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:'user',width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30,max:30}}});
+    if(generation!==state.cameraSerial){stream.getTracks().forEach(t=>t.stop());return;}
+    state.stream=stream;video.srcObject=stream;await video.play();
+    if(generation!==state.cameraSerial)return;
+    if(!('requestVideoFrameCallback' in video) && !video.getVideoPlaybackQuality && video.webkitDecodedFrameCount==null)
+      throw new Error('This browser cannot identify individual camera frames. Use a browser with video-frame timing support.');
+    canvas.width=Math.min(640,video.videoWidth);canvas.height=Math.round(canvas.width*video.videoHeight/video.videoWidth);
+    trackingCanvas.width=320;trackingCanvas.height=Math.round(320*video.videoHeight/video.videoWidth);
+    video.style.display='block';$('camera-placeholder').style.display='none';
+    state.lastMedia=-1;state.lastFrameNumber=-1;state.trackAt=0;state.lastFrameWall=performance.now();
+    state.face=null;state.rawFace=null;state.roiPolygons=null;state.motionLevel=0;
+    state.faceOk=false;state.goodSince=null;state.badSince=null;
+    state.records=[];state.validSignalTime=0;state.lastSampleT=null;
+    state.phase='SEARCHING';
+    stream.getVideoTracks()[0].addEventListener('ended',()=>{
+      if(state.stream!==stream)return;
+      stopWellnessScan('Camera Disconnected','The camera stream ended, so the scan was discarded. Reconnect the camera and choose Restart Camera.');
+    });
+    $('camera-status').textContent='Camera Active';
+    $('measurement-reason').textContent=state.mode==='mesh'
+      ? 'Landmark tracking ready. Scanning starts automatically once your face is stable.'
+      : 'Box tracking fallback active; keep your face frontal. Landmark model was unavailable.';
+    setFaceGuideState('','Position your face inside the guide');
+    scheduleFrame();state.timer=setInterval(tick,150);
+  }catch(error){
+    stopWellnessScan(
+      error?.name==='NotAllowedError'?'Camera Permission Denied':'Camera Unavailable',
+      error?.name==='NotAllowedError'
+        ? 'Camera permission was denied. Allow camera access for this site, then choose Restart Camera.'
+        : (error.message||'Camera permission or tracking failed. Choose Restart Camera to try again.')
+    );
+  }finally{state.starting=false;updateButtons();}
+}
+
+async function toggleCamera() {
+  if(state.starting || state.processing || state.saving)return;
+  if(state.stream){
+    // Acts as Stop / Cancel and performs the full reset.
+    stopWellnessScan('Camera Stopped','Camera stopped. All scan progress and values were cleared.');
+    return;
+  }
+  await startCamera();
+}
+
+/* Manual control. With auto-start this is a "restart the scan" action:
+ * capture begins on its own once a stable face lock exists. */
+function startWellnessScan() {
+  if(state.processing || state.saving)return;
+  if(!state.stream){startCamera();return;}
+  if(isCapturing())return;
+  resetScanSession('SEARCHING','Scanning restarts automatically as soon as a stable face lock is available.');
+  setFaceGuideState('','Position your face inside the guide');
+}
+
+/* ------------------------------------------------------------------ *
+ * Results
+ * ------------------------------------------------------------------ */
+function renderResult(result) {
+  const metrics=[result.hr,result.rr],usable=metrics.filter(v=>v.ok);
+  const both=usable.length===2;
+  const sqi=both?Math.min(...usable.map(v=>v.sqi)):usable[0]?.sqi||0;
+
+  $('heart-rate-value').textContent=result.hr.ok?result.hr.rate:'—';
+  $('breathing-rate-value').textContent=result.rr.ok?result.rr.rate:'—';
+
+  const hrv=result.hr?.hrv;
+  $('hrv-value').textContent=hrv?.ok?hrv.rmssd:'—';
+  $('hrv-note').textContent=hrv?.ok
+    ? `Experimental short-window HRV: RMSSD ${hrv.rmssd} ms; SDNN ${hrv.sdnn} ms from ${hrv.beats} usable beats. Not for medical use.`
+    : `Not available: ${hrv?.reason||'a stable pulse waveform is required'}.`;
+
+  const stress=result.stress;
+  $('stress-value').textContent=stress?.ok?`${stress.score}/100`:'—';
+  $('stress-note').textContent=stress?.ok
+    ? `${stress.level}; landmark quality ${stress.quality}/100. Experimental facial-tension cue only — facial movements cannot diagnose physiological or psychological stress.`
+    : `Not available: ${stress?.reason||'stable facial landmarks were not available'}.`;
+
+  // True cardiac workload (rate-pressure product) needs systolic BP.
+  // A validated cuff/device can provide it in the future by setting:
+  // window.VeerPulseValidatedSystolicBP = 120;
+  const externalSBP=Number(window.VeerPulseValidatedSystolicBP);
+  const workload=computeCardiacWorkload(result.hr.ok?result.hr.rate:NaN,externalSBP);
+
+  $('cardiac-workload-value').textContent=workload?`${workload.rpp}`:'—';
+  $('cardiac-workload-note').textContent=workload
+    ? `Rate-pressure product = HR ${workload.hr} × validated SBP ${workload.sbp} = ${workload.rpp} mmHg·bpm.`
+    : 'Not calculated: accurate cardiac workload requires a validated systolic blood-pressure measurement. Facial expression alone is not enough.';
+
+  for(const [name,metric] of [['heart-rate',result.hr],['breathing-rate',result.rr]]){
+    $(name+'-note').textContent=metric.ok
+      ? `${metric.confidence}; SQI ${metric.sqi}/100; ${metric.regions} region(s), ${metric.windows} window(s)${metric.method?`; best method ${metric.method}`:''}. Experimental; not for medical use.`
+      : `Not available: ${metric.reason}.`;
+  }
+
+  $('measurement-status-value').textContent=
+    both?'Usable — Both Metrics':
+    usable.length?'Partially Usable':
+    'Insufficient Signal — Retry';
+
+  $('signal-quality-value').textContent=usable.length
+    ? `${sqi>=78?'Good':'Fair'} · ${sqi}/100${both?'':' (accepted metric)'}`
+    : 'Insufficient Signal';
+
+  $('signal-quality-fill').style.width=`${sqi}%`;
+
+  $('measurement-confidence-value').textContent=
+    both?(sqi>=78?'Good signal evidence':'Moderate signal evidence')
+    :usable.length?'Partial — see each metric':'Not Available';
+
+  $('measurement-time-value').textContent=result.time;
+  $('scan-duration-value').textContent=
+    `${result.validSeconds.toFixed(1)} s usable / ${result.duration.toFixed(1)} s elapsed`;
+  $('usable-duration-value').textContent=
+    `HR: ${result.hr.seconds.toFixed(1)} s · Breathing: ${result.rr.seconds.toFixed(1)} s`;
+
+  $('measurement-reason').textContent=both
+    ? 'Heart rate and breathing rate passed the evidence gates. SQI is an engineering signal-quality score, not a probability of accuracy.'
+    : [['HR',result.hr],['Breathing',result.rr]]
+        .filter(([,m])=>!m.ok)
+        .map(([n,m])=>`${n}: ${m.reason}.`)
+        .join(' ');
+
+  $('camera-status').textContent=usable.length?'Measurement Complete':'Retry Recommended';
+
+  setFaceGuideState(
+    usable.length?'complete':'',
+    usable.length
+      ? 'Scan complete — review each metric'
+      : 'Insufficient signal — review the retry reason'
+  );
+  setOvalProgress(usable.length?100:0);
+
+  updateButtons();
+}
+
+function finishScan() {
+  if(!isCapturing())return;
+  state.phase='COMPLETED';state.processing=true;updateButtons();
+  $('measurement-status-value').textContent='Analysing signal…';
+  setOvalProgress(100);
+  setFaceGuideState('scanning','Analysing the captured signal…');
+  const serial=state.serial,records=state.records.slice();
+  const duration=(performance.now()-state.scanStartWall)/1000;
+  const validSeconds=state.validSignalTime;
+  // Let the completion UI paint before post-scan computation. No provisional
+  // BPM is shown while capture is incomplete.
+  setTimeout(()=>{
+    if(serial!==state.serial)return;
+    try{
+      const result=VP.analyze(records);
+      if(serial!==state.serial)return;
+      result.stress=facialStressCue(records);
+      logSignalDiagnostics(result.diagnostics,'Completed');
+      state.result=Object.freeze({...result,
+        time:new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}),
+        duration,validSeconds,serial});
+      state.processing=false;state.records=[];
+      renderResult(state.result);
+    }catch(error){
+      if(diagnosticsEnabled())console.error('VeerPulse analysis error:',error);
+      failScan('Signal analysis failed; no measurement was saved');
+    }
+  },30);
+}
+
+// Bound both the HTTP request and JSON body read; never retry a POST automatically.
+async function requestScanJson(url, options, timeoutMs=20000) {
+  const controller=new AbortController();
+  let timer;
+  const timeout=new Promise((_,reject)=>{
+    timer=setTimeout(()=>{
+      reject(new Error('Request timed out. The server may have received it; check My Trends before retrying.'));
+      controller.abort();
+    },timeoutMs);
+  });
+  try {
+    return await Promise.race([
+      (async()=>{
+        const response=await fetch(url,{...options,signal:controller.signal});
+        const data=await response.json();
+        if(!data || typeof data!=='object')throw new Error('Invalid server response.');
+        return {response,data};
+      })(),timeout
+    ]);
+  } finally {clearTimeout(timer);}
+}
+
+async function saveMeasurementToTrends() {
+  const result=state.result;
+  if(!result || (!result.hr.ok && !result.rr.ok) || state.saving || state.saved || isCapturing() || state.processing)return;
+  state.saving=true;updateButtons();
+  const accepted=[result.hr,result.rr].filter(v=>v.ok),sqi=Math.min(...accepted.map(v=>v.sqi));
+  // Preserve the existing endpoint, JSON keys and string / em-dash format.
+  const payload={heart_rate:result.hr.ok?String(result.hr.rate):'—',breathing_rate:result.rr.ok?String(result.rr.rate):'—',
+    signal_quality:sqi>=80?'Good':'Fair',confidence:accepted.length===2 && sqi>=80?'High':'Medium',
+    measurement_time:result.time,scan_duration:`${Math.round(result.duration)} seconds`};
+  try{
+    const headers={'Content-Type':'application/json'};
+    const csrf=document.querySelector('meta[name="csrf-token"], input[name="csrf_token"]');
+    if(csrf)headers['X-CSRFToken']=csrf.content||csrf.value;
+    const {response,data}=await requestScanJson('/save-wellness-scan',{method:'POST',credentials:'same-origin',headers,body:JSON.stringify(payload)});
+    if(!response.ok || !data.success)throw new Error(data.message||'The server did not save this measurement.');
+
+    // Persistence succeeded even if the separate assessment refresh fails.
+    if(state.result===result)state.saved=true;
+    let assessmentNote='';
+
+    try{
+      const {response:assessmentResponse,data:assessmentData}=await requestScanJson(
+        '/api/personnel/recalculate-assessment',
+        {method:'POST',credentials:'same-origin',headers:{...headers,'Accept':'application/json'}}
+      );
+
+
+      if(assessmentResponse.ok && assessmentData.success && assessmentData.assessment){
+        assessmentNote=
+          ` Linked as optional supporting context to Assessment v${assessmentData.assessment.assessment_version} (${assessmentData.assessment.attention_level}).`;
+      }else{
+        assessmentNote=' The scan was saved, but assessment refresh was not completed.';
+      }
+    }catch(assessmentError){
+      assessmentNote=' The scan was saved, but assessment refresh was not completed.';
+    }
+
+    if(state.result===result){
+      state.saved=true;
+      $('measurement-reason').textContent=
+        (data.message||'Usable measurement saved to My Trends.')
+        + assessmentNote
+        + ' Camera measurements remain experimental supporting context and do not independently set welfare attention.';
+    }
+  }catch(error){
+    if(state.result===result)$('measurement-reason').textContent=`Save could not be confirmed: ${error.message}. No automatic retry was sent.`;
+  }finally{state.saving=false;updateButtons();}
+}
+
+/* ------------------------------------------------------------------ *
+ * Lifecycle wiring
+ * ------------------------------------------------------------------ */
+document.addEventListener('visibilitychange',()=>{
+  // Hiding the tab freezes decoded frames. Pause instead of discarding the
+  // scan; capture resumes automatically when the tab comes back.
+  if(document.hidden && state.phase==='SCANNING'){
+    state.phase='PAUSED';
+    state.goodSince=null;
+    state.badSince??=performance.now();
+    state.lastReason='Tab was hidden';
+  }
+});
+window.addEventListener('pagehide',()=>{stopWellnessScan('Camera Stopped');});
+window.addEventListener('beforeunload',()=>{stopWellnessScan('Camera Stopped');});
+
+clearMeasurement();setOvalProgress(0);updateButtons();
+
+// AUTO START: no "Start Camera" click is required.
+(function autoStartWellnessScan(){
+  const begin=()=>{if(!state.stream && !state.starting)startCamera();};
+  if(document.readyState==='complete')setTimeout(begin,120);
+  else window.addEventListener('load',()=>setTimeout(begin,120),{once:true});
+})();
+</script>
+{% include 'partials/veerassist.html' %}
+</body>
+</html>

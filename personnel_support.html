@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Support | VeerPulse</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        .support-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 22px;
+        }
+
+        .support-card {
+            background: white;
+            border: 1px solid #e6ebef;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.05);
+        }
+
+        .support-card h2 {
+            margin: 0 0 6px;
+            color: #163b65;
+            font-size: 20px;
+        }
+
+        .support-card p {
+            color: #748291;
+            font-size: 12px;
+            line-height: 1.6;
+            margin-bottom: 18px;
+        }
+
+        .support-form-group {
+            margin-bottom: 16px;
+        }
+
+        .support-form-group label {
+            display: block;
+            margin-bottom: 7px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #34495e;
+        }
+
+        .support-form-group select,
+        .support-form-group textarea,
+        .support-form-group input {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid #d8e0e6;
+            border-radius: 8px;
+            font-size: 12px;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .support-form-group textarea {
+            resize: vertical;
+            min-height: 110px;
+        }
+
+        .support-form-group select:focus,
+        .support-form-group textarea:focus,
+        .support-form-group input:focus {
+            border-color: #16858c;
+        }
+
+        .support-submit-btn {
+            background: #163b65;
+            color: white;
+            border: none;
+            padding: 11px 18px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .support-submit-btn:hover {
+            opacity: 0.92;
+        }
+
+        .support-submit-btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+        .support-submit-message {
+            display: none;
+            margin-top: 12px;
+            padding: 12px 14px;
+            border-radius: 9px;
+            font-size: 11px;
+            font-weight: 700;
+            line-height: 1.5;
+        }
+
+        .support-submit-message.show {
+            display: block;
+        }
+
+        .support-submit-message.success {
+            background: #e8f5ec;
+            border: 1px solid #c8e6d0;
+            color: #2f7040;
+            animation: supportMessageBlink 0.45s ease-in-out 3;
+        }
+
+        .support-submit-message.error {
+            background: #fdeaea;
+            border: 1px solid #f1caca;
+            color: #9f4545;
+        }
+
+        .support-submit-message.loading {
+            background: #eef3f6;
+            border: 1px solid #d8e1e7;
+            color: #42596f;
+        }
+
+        @keyframes supportMessageBlink {
+            0%, 100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.35;
+            }
+        }
+
+        .privacy-note {
+            margin-top: 16px;
+            padding: 13px 14px;
+            border-radius: 9px;
+            background: #eef6f6;
+            border-left: 4px solid #16858c;
+            color: #536b70;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .support-status-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .support-status-item {
+            background: #f7f9fb;
+            border: 1px solid #e7ebef;
+            border-radius: 10px;
+            padding: 14px;
+        }
+
+        .support-status-item span {
+            display: block;
+            font-size: 10px;
+            color: #81909e;
+            margin-bottom: 5px;
+        }
+
+        .support-status-item strong {
+            display: block;
+            color: #24394f;
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+
+        .support-status-item p {
+            margin: 0;
+            font-size: 11px;
+            color: #7a8794;
+            line-height: 1.5;
+        }
+
+        .support-badge {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            background: #e9f4f2;
+            color: #267566;
+            font-size: 10px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        @media (max-width: 900px) {
+            .support-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+
+<body class="dashboard-page">
+
+<div class="dashboard-layout">
+
+    <!-- SHARED PERSONNEL SIDEBAR -->
+    {% include 'partials/personnel_sidebar.html' %}
+
+<!-- MAIN CONTENT -->
+    <main class="dashboard-main">
+
+        <header class="dashboard-header">
+
+            <div>
+                <p class="dashboard-label">
+                    Human Support Access
+                </p>
+
+                <h1>
+                    Support
+                </h1>
+            </div>
+
+            <div class="officer-profile">
+
+                <div class="profile-circle">
+                    VP
+                </div>
+
+                <div>
+                    <strong>{{ personnel.full_name if personnel and personnel.full_name else "Personnel" }}</strong>
+                    <p>Personnel {{ personnel.personnel_id if personnel else session.get("personnel_id") }} · Secure Personal Access</p>
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <section class="support-grid">
+
+            <!-- SUPPORT REQUEST FORM -->
+            <div class="support-card">
+
+                <span class="support-badge">
+                    Voluntary Support Request
+                </span>
+
+                <h2>Request Welfare Support</h2>
+
+                <p>
+                    Personnel may voluntarily request human welfare support.
+                    VeerPulse only helps route the request to an authorized
+                    welfare officer. It does not make medical or disciplinary
+                    decisions.
+                </p>
+
+                <form>
+
+                    <div class="support-form-group">
+                        <label for="support_reason">
+                            Support Category
+                        </label>
+
+                        <select id="support_reason">
+                            <option value="">
+                                Select a category
+                            </option>
+
+                            <option>
+                                Workload Support
+                            </option>
+
+                            <option>
+                                Duty / Rest Concern
+                            </option>
+
+                            <option>
+                                Personal Wellness Check
+                            </option>
+
+                            <option>
+                                General Welfare Guidance
+                            </option>
+
+                            <option>
+                                Other
+                            </option>
+                        </select>
+                    </div>
+
+
+                    <div class="support-form-group">
+                        <label for="contact_method">
+                            Preferred Contact Method
+                        </label>
+
+                        <select id="contact_method">
+                            <option value="">
+                                Select contact method
+                            </option>
+
+                            <option>
+                                In-Person Meeting
+                            </option>
+
+                            <option>
+                                Phone Call
+                            </option>
+
+                            <option>
+                                Secure Message
+                            </option>
+                        </select>
+                    </div>
+
+
+                    <div class="support-form-group">
+                        <label for="support_priority">
+                            Request Priority
+                        </label>
+
+                        <select id="support_priority">
+                            <option value="">
+                                Select priority
+                            </option>
+
+                            <option>
+                                Routine
+                            </option>
+
+                            <option>
+                                Soon
+                            </option>
+
+                            <option>
+                                Prompt Follow-Up
+                            </option>
+                        </select>
+                    </div>
+
+
+                    <div class="support-form-group">
+                        <label for="support_message">
+                            Optional Message
+                        </label>
+
+                        <textarea
+                            id="support_message"
+                            placeholder="Briefly describe what support you would like to request.">
+                        </textarea>
+                    </div>
+
+
+                    <button type="button"
+                            class="support-submit-btn"
+                            id="support-submit-btn">
+                        Submit Support Request
+                    </button>
+
+                    <div class="support-submit-message"
+                         id="support-submit-message"
+                         role="status"
+                         aria-live="polite"></div>
+
+                </form>
+
+
+                <div class="privacy-note">
+                    Support requests are intended for authorized welfare
+                    assistance and should be handled using minimum necessary
+                    information and non-disciplinary access controls.
+                </div>
+
+            </div>
+
+
+            <!-- REQUEST STATUS -->
+            <div class="support-card">
+
+                <h2>Support Request Status</h2>
+
+                <p>
+                    View the current status of your recent welfare support
+                    requests stored for this logged-in Personnel ID.
+                </p>
+
+                <div class="support-status-list">
+
+                    {% for request_item in support_requests %}
+
+                        <div class="support-status-item">
+
+                            <span>
+                                {{ request_item.created_at.strftime('%d %b %Y, %I:%M %p') if request_item.created_at else 'Time not recorded' }}
+                            </span>
+
+                            <strong>
+                                {{ request_item.support_category or 'Category not recorded' }}
+                                —
+                                {{ request_item.status or 'Status not recorded' }}
+                            </strong>
+
+                            <p>
+                                Contact: {{ request_item.contact_method or 'Not recorded' }}
+                                · Priority: {{ request_item.priority or 'Not recorded' }}
+                            </p>
+
+                        </div>
+
+                    {% else %}
+
+                        <div class="support-status-item">
+                            <span>Recent Requests</span>
+                            <strong>No support request recorded</strong>
+                            <p>
+                                When you submit a voluntary support request,
+                                its stored status will appear here.
+                            </p>
+                        </div>
+
+                    {% endfor %}
+
+                    <div class="support-status-item">
+
+                        <span>Request Handling</span>
+
+                        <strong>Authorized Welfare Review</strong>
+
+                        <p>
+                            Requests are reviewed by authorized welfare personnel.
+                            VeerPulse does not automatically approve, deny or close them.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<script>
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            const submitButton =
+                document.getElementById(
+                    "support-submit-btn"
+                );
+
+            const messageBox =
+                document.getElementById(
+                    "support-submit-message"
+                );
+
+            const supportCategory =
+                document.getElementById(
+                    "support_reason"
+                );
+
+            const contactMethod =
+                document.getElementById(
+                    "contact_method"
+                );
+
+            const priority =
+                document.getElementById(
+                    "support_priority"
+                );
+
+            const supportMessage =
+                document.getElementById(
+                    "support_message"
+                );
+
+            if (!submitButton) {
+                return;
+            }
+
+
+            function showSubmitMessage(
+                message,
+                type
+            ) {
+
+                if (!messageBox) {
+                    return;
+                }
+
+                messageBox.className =
+                    "support-submit-message show "
+                    + type;
+
+                messageBox.textContent =
+                    message;
+            }
+
+
+            submitButton.addEventListener(
+                "click",
+                async function () {
+
+                    const payload = {
+                        support_category:
+                            supportCategory
+                            ? supportCategory.value
+                            : "",
+
+                        contact_method:
+                            contactMethod
+                            ? contactMethod.value
+                            : "",
+
+                        priority:
+                            priority
+                            ? priority.value
+                            : "",
+
+                        message:
+                            supportMessage
+                            ? supportMessage.value.trim()
+                            : ""
+                    };
+
+
+                    if (
+                        !payload.support_category
+                        || !payload.contact_method
+                        || !payload.priority
+                    ) {
+
+                        showSubmitMessage(
+                            "Please select the support category, contact method and priority before submitting.",
+                            "error"
+                        );
+
+                        return;
+                    }
+
+
+                    submitButton.disabled =
+                        true;
+
+                    showSubmitMessage(
+                        "Submitting support request...",
+                        "loading"
+                    );
+
+
+                    try {
+
+                        const response =
+                            await fetch(
+                                "/submit-support-request",
+                                {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type":
+                                            "application/json"
+                                    },
+                                    body:
+                                        JSON.stringify(
+                                            payload
+                                        )
+                                }
+                            );
+
+                        const result =
+                            await response.json();
+
+                        if (
+                            !response.ok
+                            || !result.success
+                        ) {
+
+                            throw new Error(
+                                result.message
+                                || "Could not submit the support request."
+                            );
+                        }
+
+
+                        showSubmitMessage(
+                            "Support request submitted successfully. Request ID: "
+                            + result.request.id
+                            + " | Status: "
+                            + result.request.status,
+                            "success"
+                        );
+
+
+                        if (supportCategory) {
+                            supportCategory.value = "";
+                        }
+
+                        if (contactMethod) {
+                            contactMethod.value = "";
+                        }
+
+                        if (priority) {
+                            priority.value = "";
+                        }
+
+                        if (supportMessage) {
+                            supportMessage.value = "";
+                        }
+
+                        window.setTimeout(
+                            function () {
+                                window.location.reload();
+                            },
+                            700
+                        );
+
+                    }
+
+                    catch (error) {
+
+                        showSubmitMessage(
+                            error.message,
+                            "error"
+                        );
+                    }
+
+                    finally {
+
+                        submitButton.disabled =
+                            false;
+                    }
+                }
+            );
+        }
+    );
+</script>
+
+{% include 'partials/veerassist.html' %}
+
+</body>
+</html>

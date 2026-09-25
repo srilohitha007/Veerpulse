@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Welfare Alerts | VeerPulse</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        .alert-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .alert-summary-card {
+            background: white;
+            border: 1px solid #e6ebef;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.05);
+        }
+
+        .alert-summary-card span {
+            display: block;
+            color: #7c8996;
+            font-size: 11px;
+            margin-bottom: 7px;
+        }
+
+        .alert-summary-card strong {
+            display: block;
+            color: #163b65;
+            font-size: 24px;
+        }
+
+        .alert-summary-card p {
+            margin: 6px 0 0;
+            color: #8c97a2;
+            font-size: 10px;
+        }
+
+        .alerts-panel {
+            background: white;
+            border: 1px solid #e6ebef;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.05);
+        }
+
+        .alerts-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 18px;
+        }
+
+        .alerts-heading h2 {
+            margin: 0;
+            color: #163b65;
+            font-size: 20px;
+        }
+
+        .alerts-heading p {
+            margin: 4px 0 0;
+            color: #7a8794;
+            font-size: 11px;
+        }
+
+        .filter-select {
+            padding: 9px 11px;
+            border: 1px solid #d8e0e6;
+            border-radius: 8px;
+            font-size: 11px;
+        }
+
+        .alert-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .alert-card {
+            border: 1px solid #e6ebef;
+            border-radius: 11px;
+            padding: 16px;
+            background: #fbfcfd;
+        }
+
+        .alert-card.elevated {
+            border-left: 4px solid #c95a5a;
+        }
+
+        .alert-card.moderate {
+            border-left: 4px solid #d89a24;
+        }
+
+        .alert-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .alert-top strong {
+            color: #24394f;
+            font-size: 13px;
+        }
+
+        .alert-time {
+            color: #8a95a1;
+            font-size: 10px;
+            white-space: nowrap;
+        }
+
+        .alert-card p {
+            margin: 0;
+            color: #6f7d8c;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .alert-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .meta-tag {
+            padding: 6px 9px;
+            border-radius: 20px;
+            background: #f1f4f6;
+            color: #53616f;
+            font-size: 9px;
+            font-weight: 700;
+        }
+
+        .risk-badge {
+            display: inline-block;
+            padding: 6px 9px;
+            border-radius: 20px;
+            font-size: 9px;
+            font-weight: 700;
+        }
+
+        .risk-moderate {
+            background: #fff3d7;
+            color: #936713;
+        }
+
+        .risk-elevated {
+            background: #fdeaea;
+            color: #a54848;
+        }
+
+        .risk-low {
+            background: #e8f5ec;
+            color: #3c7d4a;
+        }
+
+        .risk-insufficient {
+            background: #edf1f4;
+            color: #5f6f7e;
+        }
+
+        .alert-card.low {
+            border-left: 4px solid #5f9b6a;
+        }
+
+        .alert-card.insufficient {
+            border-left: 4px solid #9aa7b2;
+        }
+
+        .no-alert-state {
+            padding: 18px;
+            border: 1px solid #dfe7ed;
+            border-radius: 11px;
+            background: #f8fafb;
+            color: #5f6f7e;
+            font-size: 11px;
+            line-height: 1.7;
+        }
+
+        .no-alert-state strong {
+            display: block;
+            margin-bottom: 6px;
+            color: #314b63;
+            font-size: 12px;
+        }
+
+        .review-btn {
+            margin-top: 12px;
+            display: inline-block;
+            text-decoration: none;
+            background: #163b65;
+            color: white;
+            padding: 8px 11px;
+            border-radius: 7px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .review-btn:hover {
+            opacity: 0.9;
+        }
+
+        .alert-note {
+            margin-top: 18px;
+            padding: 14px 15px;
+            background: #eef6f6;
+            border-left: 4px solid #16858c;
+            border-radius: 9px;
+            color: #536b70;
+            font-size: 11px;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 1000px) {
+            .alert-summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .alerts-heading {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 550px) {
+            .alert-summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+
+<body class="dashboard-page">
+<div class="dashboard-layout">
+    {% include 'partials/welfare_officer_sidebar.html' %}
+    <main class="dashboard-main">
+        <header class="dashboard-header">
+            <div>
+                <p class="dashboard-label">Explainable Welfare Monitoring</p>
+                <h1>Welfare Alerts</h1>
+            </div>
+            <div class="officer-profile">
+                <div class="profile-circle">WO</div>
+                <div><strong>Welfare Officer</strong><p>Authorized Access</p></div>
+            </div>
+        </header>
+
+        <section class="alert-summary-grid">
+            <div class="alert-summary-card"><span>Current Alerts</span><strong>{{ alert_counts.total }}</strong><p>Current Moderate + Elevated assessments</p></div>
+            <div class="alert-summary-card"><span>Moderate</span><strong>{{ alert_counts.Moderate }}</strong><p>Current stored assessments only</p></div>
+            <div class="alert-summary-card"><span>Elevated</span><strong>{{ alert_counts.Elevated }}</strong><p>Current stored assessments only</p></div>
+            <div class="alert-summary-card"><span>Current Assessments</span><strong>{{ alert_counts.current_assessments }}</strong><p>All current assessment records in scope</p></div>
+        </section>
+
+        <section class="alerts-panel">
+            <div class="alerts-heading">
+                <div><h2>Current Welfare Alerts</h2><p>Only current Moderate or Elevated welfare-attention assessments are shown. Historical assessments are not displayed as current alerts.</p></div>
+                <select class="filter-select" id="alert-filter" onchange="filterAlerts()">
+                    <option value="all">All Current Alerts</option>
+                    <option value="elevated">Elevated</option>
+                    <option value="moderate">Moderate</option>
+                </select>
+            </div>
+            <div class="alert-list" id="alert-list">
+                {% for assessment in alert_assessments %}
+                {% set person = personnel_map.get(assessment.personnel_id) %}
+                <div class="alert-card {{ assessment.attention_level|lower }}" data-level="{{ assessment.attention_level|lower }}">
+                    <div class="alert-top">
+                        <div>
+                            <strong>{{ person.full_name if person else 'Personnel record unavailable' }} · {{ assessment.personnel_id }}</strong>
+                            <span class="alert-time">{{ assessment.assessment_time.strftime('%d %b %Y, %I:%M %p') if assessment.assessment_time else 'Time unavailable' }}</span>
+                        </div>
+                        <span class="risk-badge risk-{{ assessment.attention_level|lower }}">{{ assessment.attention_level|upper }}</span>
+                    </div>
+                    <p>{{ assessment.explanation_summary or 'No explanation summary was stored for this current assessment.' }}</p>
+                    <div class="alert-meta">
+                        <span class="meta-tag">Assessment v{{ assessment.assessment_version }}</span>
+                        <span class="meta-tag">{{ assessment.evidence_status or 'Evidence status unavailable' }}</span>
+                        {% if person and person.unit %}<span class="meta-tag">{{ person.unit }}</span>{% endif %}
+                    </div>
+                    <a class="review-btn" href="{{ url_for('welfare_officer_case_review', personnel_id=assessment.personnel_id) }}">Open Case Review</a>
+                </div>
+                {% else %}
+                <div class="no-alert-state" style="display:block;">No current Moderate or Elevated welfare alerts are stored.</div>
+                {% endfor %}
+            </div>
+            <div class="no-alert-state" id="alert-filter-empty">No alerts match this filter.</div>
+            <div class="alert-note"><strong>Human review required.</strong> VeerPulse alerts are welfare-support indicators. They do not automatically trigger medical, disciplinary, leave, posting, transfer or deployment decisions.</div>
+        </section>
+    </main>
+</div>
+<script>
+function filterAlerts(){
+ const f=document.getElementById('alert-filter').value;
+ const cards=[...document.querySelectorAll('.alert-card')];
+ let shown=0;
+ cards.forEach(c=>{const ok=f==='all'||c.dataset.level===f;c.style.display=ok?'block':'none';if(ok)shown++;});
+ const empty=document.getElementById('alert-filter-empty'); if(empty) empty.style.display=(cards.length && shown===0)?'block':'none';
+}
+</script>
+</body>
+</html>

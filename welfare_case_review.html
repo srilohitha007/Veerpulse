@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Case Review | VeerPulse</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        .case-grid {
+            display: grid;
+            grid-template-columns: 1.25fr 0.75fr;
+            gap: 18px;
+        }
+
+        .case-panel,
+        .case-side-panel {
+            background: white;
+            border: 1px solid #e6ebef;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.05);
+        }
+
+        .case-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 18px;
+        }
+
+        .case-heading h2 {
+            margin: 0;
+            color: #163b65;
+            font-size: 20px;
+        }
+
+        .case-heading p {
+            margin: 5px 0 0;
+            color: #7a8794;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .case-id {
+            background: #eef3f6;
+            color: #4e6477;
+            border-radius: 20px;
+            padding: 7px 10px;
+            font-size: 9px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .personnel-card {
+            padding: 15px;
+            border: 1px solid #e8edf1;
+            border-radius: 10px;
+            background: #fbfcfd;
+            margin-bottom: 16px;
+        }
+
+        .personnel-card strong {
+            color: #24394f;
+            font-size: 14px;
+        }
+
+        .personnel-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .meta-tag {
+            padding: 6px 9px;
+            border-radius: 20px;
+            background: #f1f4f6;
+            color: #53616f;
+            font-size: 9px;
+            font-weight: 700;
+        }
+
+        .risk-badge {
+            display: inline-block;
+            padding: 6px 9px;
+            border-radius: 20px;
+            background: #fff3d7;
+            color: #936713;
+            font-size: 9px;
+            font-weight: 700;
+            margin-top: 9px;
+        }
+
+        .risk-badge.low {
+            background: #e8f5ec;
+            color: #3c7d4a;
+        }
+
+        .risk-badge.moderate {
+            background: #fff3d7;
+            color: #936713;
+        }
+
+        .risk-badge.elevated {
+            background: #fdeaea;
+            color: #a54343;
+        }
+
+        .risk-badge.insufficient {
+            background: #edf1f4;
+            color: #5f6f7e;
+        }
+
+        .case-status-note {
+            margin-top: 10px;
+            color: #72808d;
+            font-size: 9px;
+            line-height: 1.5;
+        }
+
+        .section-box {
+            border: 1px solid #e6ebef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 14px;
+        }
+
+        .section-box h3 {
+            margin: 0 0 9px;
+            color: #24394f;
+            font-size: 13px;
+        }
+
+        .section-box p {
+            margin: 0;
+            color: #6f7d8c;
+            font-size: 11px;
+            line-height: 1.7;
+        }
+
+        .change-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .change-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 9px 10px;
+            background: #f7f9fa;
+            border-radius: 8px;
+            font-size: 10px;
+            color: #556575;
+        }
+
+        .change-item strong {
+            color: #31485e;
+            font-size: 10px;
+        }
+
+        .case-form label {
+            display: block;
+            margin-bottom: 6px;
+            color: #425466;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .case-form select,
+        .case-form textarea {
+            width: 100%;
+            border: 1px solid #d8e0e6;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 11px;
+            margin-bottom: 13px;
+            box-sizing: border-box;
+        }
+
+        .case-form textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .case-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .action-btn {
+            border: none;
+            cursor: pointer;
+            padding: 9px 12px;
+            border-radius: 7px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .primary-btn {
+            background: #163b65;
+            color: white;
+        }
+
+        .secondary-btn {
+            background: #eef3f6;
+            color: #34495e;
+        }
+
+        .case-side-panel h3 {
+            margin: 0 0 14px;
+            color: #163b65;
+            font-size: 15px;
+        }
+
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 18px;
+        }
+
+        .timeline-item::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #16858c;
+            position: absolute;
+            left: 0;
+            top: 4px;
+        }
+
+        .timeline-item strong {
+            display: block;
+            color: #354b60;
+            font-size: 10px;
+        }
+
+        .timeline-item span {
+            display: block;
+            margin-top: 4px;
+            color: #87929d;
+            font-size: 9px;
+        }
+
+        .timeline-item p {
+            margin: 5px 0 0;
+            color: #6f7d8c;
+            font-size: 10px;
+            line-height: 1.6;
+        }
+
+        .privacy-note {
+            margin-top: 18px;
+            padding: 13px 14px;
+            border-left: 4px solid #16858c;
+            background: #eef6f6;
+            border-radius: 8px;
+            color: #536b70;
+            font-size: 10px;
+            line-height: 1.7;
+        }
+
+
+        .replay-panel {
+            margin-top: 16px;
+            padding: 16px;
+            background: #f8fafb;
+            border: 1px solid #e3e9ee;
+            border-radius: 10px;
+        }
+
+        .replay-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .replay-item {
+            padding: 11px;
+            background: white;
+            border: 1px solid #e4e9ee;
+            border-radius: 8px;
+        }
+
+        .replay-item span {
+            display: block;
+            margin-bottom: 5px;
+            color: #7b8894;
+            font-size: 8px;
+        }
+
+        .replay-item strong {
+            color: #2d4b64;
+            font-size: 10px;
+        }
+
+        .replay-status {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 6px 9px;
+            border-radius: 18px;
+            background: #e8f5ec;
+            color: #3c7d4a;
+            font-size: 8px;
+            font-weight: 700;
+        }
+
+        @media (max-width: 950px) {
+            .case-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body class="dashboard-page">
+
+<div class="dashboard-layout">
+
+    <!-- SHARED WELFARE OFFICER SIDEBAR -->
+    {% include 'partials/welfare_officer_sidebar.html' %}
+
+<!-- MAIN CONTENT -->
+    <main class="dashboard-main">
+
+        <header class="dashboard-header">
+
+            <div>
+                <p class="dashboard-label">
+                    Human Welfare Review
+                </p>
+
+                <h1>
+                    Case Review
+                </h1>
+            </div>
+
+            <div class="officer-profile">
+
+                <div class="profile-circle">
+                    WO
+                </div>
+
+                <div>
+                    <strong>Welfare Officer</strong>
+                    <p>Authorized Access</p>
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <div class="case-grid">
+
+            <!-- MAIN CASE -->
+            <section class="case-panel">
+
+                <div class="case-heading">
+
+                    <div>
+                        <h2>Personnel Welfare Case</h2>
+
+                        <p>
+                            Review explainable welfare indicators, voluntary
+                            support information and relevant duty context.
+                        </p>
+                    </div>
+
+                    <span class="case-id">
+                        Case {{ selected_personnel_id }}-01
+                    </span>
+
+                </div>
+
+
+                <div class="personnel-card">
+
+                    <strong>Personnel {{ selected_personnel_id }}</strong>
+
+                    <div class="personnel-meta">
+                        <span class="meta-tag">{{ personnel.unit if personnel and personnel.unit else "Unit not recorded" }}</span>
+                        <span class="meta-tag">Active Duty</span>
+
+                        <span class="meta-tag">
+                            {% if current_assessment
+                                  and current_assessment.attention_level
+                                  in ["Moderate", "Elevated"] %}
+                                Open Review
+                            {% elif current_assessment
+                                    and current_assessment.attention_level == "Low" %}
+                                No Priority Escalation
+                            {% else %}
+                                Assessment Withheld
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <span class="risk-badge"
+                          id="case-attention-badge">
+                        {% if current_assessment %}
+                            {{ current_assessment.attention_level | upper }}
+                        {% else %}
+                            INSUFFICIENT DATA
+                        {% endif %}
+                    </span>
+
+                    <div class="case-status-note">
+                        {% if current_assessment
+                              and current_assessment.attention_level == "Low" %}
+                            Current stored assessment does not require priority escalation.
+                        {% elif current_assessment
+                                and current_assessment.attention_level
+                                in ["Moderate", "Elevated"] %}
+                            Authorized human case review is available for this assessment.
+                        {% else %}
+                            Welfare-attention conclusion is withheld until sufficient evidence is available.
+                        {% endif %}
+                    </div>
+
+                </div>
+
+
+                <div class="section-box">
+
+                    <h3>
+                        {% if current_assessment
+                              and current_assessment.attention_level
+                              in ["Moderate", "Elevated"] %}
+                            Why This Case Was Prioritized
+                        {% else %}
+                            Current Assessment Explanation
+                        {% endif %}
+                    </h3>
+
+                    <p>
+                        {% if current_assessment
+                              and current_assessment.explanation_summary %}
+
+                            {{ current_assessment.explanation_summary }}
+
+                        {% else %}
+
+                            A welfare-attention category has not been produced
+                            because sufficient validated evidence is not
+                            currently available.
+
+                        {% endif %}
+                    </p>
+
+                    <div class="change-list"
+                         style="margin-top:12px;">
+
+                        {% if current_assessment
+                              and current_assessment.attention_level == "Low" %}
+
+                            <div class="change-item">
+                                <span>Priority Status</span>
+                                <strong>No Priority Escalation</strong>
+                            </div>
+
+                            <div class="change-item">
+                                <span>Evidence Status</span>
+                                <strong>{{ current_assessment.evidence_status }}</strong>
+                            </div>
+
+                            <div class="change-item">
+                                <span>Comparable Context</span>
+                                <strong>
+                                    {{ current_assessment.baseline_context or "Not Available" }}
+                                </strong>
+                            </div>
+
+                        {% elif current_assessment
+                                and current_assessment.attention_level
+                                in ["Moderate", "Elevated"] %}
+
+                            <div class="change-item">
+                                <span>Priority Status</span>
+                                <strong>Human Review Required</strong>
+                            </div>
+
+                            <div class="change-item">
+                                <span>Evidence Status</span>
+                                <strong>{{ current_assessment.evidence_status }}</strong>
+                            </div>
+
+                            <div class="change-item">
+                                <span>Comparable Context</span>
+                                <strong>
+                                    {{ current_assessment.baseline_context or "Not Available" }}
+                                </strong>
+                            </div>
+
+                        {% else %}
+
+                            <div class="change-item">
+                                <span>Evidence Review</span>
+                                <strong>Assessment Withheld</strong>
+                            </div>
+
+                            <div class="change-item">
+                                <span>Reason</span>
+                                <strong>Insufficient Validated Evidence</strong>
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <div class="section-box">
+
+                    <h3>Assessment Record</h3>
+
+                    <div class="change-list">
+
+                        <div class="change-item">
+                            <span>Evidence Status</span>
+                            <strong>
+                                {% if current_assessment %}
+                                    {{ current_assessment.evidence_status }}
+                                {% else %}
+                                    Awaiting Sufficient Evidence
+                                {% endif %}
+                            </strong>
+                        </div>
+
+                        <div class="change-item">
+                            <span>Assessment Confidence</span>
+                            <strong>
+                                {% if current_assessment
+                                      and current_assessment.confidence %}
+                                    {{ current_assessment.confidence }}
+                                {% else %}
+                                    Not Available
+                                {% endif %}
+                            </strong>
+                        </div>
+
+                        <div class="change-item">
+                            <span>Rules Version</span>
+                            <strong>
+                                {% if current_assessment %}
+                                    {{ current_assessment.rules_version }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </strong>
+                        </div>
+
+                        <div class="change-item">
+                            <span>Assessment Version</span>
+                            <strong>
+                                {% if current_assessment %}
+                                    {{ current_assessment.assessment_version }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </strong>
+                        </div>
+
+                        <div class="change-item">
+                            <span>Assessment Time</span>
+                            <strong>
+                                {% if current_assessment
+                                      and current_assessment.assessment_time %}
+                                    {{ current_assessment.assessment_time.strftime("%d %b %Y, %I:%M %p") }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </strong>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="section-box">
+
+                    <h3>Decision Replay</h3>
+
+                    <p>
+                        Reproduce the stored evidence snapshot used for this
+                        assessment version. This supports auditability without
+                        recalculating the past decision using today's data.
+                    </p>
+
+                    <div class="replay-panel">
+
+                        <div class="replay-item">
+                            <span>Assessment Version</span>
+                            <strong id="replay-assessment-version">
+                                {% if current_assessment %}
+                                    {{ current_assessment.assessment_version }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </strong>
+                        </div>
+
+                        <div id="decision-replay-content"
+                             style="margin-top:12px;">
+                            Loading stored evidence snapshot...
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="section-box">
+
+                    <h3>Supporting Context</h3>
+
+                    <p>
+                        Optional wellness check-ins or camera-derived
+                        physiological estimates may be considered only as
+                        supporting context when voluntarily provided and
+                        technically usable. They should not independently
+                        determine welfare status.
+                    </p>
+
+
+                    <div class="change-list"
+                         style="margin-top:14px;">
+
+                        {% if latest_checkin %}
+
+                            <div class="change-item">
+                                <span>Latest Voluntary Check-In</span>
+                                <strong>
+                                    {{ latest_checkin.summary_label }}
+                                </strong>
+                            </div>
+
+                            <div class="change-item">
+                                <span>Submitted</span>
+                                <strong>
+                                    {{ latest_checkin.submitted_at.strftime("%d %b %Y, %I:%M %p") }}
+                                </strong>
+                            </div>
+
+                            <div class="change-item">
+                                <span>Supporting Concern Items</span>
+                                <strong>
+                                    {{ latest_checkin.concern_count }}
+                                </strong>
+                            </div>
+
+                            <div class="change-item">
+                                <span>Voluntary Human Support</span>
+                                <strong>
+                                    {% if latest_checkin.support_request == "Yes" %}
+                                        Requested
+                                    {% elif latest_checkin.support_request == "Maybe Later" %}
+                                        Maybe Later
+                                    {% else %}
+                                        Not Requested
+                                    {% endif %}
+                                </strong>
+                            </div>
+
+                            <div class="change-item">
+                                <span>Linked to Current Assessment?</span>
+                                <strong>
+                                    {% if assessment_checkin_evidence %}
+                                        Yes — Assessment v{{ assessment_checkin_evidence.assessment_version }}
+                                    {% else %}
+                                        No linked Check-In snapshot for this assessment
+                                    {% endif %}
+                                </strong>
+                            </div>
+
+                        {% else %}
+
+                            <div class="change-item">
+                                <span>Latest Voluntary Check-In</span>
+                                <strong>No Recent Check-In</strong>
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="privacy-note"
+                         style="margin-top:14px;">
+
+                        <strong>Minimum Necessary View:</strong>
+                        The officer sees only a safe Check-In summary and whether
+                        human support was requested. Individual questionnaire
+                        answers and the confidential free-text note are not shown
+                        on Case Review.
+
+                    </div>
+
+
+                    <div class="change-list"
+                         style="margin-top:14px;">
+
+                        {% if latest_scan %}
+
+                            <div class="change-item">
+                                <span>Latest Usable Wellness Scan</span>
+                                <strong>
+                                    {% if latest_scan.saved_at %}
+                                        {{ latest_scan.saved_at.strftime("%d %b %Y, %I:%M %p") }}
+                                    {% else %}
+                                        Available
+                                    {% endif %}
+                                </strong>
+                            </div>
+
+                            <div class="change-item">
+                                <span>Camera Heart Rate</span>
+                                <strong>
+                                    {% if latest_scan.heart_rate is not none %}
+                                        {{ latest_scan.heart_rate }} BPM
+                                    {% else %}
+                                        Not Available
+                                    {% endif %}
+                                </strong>
+                            </div>
+
+                            <div class="change-item">
+                                <span>Camera Breathing Rate</span>
+                                <strong>
+                                    {% if latest_scan.breathing_rate is not none %}
+                                        {{ latest_scan.breathing_rate }} / min
+                                    {% else %}
+                                        Not Available
+                                    {% endif %}
+                                </strong>
+                            </div>
+
+                            <div class="change-item">
+                                <span>Signal Evidence</span>
+                                <strong>
+                                    {{ latest_scan.signal_quality or "Not recorded" }}
+                                    ·
+                                    {{ latest_scan.confidence or "Not recorded" }}
+                                </strong>
+                            </div>
+
+                            <div class="change-item">
+                                <span>Linked to Current Assessment?</span>
+                                <strong>
+                                    {% if assessment_scan_evidence %}
+                                        Yes — Assessment v{{ assessment_scan_evidence.assessment_version }}
+                                    {% else %}
+                                        No linked scan snapshot for this assessment
+                                    {% endif %}
+                                </strong>
+                            </div>
+
+                        {% else %}
+
+                            <div class="change-item">
+                                <span>Latest Usable Wellness Scan</span>
+                                <strong>No Usable Scan Available</strong>
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="privacy-note"
+                         style="margin-top:14px;">
+
+                        <strong>Camera Measurement Guardrail:</strong>
+                        Heart-rate and breathing-rate estimates are experimental
+                        wellness-support measurements, not medical measurements.
+                        A camera scan does not independently create or raise a
+                        Low, Moderate or Elevated welfare-attention level.
+
+                    </div>
+
+                </div>
+
+
+                <div class="section-box">
+
+                    <h3>Officer Review</h3>
+
+                    {% if current_assessment
+                          and current_assessment.attention_level
+                          in ["Moderate", "Elevated"] %}
+
+                    <form class="case-form">
+
+                        <label for="review-status">
+                            Review Status
+                        </label>
+
+                        <select id="review-status">
+                            <option>Open</option>
+                            <option>In Review</option>
+                            <option>Follow-Up Recommended</option>
+                            <option>Support Initiated</option>
+                            <option>Closed</option>
+                        </select>
+
+
+                        <label for="follow-up">
+                            Follow-Up Action
+                        </label>
+
+                        <select id="follow-up">
+                            <option>No action selected</option>
+                            <option>Confidential welfare conversation</option>
+                            <option>Offer support resources</option>
+                            <option>Review duty / rest context</option>
+                            <option>Schedule follow-up</option>
+                        </select>
+
+
+                        <label for="review-notes">
+                            Officer Notes
+                        </label>
+
+                        <textarea
+                            id="review-notes"
+                            placeholder="Enter minimum necessary review notes..."
+                        ></textarea>
+
+
+                        <div class="case-actions">
+
+                            <a href="{{ url_for(
+                                    'welfare_officer_intervention_recommendations',
+                                    personnel_id=selected_personnel_id
+                                ) }}"
+                               class="action-btn primary-btn"
+                               style="text-decoration:none;">
+                                Intervention & Recommendations
+                            </a>
+
+                            <button
+                                type="button"
+                                class="action-btn primary-btn">
+                                Save Review
+                            </button>
+
+                            <button
+                                type="button"
+                                class="action-btn secondary-btn">
+                                Close Case
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                    {% elif current_assessment
+                            and current_assessment.attention_level == "Low" %}
+
+                    <div class="privacy-note"
+                         style="margin-top:0;">
+                        This assessment is currently Low and is not in the
+                        priority-review queue. A Welfare Officer can still
+                        respond to a direct voluntary support request through
+                        the Support Requests workflow.
+                    </div>
+
+                    {% else %}
+
+                    <div class="privacy-note"
+                         style="margin-top:0;">
+                        Officer case actions are unavailable because the
+                        welfare-attention assessment is currently withheld.
+                    </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="privacy-note">
+                    Case review is for welfare support and authorized human
+                    decision-making only. VeerPulse does not diagnose mental
+                    health conditions and does not make automatic disciplinary
+                    decisions.
+                </div>
+
+            </section>
+
+
+            <!-- CASE HISTORY -->
+            <aside class="case-side-panel">
+
+                <h3>Case Timeline</h3>
+
+                <div class="timeline">
+
+                    <div class="timeline-item">
+                        <strong>Assessment record available</strong>
+                        <span>
+                            {% if current_assessment
+                                  and current_assessment.assessment_time %}
+                                {{ current_assessment.assessment_time.strftime("%d %b %Y, %I:%M %p") }}
+                            {% else %}
+                                Time unavailable
+                            {% endif %}
+                        </span>
+
+                        <p>
+                            Stored assessment version
+                            {% if current_assessment %}
+                                {{ current_assessment.assessment_version }}
+                            {% else %}
+                                —
+                            {% endif %}
+                            was loaded from the single source of truth.
+                        </p>
+                    </div>
+
+                    <div class="timeline-item">
+                        <strong>Evidence status</strong>
+                        <span>
+                            {% if current_assessment %}
+                                {{ current_assessment.evidence_status }}
+                            {% else %}
+                                Unavailable
+                            {% endif %}
+                        </span>
+
+                        <p>
+                            No case action is inferred from missing or unusable
+                            evidence.
+                        </p>
+                    </div>
+
+                    <div class="timeline-item">
+                        <strong>Current workflow state</strong>
+                        <span>
+                            {% if current_assessment
+                                  and current_assessment.attention_level
+                                  in ["Moderate", "Elevated"] %}
+                                Human review available
+                            {% elif current_assessment
+                                    and current_assessment.attention_level == "Low" %}
+                                No priority escalation
+                            {% else %}
+                                Assessment withheld
+                            {% endif %}
+                        </span>
+
+                        <p>
+                            Final welfare and operational decisions remain with
+                            authorized human personnel.
+                        </p>
+                    </div>
+
+                </div>
+
+            </aside>
+
+        </div>
+
+    </main>
+
+</div>
+
+{% include 'partials/welfare_veerassist.html' %}
+
+<script>
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            const badge =
+                document.getElementById(
+                    "case-attention-badge"
+                );
+
+            if (!badge) {
+                return;
+            }
+
+            const level =
+                badge.textContent
+                    .trim()
+                    .toLowerCase();
+
+            badge.classList.remove(
+                "low",
+                "moderate",
+                "elevated",
+                "insufficient"
+            );
+
+            if (level === "low") {
+                badge.classList.add("low");
+            }
+
+            else if (level === "moderate") {
+                badge.classList.add("moderate");
+            }
+
+            else if (level === "elevated") {
+                badge.classList.add("elevated");
+            }
+
+            else {
+                badge.classList.add("insufficient");
+            }
+        }
+    );
+</script>
+
+<script>
+    document.addEventListener(
+        "DOMContentLoaded",
+        async function () {
+
+            const versionElement =
+                document.getElementById(
+                    "replay-assessment-version"
+                );
+
+            const replayBox =
+                document.getElementById(
+                    "decision-replay-content"
+                );
+
+            if (!versionElement || !replayBox) {
+                return;
+            }
+
+            const version =
+                versionElement.textContent.trim();
+
+            if (!version || version === "—") {
+                replayBox.textContent =
+                    "No stored assessment version is available for replay.";
+                return;
+            }
+
+            try {
+                const response =
+                    await fetch(
+                        "/api/welfare-officer/decision-replay/"
+                        + encodeURIComponent(version)
+                    );
+
+                const data =
+                    await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(
+                        data.message
+                        || "Decision Replay could not be loaded."
+                    );
+                }
+
+                if (
+                    data.replay_status
+                    !== "Reproducible Snapshot Available"
+                ) {
+                    replayBox.innerHTML =
+                        "<div class='replay-item'>" +
+                        "<span>Replay Status</span>" +
+                        "<strong>" + data.replay_status + "</strong>" +
+                        "</div>";
+                    return;
+                }
+
+                const snapshot =
+                    data.evidence_snapshot;
+
+                replayBox.innerHTML =
+                    "<span class='replay-status'>"
+                    + data.replay_status
+                    + "</span>" +
+                    "<div class='replay-grid'>" +
+
+                    "<div class='replay-item'><span>Rules Version</span><strong>"
+                    + (snapshot.rules_version || "—")
+                    + "</strong></div>" +
+
+                    "<div class='replay-item'><span>Baseline Context</span><strong>"
+                    + (snapshot.baseline_context || "—")
+                    + "</strong></div>" +
+
+                    "<div class='replay-item'><span>Current Records</span><strong>"
+                    + (snapshot.current_record_count ?? "—")
+                    + "</strong></div>" +
+
+                    "<div class='replay-item'><span>Baseline Records</span><strong>"
+                    + (snapshot.baseline_record_count ?? "—")
+                    + "</strong></div>" +
+
+                    "<div class='replay-item'><span>Duty Delta</span><strong>"
+                    + (snapshot.duty_delta ?? "—")
+                    + "</strong></div>" +
+
+                    "<div class='replay-item'><span>Rest Delta</span><strong>"
+                    + (snapshot.rest_delta ?? "—")
+                    + "</strong></div>" +
+
+                    "<div class='replay-item'><span>Recovery Day Delta</span><strong>"
+                    + (snapshot.recovery_day_delta ?? "—")
+                    + "</strong></div>" +
+
+                    "<div class='replay-item'><span>Concerning Factors</span><strong>"
+                    + (snapshot.concerning_factor_count ?? "—")
+                    + "</strong></div>" +
+
+                    "<div class='replay-item'><span>Severity Score</span><strong>"
+                    + (snapshot.severity_score ?? "—")
+                    + "</strong></div>" +
+
+                    "<div class='replay-item'><span>Result</span><strong>"
+                    + (snapshot.resulting_attention_level || "—")
+                    + "</strong></div>" +
+
+                    "</div>";
+
+                const checkinEvidence =
+                    data.voluntary_checkin_evidence;
+
+                if (checkinEvidence) {
+
+                    replayBox.innerHTML +=
+                        "<div class='replay-grid' style='margin-top:12px;'>" +
+
+                        "<div class='replay-item'><span>Voluntary Check-In</span><strong>"
+                        + (checkinEvidence.summary_label || "Available")
+                        + "</strong></div>" +
+
+                        "<div class='replay-item'><span>Check-In Submitted</span><strong>"
+                        + (checkinEvidence.checkin_submitted_at || "—")
+                        + "</strong></div>" +
+
+                        "<div class='replay-item'><span>Supporting Concern Items</span><strong>"
+                        + (checkinEvidence.concern_count ?? "—")
+                        + "</strong></div>" +
+
+                        "<div class='replay-item'><span>Human Support Requested</span><strong>"
+                        + (checkinEvidence.support_requested ? "Yes" : "No")
+                        + "</strong></div>" +
+
+                        "</div>" +
+
+                        "<div class='privacy-note' style='margin-top:12px;'>"
+                        + (checkinEvidence.guardrail || "")
+                        + "</div>";
+                }
+
+
+                const scanEvidence =
+                    data.wellness_scan_evidence;
+
+                if (scanEvidence) {
+
+                    replayBox.innerHTML +=
+                        "<div class='replay-grid' style='margin-top:12px;'>" +
+
+                        "<div class='replay-item'><span>Wellness Scan</span><strong>"
+                        + (scanEvidence.scan_saved_at || "Available")
+                        + "</strong></div>" +
+
+                        "<div class='replay-item'><span>Camera Heart Rate</span><strong>"
+                        + (
+                            scanEvidence.heart_rate !== null
+                            && scanEvidence.heart_rate !== undefined
+                            ? scanEvidence.heart_rate + " BPM"
+                            : "Not Available"
+                        )
+                        + "</strong></div>" +
+
+                        "<div class='replay-item'><span>Camera Breathing Rate</span><strong>"
+                        + (
+                            scanEvidence.breathing_rate !== null
+                            && scanEvidence.breathing_rate !== undefined
+                            ? scanEvidence.breathing_rate + " / min"
+                            : "Not Available"
+                        )
+                        + "</strong></div>" +
+
+                        "<div class='replay-item'><span>Signal Evidence</span><strong>"
+                        + (scanEvidence.signal_quality || "—")
+                        + " · "
+                        + (scanEvidence.confidence || "—")
+                        + "</strong></div>" +
+
+                        "</div>" +
+
+                        "<div class='privacy-note' style='margin-top:12px;'>"
+                        + (scanEvidence.guardrail || "")
+                        + "</div>";
+                }
+            }
+
+            catch (error) {
+                replayBox.textContent =
+                    error.message;
+            }
+        }
+    );
+</script>
+
+{% include 'partials/welfare_veerassist.html' %}
+
+</body>
+</html>

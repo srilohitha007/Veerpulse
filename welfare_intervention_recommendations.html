@@ -1,0 +1,2306 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Intervention & Recommendations | VeerPulse</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body.dashboard-page {
+            margin: 0;
+            background: #f4f7f9;
+            color: #24394f;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .dashboard-layout {
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .dashboard-main {
+            flex: 1;
+            min-width: 0;
+            min-height: 100vh;
+            padding: 28px 32px 70px;
+            background: #f4f7f9;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .dashboard-label {
+            margin: 0 0 6px;
+            color: #16858c;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .dashboard-header h1 {
+            margin: 0;
+            color: #163b65;
+            font-size: 28px;
+        }
+
+        .officer-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 13px;
+            background: white;
+            border: 1px solid #e1e7ec;
+            border-radius: 12px;
+        }
+
+        .profile-circle {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            background: #163b65;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .officer-profile strong {
+            display: block;
+            color: #24394f;
+            font-size: 11px;
+        }
+
+        .officer-profile p {
+            margin: 3px 0 0;
+            color: #82909c;
+            font-size: 9px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 15px;
+            margin-bottom: 22px;
+        }
+
+        .summary-card {
+            padding: 17px;
+            background: white;
+            border: 1px solid #e4e9ee;
+            border-radius: 12px;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.04);
+        }
+
+        .summary-card span {
+            display: block;
+            margin-bottom: 7px;
+            color: #7d8995;
+            font-size: 10px;
+        }
+
+        .summary-card strong {
+            display: block;
+            color: #163b65;
+            font-size: 20px;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+            align-items: start;
+        }
+
+        .content-grid > div {
+            display: contents;
+        }
+
+        .content-grid .panel {
+            margin-bottom: 0;
+        }
+
+        .panel {
+            padding: 20px;
+            background: white;
+            border: 1px solid #e3e9ee;
+            border-radius: 14px;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.04);
+            margin-bottom: 18px;
+        }
+
+        .panel-label {
+            margin: 0 0 5px;
+            color: #16858c;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+        }
+
+        .panel h2 {
+            margin: 0 0 16px;
+            color: #203c59;
+            font-size: 17px;
+        }
+
+        .recommendation-list {
+            display: flex;
+            flex-direction: column;
+            gap: 11px;
+        }
+
+        .recommendation-card {
+            padding: 15px;
+            background: #f8fafb;
+            border: 1px solid #e5eaee;
+            border-radius: 10px;
+        }
+
+        .recommendation-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .recommendation-card h3 {
+            margin: 0;
+            color: #2b4861;
+            font-size: 12px;
+        }
+
+        .priority-tag {
+            padding: 5px 8px;
+            border-radius: 20px;
+            font-size: 8px;
+            font-weight: 700;
+            background: #fff0d8;
+            color: #986614;
+        }
+
+        .recommendation-card p {
+            margin: 0;
+            color: #657684;
+            font-size: 10px;
+            line-height: 1.7;
+        }
+
+        .recommendation-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            margin-top: 10px;
+        }
+
+        .meta-tag {
+            padding: 5px 8px;
+            border: 1px solid #dde5ea;
+            background: white;
+            border-radius: 20px;
+            color: #617483;
+            font-size: 8px;
+        }
+
+        .action-card {
+            padding: 14px;
+            margin-bottom: 10px;
+            background: #f8fafb;
+            border: 1px solid #e5eaee;
+            border-radius: 9px;
+        }
+
+        .action-card span {
+            display: block;
+            color: #81909c;
+            font-size: 8px;
+            margin-bottom: 5px;
+        }
+
+        .action-card strong {
+            color: #304c65;
+            font-size: 10px;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .action-btn {
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: #163b65;
+            color: white;
+            font-size: 9px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .action-btn.secondary {
+            background: #eef3f6;
+            color: #35526e;
+            border: 1px solid #d9e2e8;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 105px;
+            resize: vertical;
+            padding: 11px;
+            border: 1px solid #dce4e9;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 10px;
+            outline: none;
+        }
+
+        .save-btn {
+            width: 100%;
+            margin-top: 10px;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: #16858c;
+            color: white;
+            font-size: 9px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .human-note {
+            margin-top: 18px;
+            padding: 14px 16px;
+            background: #eef7f7;
+            border-left: 4px solid #16858c;
+            border-radius: 9px;
+            color: #526b70;
+            font-size: 10px;
+            line-height: 1.7;
+        }
+
+        .planner-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .planner-option {
+            padding: 14px;
+            border: 1px solid #e1e7ec;
+            border-radius: 10px;
+            background: #f8fafb;
+        }
+
+        .planner-option h3 {
+            margin: 0 0 8px;
+            color: #2d4b64;
+            font-size: 11px;
+        }
+
+        .planner-option p {
+            margin: 0;
+            color: #667785;
+            font-size: 9px;
+            line-height: 1.6;
+        }
+
+        .planner-status {
+            display: inline-block;
+            margin-top: 9px;
+            padding: 5px 8px;
+            border-radius: 18px;
+            font-size: 8px;
+            font-weight: 700;
+        }
+
+        .planner-action-btn {
+            width: 100%;
+            margin-top: 10px;
+            padding: 9px 10px;
+            border: none;
+            border-radius: 8px;
+            background: #163b65;
+            color: white;
+            font-size: 8px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .planner-action-btn:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        .planner-action-message {
+            margin-top: 10px;
+            min-height: 16px;
+            color: #667785;
+            font-size: 9px;
+        }
+
+        .planner-pass {
+            background: #e8f5ec;
+            color: #3c7d4a;
+        }
+
+        .planner-reject {
+            background: #fdeaea;
+            color: #a54848;
+        }
+
+        .planner-pending {
+            background: #edf1f4;
+            color: #5f6f7e;
+        }
+
+        .workflow-strip {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .workflow-step {
+            padding: 7px 10px;
+            border-radius: 18px;
+            background: #eef3f6;
+            color: #536779;
+            font-size: 8px;
+            font-weight: 700;
+        }
+
+        .workflow-step.active {
+            background: #e8f5ec;
+            color: #3c7d4a;
+        }
+
+        .roster-table-wrap {
+            overflow-x: auto;
+            margin-top: 12px;
+        }
+
+        .roster-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 640px;
+        }
+
+        .roster-table th,
+        .roster-table td {
+            padding: 9px 8px;
+            border-bottom: 1px solid #e7ecef;
+            text-align: left;
+            font-size: 8px;
+        }
+
+        .roster-table th {
+            color: #6a7885;
+            background: #f8fafb;
+        }
+
+        @media (max-width: 900px) {
+            .planner-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 1000px) {
+
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 650px) {
+
+            .dashboard-layout {
+                display: block;
+            }
+
+            .dashboard-main {
+                padding: 18px 14px 70px;
+            }
+
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .summary-grid,
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .recommendation-top {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+
+
+        .personnel-selector-panel {
+            background: white;
+            border: 1px solid #e3e9ee;
+            border-radius: 14px;
+            padding: 22px;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.04);
+        }
+
+        .personnel-selector-panel h2 {
+            margin: 0 0 7px;
+            color: #203c59;
+            font-size: 19px;
+        }
+
+        .personnel-selector-panel > p {
+            margin: 0 0 18px;
+            color: #748392;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .personnel-search-input {
+            width: 100%;
+            padding: 12px 13px;
+            border: 1px solid #d9e1e7;
+            border-radius: 9px;
+            outline: none;
+            font-size: 12px;
+            color: #24394f;
+            margin-bottom: 14px;
+        }
+
+        .personnel-search-input:focus {
+            border-color: #16858c;
+        }
+
+        .personnel-search-results {
+            display: grid;
+            gap: 9px;
+        }
+
+        .personnel-search-card {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            padding: 13px 14px;
+            background: #f8fafb;
+            border: 1px solid #e5eaee;
+            border-radius: 9px;
+            text-decoration: none;
+        }
+
+        .personnel-search-card:hover {
+            background: #f0f7f8;
+            border-color: #cbdfe1;
+        }
+
+        .personnel-search-card strong {
+            display: block;
+            color: #163b65;
+            font-size: 12px;
+        }
+
+        .personnel-search-card span {
+            display: block;
+            margin-top: 4px;
+            color: #7d8995;
+            font-size: 9px;
+        }
+
+        .personnel-search-open {
+            flex: 0 0 auto;
+            padding: 8px 11px;
+            border-radius: 7px;
+            background: #163b65;
+            color: white !important;
+            font-size: 9px !important;
+            font-weight: 700;
+        }
+
+        .selector-message {
+            padding: 13px;
+            background: #f8fafb;
+            border: 1px solid #e5eaee;
+            border-radius: 9px;
+            color: #72808e;
+            font-size: 10px;
+            line-height: 1.6;
+        }
+
+        .selector-error {
+            margin-bottom: 14px;
+            padding: 11px 13px;
+            background: #fff5f5;
+            border-left: 4px solid #c95a5a;
+            border-radius: 8px;
+            color: #8f4a4a;
+            font-size: 10px;
+        }
+
+    </style>
+
+</head>
+
+
+<body class="dashboard-page">
+
+
+<div class="dashboard-layout">
+
+
+    {% include 'partials/welfare_officer_sidebar.html' %}
+
+
+    <main class="dashboard-main">
+
+
+        <header class="dashboard-header">
+
+            <div>
+
+                <p class="dashboard-label">
+                    Human-Centered Welfare Support
+                </p>
+
+                <h1>
+                    Intervention & Recommendations
+                </h1>
+
+            </div>
+
+
+            <div class="officer-profile">
+
+                <div class="profile-circle">
+                    WO
+                </div>
+
+                <div>
+
+                    <strong>
+                        Welfare Officer
+                    </strong>
+
+                    <p>
+                        Authorized Welfare Access
+                    </p>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        {% if not selected_personnel_id %}
+
+        <section class="personnel-selector-panel">
+
+            <p class="panel-label">
+                Scalable Case Selection
+            </p>
+
+            <h2>
+                Select Personnel
+            </h2>
+
+            <p>
+                Search by Personnel ID, name, unit or department.
+                Select a person once and VeerPulse carries the same
+                personnel ID through recommendations, welfare action
+                and follow-up.
+            </p>
+
+            {% if selection_error %}
+            <div class="selector-error">
+                {{ selection_error }}
+            </div>
+            {% endif %}
+
+            <input type="search"
+                   id="intervention-personnel-search"
+                   class="personnel-search-input"
+                   placeholder="Search Personnel ID, name, unit or department..."
+                   autocomplete="off">
+
+            <div id="intervention-personnel-results"
+                 class="personnel-search-results">
+
+                <div class="selector-message">
+                    Loading active personnel...
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <script>
+            document.addEventListener(
+                "DOMContentLoaded",
+                function () {
+
+                    const searchInput =
+                        document.getElementById(
+                            "intervention-personnel-search"
+                        );
+
+                    const resultsBox =
+                        document.getElementById(
+                            "intervention-personnel-results"
+                        );
+
+                    let searchTimer = null;
+
+                    async function loadPersonnel(
+                        searchText
+                    ) {
+
+                        resultsBox.innerHTML =
+                            "<div class='selector-message'>"
+                            + "Searching personnel..."
+                            + "</div>";
+
+                        try {
+
+                            const response =
+                                await fetch(
+                                    "/api/welfare-officer/personnel"
+                                    + "?status=Active"
+                                    + "&limit=50"
+                                    + "&q="
+                                    + encodeURIComponent(
+                                        searchText || ""
+                                    ),
+                                    {
+                                        headers: {
+                                            "Accept":
+                                                "application/json"
+                                        }
+                                    }
+                                );
+
+                            const data =
+                                await response.json();
+
+                            if (
+                                !response.ok
+                                || !data.success
+                            ) {
+                                throw new Error(
+                                    data.message
+                                    || "Unable to load personnel."
+                                );
+                            }
+
+                            const personnel =
+                                data.personnel || [];
+
+                            if (!personnel.length) {
+
+                                resultsBox.innerHTML =
+                                    "<div class='selector-message'>"
+                                    + "No matching active personnel found."
+                                    + "</div>";
+
+                                return;
+                            }
+
+                            resultsBox.innerHTML =
+                                personnel.map(
+                                    function (item) {
+
+                                        const id =
+                                            item.personnel_id
+                                            || "";
+
+                                        const name =
+                                            item.full_name
+                                            || "Name not recorded";
+
+                                        const unit =
+                                            item.unit
+                                            || "Unit not recorded";
+
+                                        const department =
+                                            item.department
+                                            || "Department not recorded";
+
+                                        const href =
+                                            "{{ url_for('welfare_officer_intervention_recommendations') }}"
+                                            + "?personnel_id="
+                                            + encodeURIComponent(id);
+
+                                        return (
+                                            "<a class='personnel-search-card' href='"
+                                            + href
+                                            + "'>"
+                                            + "<div>"
+                                            + "<strong>"
+                                            + id
+                                            + " · "
+                                            + name
+                                            + "</strong>"
+                                            + "<span>"
+                                            + unit
+                                            + " · "
+                                            + department
+                                            + "</span>"
+                                            + "</div>"
+                                            + "<span class='personnel-search-open'>"
+                                            + "Open Recommendations"
+                                            + "</span>"
+                                            + "</a>"
+                                        );
+                                    }
+                                ).join("");
+
+                        }
+
+                        catch (error) {
+
+                            resultsBox.innerHTML =
+                                "<div class='selector-message'>"
+                                + error.message
+                                + "</div>";
+                        }
+                    }
+
+                    searchInput.addEventListener(
+                        "input",
+                        function () {
+
+                            window.clearTimeout(
+                                searchTimer
+                            );
+
+                            searchTimer =
+                                window.setTimeout(
+                                    function () {
+                                        loadPersonnel(
+                                            searchInput.value.trim()
+                                        );
+                                    },
+                                    250
+                                );
+                        }
+                    );
+
+                    loadPersonnel("");
+                }
+            );
+        </script>
+
+        {% else %}
+
+
+        <section class="summary-grid">
+
+            <div class="summary-card">
+                <span>Selected Personnel Case</span>
+
+                <strong>
+                    {{ projection_summary.personnel_id }}
+                </strong>
+
+                {% if selected_personnel
+                      and selected_personnel.full_name %}
+                    <p>
+                        {{ selected_personnel.full_name }}
+                        {% if selected_personnel.unit %}
+                            · {{ selected_personnel.unit }}
+                        {% endif %}
+                    </p>
+                {% endif %}
+
+                <p>
+                    <a href="{{ url_for(
+                            'welfare_officer_intervention_recommendations'
+                        ) }}"
+                       style="color:#16858c;
+                              text-decoration:none;
+                              font-weight:700;">
+                        Choose another case
+                    </a>
+                </p>
+            </div>
+
+            <div class="summary-card">
+                <span>Welfare Attention</span>
+                <strong>
+                    {% if current_assessment %}
+                        {{ current_assessment.attention_level }}
+                    {% else %}
+                        Insufficient Data
+                    {% endif %}
+                </strong>
+            </div>
+
+            <div class="summary-card">
+                <span>72-Hour Roster Data</span>
+                <strong>
+                    {{ projection_summary.upcoming_record_count }}
+                </strong>
+            </div>
+
+            <div class="summary-card">
+                <span>Final Authority</span>
+                <strong>Human</strong>
+            </div>
+
+        </section>
+
+
+        <div class="content-grid">
+
+
+            <div>
+
+
+                <section class="panel">
+
+                    <p class="panel-label">
+                        AI-Assisted Decision Support
+                    </p>
+
+                    <h2>
+                        Available Welfare Support Options
+                    </h2>
+
+
+                    <div class="recommendation-list">
+
+
+                        <div class="recommendation-card">
+
+                            <div class="recommendation-top">
+
+                                <h3>
+                                    Confidential Welfare Conversation
+                                </h3>
+
+                                <span class="priority-tag">
+                                    PRIORITY
+                                </span>
+
+                            </div>
+
+                            <p>
+                                Consider a confidential welfare conversation to
+                                understand current concerns, operational pressure
+                                and whether additional support is required.
+                            </p>
+
+                            <div class="recommendation-meta">
+                                <span class="meta-tag">Human-Led</span>
+                                <span class="meta-tag">Confidential</span>
+                            </div>
+
+                        </div>
+
+
+                        <div class="recommendation-card">
+
+                            <div class="recommendation-top">
+
+                                <h3>
+                                    Duty & Rest Review
+                                </h3>
+
+                                <span class="priority-tag">
+                                    REVIEW
+                                </span>
+
+                            </div>
+
+                            <p>
+                                Consider reviewing current duty allocation and
+                                recovery time. Non-critical workload may be
+                                redistributed where appropriate and subject to
+                                operational requirements.
+                            </p>
+
+                            <div class="recommendation-meta">
+                                <span class="meta-tag">Duty</span>
+                                <span class="meta-tag">Rest</span>
+                                <span class="meta-tag">Operational Approval</span>
+                            </div>
+
+                        </div>
+
+
+                        <div class="recommendation-card">
+
+                            <div class="recommendation-top">
+
+                                <h3>
+                                    Recovery Window
+                                </h3>
+
+                                <span class="priority-tag">
+                                    REVIEW
+                                </span>
+
+                            </div>
+
+                            <p>
+                                Consider providing an appropriate recovery window
+                                where operational conditions allow. VeerPulse does
+                                not automatically change duty schedules.
+                            </p>
+
+                            <div class="recommendation-meta">
+                                <span class="meta-tag">Recovery</span>
+                                <span class="meta-tag">Human Decision</span>
+                            </div>
+
+                        </div>
+
+
+                        <div class="recommendation-card">
+
+                            <div class="recommendation-top">
+
+                                <h3>
+                                    Training Load Review
+                                </h3>
+
+                                <span class="priority-tag">
+                                    CONTEXT
+                                </span>
+
+                            </div>
+
+                            <p>
+                                Review the upcoming five-day training commitment
+                                alongside the existing duty and deployment load.
+                                Any modification remains an authorized human
+                                decision.
+                            </p>
+
+                            <div class="recommendation-meta">
+                                <span class="meta-tag">Training</span>
+                                <span class="meta-tag">Workload</span>
+                            </div>
+
+                        </div>
+
+
+                        <div class="recommendation-card">
+
+                            <div class="recommendation-top">
+
+                                <h3>
+                                    Counselling / Welfare Support
+                                </h3>
+
+                                <span class="priority-tag">
+                                    OPTIONAL
+                                </span>
+
+                            </div>
+
+                            <p>
+                                Where appropriate and with authorized welfare
+                                procedures, offer access to counselling or other
+                                available welfare-support services.
+                            </p>
+
+                            <div class="recommendation-meta">
+                                <span class="meta-tag">Support</span>
+                                <span class="meta-tag">Welfare Referral</span>
+                            </div>
+
+                        </div>
+
+
+                        <div class="recommendation-card">
+
+                            <div class="recommendation-top">
+
+                                <h3>
+                                    Short-Term Follow-Up
+                                </h3>
+
+                                <span class="priority-tag">
+                                    MONITOR
+                                </span>
+
+                            </div>
+
+                            <p>
+                                Continue short-term review of sustained duty, rest,
+                                deployment and voluntary wellness trends after any
+                                human-led support action.
+                            </p>
+
+                            <div class="recommendation-meta">
+                                <span class="meta-tag">Follow-Up</span>
+                                <span class="meta-tag">Trend Review</span>
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+                </section>
+
+
+            </div>
+
+
+            <div>
+
+                <section class="panel">
+
+                    <p class="panel-label">
+                        72-Hour Forward Recovery Projection
+                    </p>
+
+                    <h2>
+                        Constraint-Aware Recovery Window Planner
+                    </h2>
+
+                    <div class="action-card">
+                        <span>Projection Window</span>
+                        <strong>
+                            {{ projection_summary.projection_start.strftime("%d %b %Y") }}
+                            –
+                            {{ projection_summary.projection_end.strftime("%d %b %Y") }}
+                        </strong>
+                    </div>
+
+                    <div class="action-card">
+                        <span>Upcoming Roster Data</span>
+                        <strong>
+                            {{ projection_summary.data_status }}
+                        </strong>
+                    </div>
+
+                    {% if upcoming_records %}
+
+                    <div class="roster-table-wrap">
+                        <table class="roster-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Context</th>
+                                    <th>Duty Hrs</th>
+                                    <th>Training Hrs</th>
+                                    <th>Leave</th>
+                                    <th>Deployment</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in upcoming_records %}
+                                <tr>
+                                    <td>{{ record.record_date.strftime("%d %b") }}</td>
+                                    <td>{{ record.context_type }}</td>
+                                    <td>{{ record.duty_hours if record.duty_hours is not none else "—" }}</td>
+                                    <td>{{ record.training_hours if record.training_hours is not none else "—" }}</td>
+                                    <td>{{ record.leave_status or "—" }}</td>
+                                    <td>{{ "Yes" if record.deployment_active else "No" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="action-card">
+                        <span>Largest Current Recovery Window</span>
+                        <strong id="largest-recovery-window">
+                            Loading...
+                        </strong>
+                    </div>
+
+                    <div class="planner-grid"
+                         id="planner-options-grid">
+
+                        <div class="planner-option">
+                            <h3>Loading planner options...</h3>
+                            <p>
+                                Reading stored roster constraints and calculating
+                                feasible recovery alternatives.
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div class="planner-action-message"
+                         id="planner-action-message"></div>
+
+                    {% else %}
+
+                    <div class="human-note">
+                        VeerPulse cannot produce a credible 72-hour recovery
+                        option because no upcoming roster records are available.
+                        The safe result is <strong>Insufficient Scheduling Data</strong>,
+                        not a fabricated recommendation.
+                    </div>
+
+                    {% endif %}
+
+                    <div class="human-note">
+                        This planner does not predict a percentage reduction in
+                        stress. It only compares feasible scheduling options and
+                        recovery opportunity. Operational constraints and all final
+                        decisions remain with authorized humans.
+                    </div>
+
+                </section>
+
+
+                <section class="panel">
+
+                    <p class="panel-label">
+                        Welfare Action Verification
+                    </p>
+
+                    <h2>
+                        Intervention Delivery State
+                    </h2>
+
+                    <div id="welfare-action-state">
+
+                        <div class="action-card">
+                            <span>Latest Welfare Action</span>
+                            <strong id="latest-action-type">
+                                Loading...
+                            </strong>
+                        </div>
+
+                        <div class="action-card">
+                            <span>Planner Option</span>
+                            <strong id="latest-planner-option">
+                                Loading...
+                            </strong>
+                        </div>
+
+                        <div class="action-card">
+                            <span>Current Verification State</span>
+                            <strong id="latest-action-status">
+                                Loading...
+                            </strong>
+                        </div>
+
+                        <div class="workflow-strip"
+                             id="workflow-strip">
+                            <span class="workflow-step"
+                                  data-state="Planned">
+                                Planned
+                            </span>
+                            <span class="workflow-step"
+                                  data-state="Approved">
+                                Approved
+                            </span>
+                            <span class="workflow-step"
+                                  data-state="Delivered">
+                                Delivered
+                            </span>
+                            <span class="workflow-step"
+                                  data-state="Interrupted">
+                                Interrupted
+                            </span>
+                            <span class="workflow-step"
+                                  data-state="Unable to Verify">
+                                Unable to Verify
+                            </span>
+                            <span class="workflow-step"
+                                  data-state="Follow-Up">
+                                Follow-Up
+                            </span>
+                        </div>
+
+                        <div class="action-card">
+                            <span>Verification Note</span>
+                            <strong id="latest-verification-note">
+                                Loading...
+                            </strong>
+                        </div>
+
+                        <div class="action-card">
+                            <span>Update Delivery State</span>
+
+                            <textarea
+                                id="welfare-action-verification-input"
+                                placeholder="Enter a minimum-necessary verification note before updating the action state..."></textarea>
+
+                            <div class="action-buttons"
+                                 id="welfare-action-state-buttons"
+                                 style="margin-top:10px;">
+
+                                <button type="button"
+                                        class="action-btn"
+                                        data-next-state="Approved">
+                                    Approve
+                                </button>
+
+                                <button type="button"
+                                        class="action-btn"
+                                        data-next-state="Delivered">
+                                    Mark Delivered
+                                </button>
+
+                                <button type="button"
+                                        class="action-btn secondary"
+                                        data-next-state="Interrupted">
+                                    Mark Interrupted
+                                </button>
+
+                                <button type="button"
+                                        class="action-btn secondary"
+                                        data-next-state="Unable to Verify">
+                                    Unable to Verify
+                                </button>
+
+                                <button type="button"
+                                        class="action-btn secondary"
+                                        data-next-state="Follow-Up">
+                                    Send to Follow-Up
+                                </button>
+
+                            </div>
+
+                            <p id="welfare-action-update-message"
+                               style="margin:9px 0 0;color:#6f7d8c;font-size:9px;"></p>
+                        </div>
+
+                        <div class="action-card">
+                            <span>Follow-Up Assessment</span>
+
+                            <strong id="follow-up-assessment-status">
+                                Available after the welfare action enters Follow-Up
+                            </strong>
+
+                            <div class="action-buttons"
+                                 style="margin-top:10px;">
+
+                                <button type="button"
+                                        class="action-btn"
+                                        id="run-follow-up-assessment-btn"
+                                        disabled>
+                                    Recalculate Follow-Up Assessment
+                                </button>
+
+                            </div>
+
+                            <p id="follow-up-assessment-message"
+                               style="margin:9px 0 0;color:#6f7d8c;font-size:9px;">
+                                This creates the next versioned assessment for the same personnel using current stored operational evidence.
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div class="human-note">
+                        Recommendation, approval and actual delivery are separate
+                        states. VeerPulse must not assume that a recommended
+                        welfare action actually occurred.
+                    </div>
+
+                </section>
+
+
+                <section class="panel">
+
+                    <p class="panel-label">
+                        Follow-Up Outcome
+                    </p>
+
+                    <h2>
+                        Before vs After Intervention
+                    </h2>
+
+
+                    <div class="action-card">
+                        <span>Personnel</span>
+                        <strong>
+                            {{ projection_summary.personnel_id }}
+                        </strong>
+                    </div>
+
+
+                    <div class="action-card">
+                        <span>Welfare Action</span>
+                        <strong>
+                            {% if latest_welfare_action %}
+                                {{ latest_welfare_action.action_type }}
+                            {% else %}
+                                No Action Recorded
+                            {% endif %}
+                        </strong>
+                    </div>
+
+
+                    <div class="action-card">
+                        <span>Before Intervention</span>
+                        <strong>
+                            {% if source_assessment %}
+                                Assessment v{{ source_assessment.assessment_version }}
+                                — {{ source_assessment.attention_level }}
+                            {% else %}
+                                Not Available
+                            {% endif %}
+                        </strong>
+                    </div>
+
+
+                    <div class="action-card">
+                        <span>Latest Follow-Up Assessment</span>
+                        <strong>
+                            {% if current_assessment %}
+                                Assessment v{{ current_assessment.assessment_version }}
+                                — {{ current_assessment.attention_level }}
+                            {% else %}
+                                Not Available
+                            {% endif %}
+                        </strong>
+                    </div>
+
+
+                    <div class="action-card">
+                        <span>Follow-Up Result</span>
+                        <strong>
+                            {{ follow_up_comparison.outcome }}
+                        </strong>
+                    </div>
+
+
+                    <div class="action-card">
+                        <span>Attention Change</span>
+                        <strong>
+                            {{ follow_up_comparison.status }}
+                        </strong>
+                    </div>
+
+
+                    <div class="human-note">
+
+                        <strong>
+                            {{ follow_up_comparison.message }}
+                        </strong>
+
+                        <br><br>
+
+                        This comparison describes change in VeerPulse
+                        welfare-attention categories only. It is not a medical,
+                        psychological or disciplinary outcome.
+
+                    </div>
+
+                </section>
+
+
+                <section class="panel">
+
+                    <p class="panel-label">
+                        Authorization
+                    </p>
+
+                    <h2>
+                        Current Review Status
+                    </h2>
+
+
+                    <div class="action-card">
+                        <span>Personnel</span>
+                        <strong>{{ projection_summary.personnel_id }}</strong>
+                    </div>
+
+                    <div class="action-card">
+                        <span>Assessment Confidence</span>
+                        <strong>
+                            {% if current_assessment
+                                  and current_assessment.confidence %}
+                                {{ current_assessment.confidence }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </strong>
+                    </div>
+
+                    <div class="action-card">
+                        <span>Review Status</span>
+                        <strong>
+                            {% if current_assessment
+                                  and current_assessment.attention_level
+                                  in ["Moderate", "Elevated"] %}
+                                Human Review Available
+                            {% elif current_assessment
+                                    and current_assessment.attention_level == "Low" %}
+                                No Priority Escalation
+                            {% else %}
+                                Assessment Withheld
+                            {% endif %}
+                        </strong>
+                    </div>
+
+                    <div class="action-card">
+                        <span>Automatic Intervention</span>
+                        <strong>Disabled</strong>
+                    </div>
+
+                    <div class="action-card">
+                        <span>Final Decision Authority</span>
+                        <strong>Authorized Welfare Officer / Commander</strong>
+                    </div>
+
+                </section>
+
+
+                <section class="panel">
+
+                    <p class="panel-label">
+                        Authorized Actions
+                    </p>
+
+                    <h2>
+                        Record Intervention
+                    </h2>
+
+
+                    <div class="action-buttons">
+
+                        <button class="action-btn">
+                            Welfare Conversation
+                        </button>
+
+                        <button class="action-btn">
+                            Counselling Referral
+                        </button>
+
+                        <button class="action-btn secondary">
+                            Duty / Rest Review
+                        </button>
+
+                        <button class="action-btn secondary">
+                            Training Review
+                        </button>
+
+                        <button class="action-btn secondary">
+                            Support Follow-Up
+                        </button>
+
+                        <button class="action-btn secondary">
+                            Continue Monitoring
+                        </button>
+
+                    </div>
+
+                </section>
+
+
+                <section class="panel">
+
+                    <p class="panel-label">
+                        Recommendation Notes
+                    </p>
+
+                    <h2>
+                        Officer Decision Notes
+                    </h2>
+
+                    <textarea
+                        placeholder="Enter minimum necessary notes about the authorized welfare action..."></textarea>
+
+                    <button class="save-btn">
+                        Save Recommendation Review
+                    </button>
+
+                </section>
+
+
+            </div>
+
+
+        </div>
+
+
+        <div class="human-note">
+
+            <strong>
+                AI Recommendation Only — Final action remains with the
+                authorized Welfare Officer or Commander.
+            </strong>
+
+            Recommendations are decision-support suggestions based on
+            multi-factor welfare context. VeerPulse does not automatically
+            change duty, leave, deployment, training, transfer or posting,
+            and it does not make medical or disciplinary decisions.
+
+        </div>
+
+
+    </main>
+
+
+</div>
+
+<script>
+    document.addEventListener(
+        "DOMContentLoaded",
+        async function () {
+
+            const windowBox =
+                document.getElementById(
+                    "largest-recovery-window"
+                );
+
+            const grid =
+                document.getElementById(
+                    "planner-options-grid"
+                );
+
+            if (!windowBox || !grid) {
+                return;
+            }
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/welfare-officer/recovery-window-analysis?personnel_id="
+                        + encodeURIComponent(
+                            "{{ projection_summary.personnel_id }}"
+                        )
+                    );
+
+                const data =
+                    await response.json();
+
+                if (
+                    !response.ok
+                    || !data.success
+                ) {
+                    throw new Error(
+                        data.message
+                        || "Planner analysis failed."
+                    );
+                }
+
+                if (
+                    data.data_status
+                    !== "Available"
+                ) {
+
+                    windowBox.textContent =
+                        "Insufficient Scheduling Data";
+
+                    grid.innerHTML =
+                        "<div class='planner-option'>" +
+                        "<h3>No planner option generated</h3>" +
+                        "<p>" +
+                        "VeerPulse will not fabricate a recovery window " +
+                        "without sufficient scheduling data." +
+                        "</p>" +
+                        "</div>";
+
+                    return;
+                }
+
+                if (
+                    data.largest_recovery_window
+                ) {
+
+                    windowBox.textContent =
+                        data.largest_recovery_window.hours
+                        + " hrs — "
+                        + data.largest_recovery_window.start
+                        + " to "
+                        + data.largest_recovery_window.end;
+
+                }
+                else {
+
+                    windowBox.textContent =
+                        "No uninterrupted window found";
+                }
+
+                const options =
+                    data.planner_options || [];
+
+                if (!options.length) {
+
+                    grid.innerHTML =
+                        "<div class='planner-option'>" +
+                        "<h3>No alternatives available</h3>" +
+                        "<p>No validated planner alternatives were returned.</p>" +
+                        "</div>";
+
+                    return;
+                }
+
+                grid.innerHTML = "";
+
+                options.forEach(
+                    function (option) {
+
+                        const card =
+                            document.createElement(
+                                "div"
+                            );
+
+                        card.className =
+                            "planner-option";
+
+                        const title =
+                            document.createElement(
+                                "h3"
+                            );
+
+                        title.textContent =
+                            "Option "
+                            + option.option_id
+                            + " — "
+                            + option.title;
+
+                        const reason =
+                            document.createElement(
+                                "p"
+                            );
+
+                        reason.textContent =
+                            option.reason;
+
+                        const effect =
+                            document.createElement(
+                                "p"
+                            );
+
+                        effect.style.marginTop =
+                            "8px";
+
+                        effect.textContent =
+                            "Projected largest recovery window: "
+                            + option.projected_largest_recovery_hours
+                            + " hrs"
+                            + " | Recovery opportunity change: +"
+                            + option.recovery_opportunity_change_hours
+                            + " hrs";
+
+                        const status =
+                            document.createElement(
+                                "span"
+                            );
+
+                        status.className =
+                            "planner-status ";
+
+                        if (
+                            option.status
+                            === "Feasible"
+                        ) {
+                            status.className +=
+                                "planner-pass";
+                        }
+                        else if (
+                            option.status
+                            === "Rejected"
+                        ) {
+                            status.className +=
+                                "planner-reject";
+                        }
+                        else {
+                            status.className +=
+                                "planner-pending";
+                        }
+
+                        status.textContent =
+                            option.status.toUpperCase();
+
+                        card.appendChild(title);
+                        card.appendChild(reason);
+                        card.appendChild(effect);
+                        card.appendChild(status);
+
+                        if (
+                            option.status !== "Rejected"
+                        ) {
+
+                            const planButton =
+                                document.createElement(
+                                    "button"
+                                );
+
+                            planButton.type =
+                                "button";
+
+                            planButton.className =
+                                "planner-action-btn";
+
+                            planButton.textContent =
+                                "Record Option "
+                                + option.option_id
+                                + " as Planned";
+
+                            planButton.addEventListener(
+                                "click",
+                                async function () {
+
+                                    const messageBox =
+                                        document.getElementById(
+                                            "planner-action-message"
+                                        );
+
+                                    planButton.disabled =
+                                        true;
+
+                                    if (messageBox) {
+                                        messageBox.textContent =
+                                            "Recording welfare action...";
+                                    }
+
+                                    try {
+
+                                        const createResponse =
+                                            await fetch(
+                                                "/api/welfare-officer/welfare-actions?personnel_id="
+                        + encodeURIComponent(
+                            "{{ projection_summary.personnel_id }}"
+                        ),
+                                                {
+                                                    method: "POST",
+                                                    headers: {
+                                                        "Content-Type":
+                                                            "application/json"
+                                                    },
+                                                    body: JSON.stringify({
+                                                        personnel_id:
+                                                            "{{ projection_summary.personnel_id }}",
+                                                        action_type:
+                                                            "Recovery Window",
+                                                        planner_option_id:
+                                                            option.option_id,
+                                                        officer_note:
+                                                            "Recovery planner option "
+                                                            + option.option_id
+                                                            + " recorded for human review."
+                                                    })
+                                                }
+                                            );
+
+                                        const createResult =
+                                            await createResponse.json();
+
+                                        if (
+                                            !createResponse.ok
+                                            || !createResult.success
+                                        ) {
+                                            throw new Error(
+                                                createResult.message
+                                                || "Could not record welfare action."
+                                            );
+                                        }
+
+                                        window.location.reload();
+
+                                    }
+
+                                    catch (error) {
+
+                                        planButton.disabled =
+                                            false;
+
+                                        if (messageBox) {
+                                            messageBox.textContent =
+                                                error.message;
+                                        }
+                                    }
+                                }
+                            );
+
+                            card.appendChild(
+                                planButton
+                            );
+                        }
+
+                        grid.appendChild(card);
+                    }
+                );
+
+            }
+
+            catch (error) {
+
+                windowBox.textContent =
+                    "Unavailable";
+
+                grid.innerHTML =
+                    "<div class='planner-option'>" +
+                    "<h3>Planner unavailable</h3>" +
+                    "<p>"
+                    + error.message
+                    + "</p>" +
+                    "</div>";
+            }
+
+            try {
+
+                const actionResponse =
+                    await fetch(
+                        "/api/welfare-officer/welfare-actions?personnel_id="
+                        + encodeURIComponent(
+                            "{{ projection_summary.personnel_id }}"
+                        )
+                    );
+
+                const actionData =
+                    await actionResponse.json();
+
+                const actionTypeBox =
+                    document.getElementById(
+                        "latest-action-type"
+                    );
+
+                const plannerOptionBox =
+                    document.getElementById(
+                        "latest-planner-option"
+                    );
+
+                const actionStatusBox =
+                    document.getElementById(
+                        "latest-action-status"
+                    );
+
+                const verificationBox =
+                    document.getElementById(
+                        "latest-verification-note"
+                    );
+
+                const workflowSteps =
+                    document.querySelectorAll(
+                        "#workflow-strip .workflow-step"
+                    );
+
+                if (
+                    !actionResponse.ok
+                    || !actionData.success
+                ) {
+                    throw new Error(
+                        actionData.message
+                        || "Could not load welfare actions."
+                    );
+                }
+
+                const latestAction =
+                    (
+                        actionData.actions
+                        && actionData.actions.length
+                    )
+                    ? actionData.actions[0]
+                    : null;
+
+                window.currentVeerPulseWelfareAction =
+                    latestAction;
+
+                workflowSteps.forEach(
+                    function (step) {
+                        step.classList.remove(
+                            "active"
+                        );
+                    }
+                );
+
+                if (!latestAction) {
+
+                    if (actionTypeBox) {
+                        actionTypeBox.textContent =
+                            "No action recorded";
+                    }
+
+                    if (plannerOptionBox) {
+                        plannerOptionBox.textContent =
+                            "—";
+                    }
+
+                    if (actionStatusBox) {
+                        actionStatusBox.textContent =
+                            "No Verification State";
+                    }
+
+                    if (verificationBox) {
+                        verificationBox.textContent =
+                            "No welfare action has been recorded.";
+                    }
+
+                    return;
+                }
+
+                if (actionTypeBox) {
+                    actionTypeBox.textContent =
+                        latestAction.action_type;
+                }
+
+                if (plannerOptionBox) {
+                    plannerOptionBox.textContent =
+                        latestAction.planner_option_id
+                        || "—";
+                }
+
+                if (actionStatusBox) {
+                    actionStatusBox.textContent =
+                        latestAction.status;
+                }
+
+                if (verificationBox) {
+                    verificationBox.textContent =
+                        latestAction.verification_note
+                        || "No verification note recorded.";
+                }
+
+                workflowSteps.forEach(
+                    function (step) {
+
+                        if (
+                            step.dataset.state
+                            === latestAction.status
+                        ) {
+                            step.classList.add(
+                                "active"
+                            );
+                        }
+                    }
+                );
+
+                const followUpButton =
+                    document.getElementById(
+                        "run-follow-up-assessment-btn"
+                    );
+
+                const followUpStatus =
+                    document.getElementById(
+                        "follow-up-assessment-status"
+                    );
+
+                if (followUpButton) {
+                    followUpButton.disabled =
+                        latestAction.status !== "Follow-Up";
+                }
+
+                if (followUpStatus) {
+                    if (
+                        latestAction.status === "Follow-Up"
+                    ) {
+                        followUpStatus.textContent =
+                            "Ready — source assessment version "
+                            + (
+                                latestAction.source_assessment_version
+                                || "not recorded"
+                            );
+                    }
+                    else {
+                        followUpStatus.textContent =
+                            "Move the current welfare action to Follow-Up first";
+                    }
+                }
+
+            }
+
+            catch (error) {
+
+                const actionTypeBox =
+                    document.getElementById(
+                        "latest-action-type"
+                    );
+
+                const actionStatusBox =
+                    document.getElementById(
+                        "latest-action-status"
+                    );
+
+                const verificationBox =
+                    document.getElementById(
+                        "latest-verification-note"
+                    );
+
+                if (actionTypeBox) {
+                    actionTypeBox.textContent =
+                        "Unavailable";
+                }
+
+                if (actionStatusBox) {
+                    actionStatusBox.textContent =
+                        "Unavailable";
+                }
+
+                if (verificationBox) {
+                    verificationBox.textContent =
+                        error.message;
+                }
+            }
+
+            const followUpAssessmentButton =
+                document.getElementById(
+                    "run-follow-up-assessment-btn"
+                );
+
+            if (followUpAssessmentButton) {
+
+                followUpAssessmentButton
+                    .addEventListener(
+                        "click",
+                        async function () {
+
+                            const messageBox =
+                                document.getElementById(
+                                    "follow-up-assessment-message"
+                                );
+
+                            const currentAction =
+                                window.currentVeerPulseWelfareAction;
+
+                            if (
+                                !currentAction
+                                || currentAction.status !== "Follow-Up"
+                            ) {
+                                if (messageBox) {
+                                    messageBox.textContent =
+                                        "Move the latest welfare action to Follow-Up before recalculating.";
+                                }
+                                return;
+                            }
+
+                            followUpAssessmentButton.disabled =
+                                true;
+
+                            followUpAssessmentButton.textContent =
+                                "Recalculating...";
+
+                            if (messageBox) {
+                                messageBox.textContent =
+                                    "Reading the latest stored operational evidence for this personnel...";
+                            }
+
+                            try {
+
+                                const response =
+                                    await fetch(
+                                        "/api/welfare-officer/personnel/"
+                                        + encodeURIComponent(
+                                            "{{ projection_summary.personnel_id }}"
+                                        )
+                                        + "/follow-up-assessment",
+                                        {
+                                            method: "POST",
+                                            headers: {
+                                                "Accept":
+                                                    "application/json"
+                                            }
+                                        }
+                                    );
+
+                                const result =
+                                    await response.json();
+
+                                if (
+                                    !response.ok
+                                    || !result.success
+                                ) {
+                                    throw new Error(
+                                        result.message
+                                        || "Could not recalculate the follow-up assessment."
+                                    );
+                                }
+
+                                if (messageBox) {
+                                    messageBox.textContent =
+                                        "Follow-Up Assessment v"
+                                        + result.assessment.assessment_version
+                                        + " created: "
+                                        + result.assessment.attention_level
+                                        + ". Reloading...";
+                                }
+
+                                window.setTimeout(
+                                    function () {
+                                        window.location.reload();
+                                    },
+                                    900
+                                );
+
+                            }
+
+                            catch (error) {
+
+                                followUpAssessmentButton.disabled =
+                                    false;
+
+                                followUpAssessmentButton.textContent =
+                                    "Recalculate Follow-Up Assessment";
+
+                                if (messageBox) {
+                                    messageBox.textContent =
+                                        error.message;
+                                }
+                            }
+                        }
+                    );
+            }
+
+
+            const stateButtons =
+                document.querySelectorAll(
+                    "#welfare-action-state-buttons [data-next-state]"
+                );
+
+            stateButtons.forEach(
+                function (button) {
+
+                    button.addEventListener(
+                        "click",
+                        async function () {
+
+                            const currentAction =
+                                window.currentVeerPulseWelfareAction;
+
+                            const messageBox =
+                                document.getElementById(
+                                    "welfare-action-update-message"
+                                );
+
+                            const noteInput =
+                                document.getElementById(
+                                    "welfare-action-verification-input"
+                                );
+
+                            if (!currentAction) {
+
+                                if (messageBox) {
+                                    messageBox.textContent =
+                                        "No welfare action is available to update.";
+                                }
+
+                                return;
+                            }
+
+                            const nextState =
+                                button.dataset.nextState;
+
+                            const verificationNote =
+                                (
+                                    noteInput
+                                    ? noteInput.value.trim()
+                                    : ""
+                                );
+
+                            if (!verificationNote) {
+
+                                if (messageBox) {
+                                    messageBox.textContent =
+                                        "Please enter a verification note before updating the state.";
+                                }
+
+                                return;
+                            }
+
+                            stateButtons.forEach(
+                                function (item) {
+                                    item.disabled = true;
+                                }
+                            );
+
+                            if (messageBox) {
+                                messageBox.textContent =
+                                    "Updating...";
+                            }
+
+                            try {
+
+                                const response =
+                                    await fetch(
+                                        "/api/welfare-officer/welfare-actions/"
+                                        + currentAction.id
+                                        + "/status",
+                                        {
+                                            method: "POST",
+                                            headers: {
+                                                "Content-Type":
+                                                    "application/json"
+                                            },
+                                            body: JSON.stringify({
+                                                status:
+                                                    nextState,
+                                                verification_note:
+                                                    verificationNote
+                                            })
+                                        }
+                                    );
+
+                                const result =
+                                    await response.json();
+
+                                if (
+                                    !response.ok
+                                    || !result.success
+                                ) {
+                                    throw new Error(
+                                        result.message
+                                        || "Could not update action state."
+                                    );
+                                }
+
+                                window.location.reload();
+
+                            }
+
+                            catch (error) {
+
+                                stateButtons.forEach(
+                                    function (item) {
+                                        item.disabled = false;
+                                    }
+                                );
+
+                                if (messageBox) {
+                                    messageBox.textContent =
+                                        error.message;
+                                }
+                            }
+                        }
+                    );
+                }
+            );
+        }
+    );
+</script>
+
+{% endif %}
+
+{% include 'partials/welfare_veerassist.html' %}
+
+</body>
+
+</html>

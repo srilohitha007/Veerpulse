@@ -1,0 +1,2589 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Personnel Management | VeerPulse</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        .personnel-management-page {
+            color: #24394f;
+        }
+
+        .management-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .management-summary-card {
+            background: #ffffff;
+            border: 1px solid #e5eaee;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.05);
+        }
+
+        .management-summary-card span {
+            display: block;
+            color: #7b8794;
+            font-size: 10px;
+            margin-bottom: 7px;
+        }
+
+        .management-summary-card strong {
+            display: block;
+            color: #163b65;
+            font-size: 24px;
+        }
+
+        .management-summary-card p {
+            margin: 6px 0 0;
+            color: #8b97a2;
+            font-size: 10px;
+            line-height: 1.5;
+        }
+
+        .management-panel {
+            background: #ffffff;
+            border: 1px solid #e5eaee;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.05);
+        }
+
+        .management-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .management-toolbar h2 {
+            margin: 0;
+            color: #163b65;
+            font-size: 20px;
+        }
+
+        .management-toolbar p {
+            margin: 5px 0 0;
+            color: #778594;
+            font-size: 11px;
+            line-height: 1.55;
+        }
+
+        .toolbar-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 9px;
+            flex-wrap: wrap;
+        }
+
+        .search-box,
+        .filter-select,
+        .form-control {
+            border: 1px solid #d8e0e6;
+            background: #ffffff;
+            color: #34495e;
+            border-radius: 8px;
+            padding: 9px 11px;
+            font-size: 11px;
+            outline: none;
+        }
+
+        .search-box:focus,
+        .filter-select:focus,
+        .form-control:focus {
+            border-color: #16858c;
+            box-shadow: 0 0 0 3px rgba(22, 133, 140, 0.08);
+        }
+
+        .search-box {
+            min-width: 210px;
+        }
+
+        .filter-select {
+            min-width: 135px;
+        }
+
+        .primary-btn,
+        .secondary-btn,
+        .table-btn,
+        .danger-outline-btn {
+            border: 0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-family: inherit;
+        }
+
+        .primary-btn {
+            padding: 10px 14px;
+            background: #163b65;
+            color: #ffffff;
+            font-size: 10px;
+        }
+
+        .primary-btn:hover {
+            opacity: 0.92;
+        }
+
+        .excel-btn {
+            padding: 10px 14px;
+            background: #eef6f6;
+            color: #16727a;
+            border: 1px solid #cfe5e3;
+            font-size: 10px;
+        }
+
+        .excel-btn:hover {
+            background: #e4f1f0;
+        }
+
+        .bulk-column-list {
+            margin: 12px 0 0;
+            padding: 12px 14px;
+            border: 1px solid #e4e9ed;
+            border-radius: 9px;
+            background: #f8fafb;
+            color: #526475;
+            font-size: 9px;
+            line-height: 1.7;
+            overflow-wrap: anywhere;
+        }
+
+        .bulk-result-box {
+            display: none;
+            margin-top: 14px;
+            padding: 12px 14px;
+            border-radius: 9px;
+            background: #f8fafb;
+            border: 1px solid #e4e9ed;
+            color: #526475;
+            font-size: 9px;
+            line-height: 1.65;
+            max-height: 220px;
+            overflow-y: auto;
+        }
+
+        .bulk-result-box.show {
+            display: block;
+        }
+
+        .primary-btn:disabled,
+        .secondary-btn:disabled,
+        .table-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.55;
+        }
+
+        .secondary-btn {
+            padding: 9px 13px;
+            background: #eef3f7;
+            color: #31536e;
+            font-size: 10px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border: 1px solid #edf0f2;
+            border-radius: 10px;
+        }
+
+        .personnel-table,
+        .records-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .personnel-table {
+            min-width: 980px;
+        }
+
+        .records-table {
+            min-width: 920px;
+        }
+
+        .personnel-table th,
+        .records-table th {
+            text-align: left;
+            padding: 11px 10px;
+            background: #f7f9fb;
+            border-bottom: 1px solid #e6ebef;
+            color: #6e7d8c;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.35px;
+        }
+
+        .personnel-table td,
+        .records-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #edf0f2;
+            color: #405366;
+            font-size: 10px;
+            vertical-align: middle;
+        }
+
+        .personnel-table tbody tr:last-child td,
+        .records-table tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .personnel-table tbody tr:hover,
+        .records-table tbody tr:hover {
+            background: #fbfcfd;
+        }
+
+        .personnel-name {
+            color: #163b65;
+            font-weight: 700;
+        }
+
+        .muted {
+            color: #8b97a2;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 8px;
+            border-radius: 20px;
+            font-size: 8px;
+            font-weight: 800;
+        }
+
+        .status-active {
+            background: #e9f5f0;
+            color: #26705c;
+        }
+
+        .status-inactive {
+            background: #eef1f4;
+            color: #65717c;
+        }
+
+        .status-transferred {
+            background: #eaf2fb;
+            color: #386b9b;
+        }
+
+        .status-retired {
+            background: #f2edf8;
+            color: #725593;
+        }
+
+        .action-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .table-btn {
+            padding: 7px 9px;
+            background: #eef4f7;
+            color: #31536e;
+            font-size: 9px;
+        }
+
+        .table-btn.dark {
+            background: #163b65;
+            color: #ffffff;
+        }
+
+        .table-btn.teal {
+            background: #e8f5f4;
+            color: #16727a;
+        }
+
+        .empty-state,
+        .loading-state {
+            padding: 28px 18px;
+            text-align: center;
+            color: #7b8794;
+            font-size: 11px;
+        }
+
+        .notice {
+            display: none;
+            margin-bottom: 15px;
+            padding: 11px 13px;
+            border-radius: 8px;
+            font-size: 10px;
+            line-height: 1.5;
+        }
+
+        .notice.success {
+            display: block;
+            background: #eaf5f0;
+            color: #26705c;
+            border: 1px solid #cfe7dc;
+        }
+
+        .notice.error {
+            display: block;
+            background: #fdeeee;
+            color: #a54848;
+            border: 1px solid #f2cece;
+        }
+
+        .access-note {
+            margin-top: 16px;
+            padding: 13px 14px;
+            background: #eef6f6;
+            border-left: 4px solid #16858c;
+            border-radius: 8px;
+            color: #536b70;
+            font-size: 10px;
+            line-height: 1.65;
+        }
+
+        /* MODAL */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1500;
+            background: rgba(18, 35, 53, 0.48);
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .modal-backdrop.open {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        .modal-card {
+            width: min(760px, 100%);
+            margin: 28px auto;
+            background: #ffffff;
+            border-radius: 14px;
+            border: 1px solid #e1e7ec;
+            box-shadow: 0 20px 60px rgba(17, 38, 58, 0.2);
+            overflow: hidden;
+        }
+
+        .modal-card.wide {
+            width: min(1180px, 100%);
+        }
+
+        .modal-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid #e7ebee;
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            align-items: flex-start;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #163b65;
+            font-size: 19px;
+        }
+
+        .modal-header p {
+            margin: 5px 0 0;
+            color: #7b8794;
+            font-size: 10px;
+            line-height: 1.5;
+        }
+
+        .modal-close {
+            border: 0;
+            background: #f1f4f6;
+            color: #51616f;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 17px;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .form-group {
+            min-width: 0;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #526475;
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.35px;
+        }
+
+        .form-control {
+            width: 100%;
+        }
+
+        .field-help {
+            margin: 5px 0 0;
+            color: #8995a0;
+            font-size: 9px;
+            line-height: 1.4;
+        }
+
+        .required {
+            color: #b15454;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 9px;
+            padding: 15px 20px;
+            border-top: 1px solid #e7ebee;
+            background: #fafbfc;
+        }
+
+        .section-divider {
+            height: 1px;
+            background: #e8ecef;
+            margin: 19px 0;
+        }
+
+        /* OPERATIONAL RECORDS */
+        .records-header-grid {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 14px;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .records-personnel-card {
+            padding: 13px 14px;
+            border: 1px solid #e7ebee;
+            border-radius: 9px;
+            background: #f9fbfc;
+        }
+
+        .records-personnel-card strong {
+            display: block;
+            color: #163b65;
+            font-size: 13px;
+        }
+
+        .records-personnel-card span {
+            display: block;
+            margin-top: 3px;
+            color: #7d8995;
+            font-size: 9px;
+        }
+
+        .record-form {
+            display: none;
+            margin-bottom: 18px;
+            padding: 16px;
+            background: #f8fafb;
+            border: 1px solid #e3e8ec;
+            border-radius: 10px;
+        }
+
+        .record-form.open {
+            display: block;
+        }
+
+        .record-form h3 {
+            margin: 0 0 13px;
+            color: #163b65;
+            font-size: 14px;
+        }
+
+        .record-form-actions {
+            margin-top: 14px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .deployment-check {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 37px;
+            color: #526475;
+            font-size: 10px;
+        }
+
+        .deployment-check input {
+            width: 15px;
+            height: 15px;
+        }
+
+        @media (max-width: 1100px) {
+            .management-summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .management-toolbar {
+                flex-direction: column;
+            }
+
+            .toolbar-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .management-summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group.full {
+                grid-column: auto;
+            }
+
+            .search-box,
+            .filter-select {
+                width: 100%;
+                min-width: 0;
+            }
+
+            .toolbar-actions {
+                display: grid;
+                grid-template-columns: 1fr;
+            }
+
+            .records-header-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-backdrop {
+                padding: 8px;
+            }
+
+            .modal-card {
+                margin: 10px auto;
+            }
+        }
+    </style>
+</head>
+
+<body class="dashboard-page personnel-management-page">
+
+<div class="dashboard-layout">
+
+    <!-- SHARED WELFARE OFFICER SIDEBAR -->
+    {% include 'partials/welfare_officer_sidebar.html' %}
+
+    <main class="dashboard-main">
+
+        <header class="dashboard-header">
+            <div>
+                <p class="dashboard-label">
+                    Authorized Personnel Administration
+                </p>
+
+                <h1>
+                    Personnel Management
+                </h1>
+            </div>
+
+            <div class="officer-profile">
+                <div class="profile-circle">
+                    WO
+                </div>
+
+                <div>
+                    <strong>Welfare Officer</strong>
+                    <p>Authorized Access</p>
+                </div>
+            </div>
+        </header>
+
+        <div id="page-notice"
+             class="notice"></div>
+
+        <section class="management-summary-grid">
+            <div class="management-summary-card">
+                <span>Total Personnel</span>
+                <strong id="count-total">—</strong>
+                <p>All registered personnel records</p>
+            </div>
+
+            <div class="management-summary-card">
+                <span>Active</span>
+                <strong id="count-active">—</strong>
+                <p>Currently active personnel accounts</p>
+            </div>
+
+            <div class="management-summary-card">
+                <span>Inactive / Transferred</span>
+                <strong id="count-nonactive">—</strong>
+                <p>Retained for historical continuity</p>
+            </div>
+
+            <div class="management-summary-card">
+                <span>Visible Results</span>
+                <strong id="count-visible">—</strong>
+                <p>Matches current search and filter</p>
+            </div>
+        </section>
+
+        <section class="management-panel">
+
+            <div class="management-toolbar">
+                <div>
+                    <h2>Personnel Directory</h2>
+                    <p>
+                        Add and maintain authorized personnel master records.
+                        Personnel IDs cannot be silently replaced after creation.
+                    </p>
+                </div>
+
+                <div class="toolbar-actions">
+                    <input type="text"
+                           id="personnel-search"
+                           class="search-box"
+                           placeholder="Search ID, name, unit..."
+                           autocomplete="off">
+
+                    <select id="status-filter"
+                            class="filter-select">
+                        <option value="">All Statuses</option>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                        <option value="Transferred">Transferred</option>
+                        <option value="Retired">Retired</option>
+                    </select>
+
+                    <button type="button"
+                            class="secondary-btn excel-btn"
+                            id="download-bulk-template-btn">
+                        Download Excel Template
+                    </button>
+
+                    <button type="button"
+                            class="secondary-btn excel-btn"
+                            id="bulk-import-btn">
+                        Bulk Import Excel
+                    </button>
+
+                    <button type="button"
+                            class="primary-btn"
+                            id="add-personnel-btn">
+                        + Add Personnel
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table class="personnel-table">
+                    <thead>
+                        <tr>
+                            <th>Personnel ID</th>
+                            <th>Name</th>
+                            <th>Rank / Designation</th>
+                            <th>Unit</th>
+                            <th>Department</th>
+                            <th>Status</th>
+                            <th>Posting</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="personnel-table-body">
+                        <tr>
+                            <td colspan="8"
+                                class="loading-state">
+                                Loading personnel records...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="access-note">
+                Personnel records are not permanently deleted from this page.
+                Use Active, Inactive, Transferred or Retired status so historical
+                duty, leave, wellness and audit records remain traceable.
+            </div>
+        </section>
+
+    </main>
+</div>
+
+
+<!-- BULK PERSONNEL EXCEL IMPORT MODAL -->
+<div class="modal-backdrop"
+     id="bulk-import-modal"
+     aria-hidden="true">
+
+    <div class="modal-card"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="bulk-import-title">
+
+        <div class="modal-header">
+            <div>
+                <h2 id="bulk-import-title">
+                    Bulk Import Personnel from Excel
+                </h2>
+
+                <p>
+                    Upload an .xlsx file using the same personnel field names
+                    as the individual Add Personnel form.
+                </p>
+            </div>
+
+            <button type="button"
+                    class="modal-close"
+                    data-close-modal="bulk-import-modal"
+                    aria-label="Close">
+                ×
+            </button>
+        </div>
+
+        <form id="bulk-import-form">
+
+            <div class="modal-body">
+
+                <div id="bulk-import-notice"
+                     class="notice"></div>
+
+                <div class="form-group full">
+
+                    <label>
+                        Excel File
+                        <span class="required">*</span>
+                    </label>
+
+                    <input type="file"
+                           id="bulk-excel-file"
+                           class="form-control"
+                           accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                           required>
+
+                    <p class="field-help">
+                        Maximum 5 MB and 2,000 personnel rows per upload.
+                        Existing Personnel IDs are skipped rather than overwritten.
+                    </p>
+                </div>
+
+                <div class="bulk-column-list">
+                    <strong>Required Excel column names:</strong><br>
+                    personnel_id, full_name, rank_designation, unit,
+                    department, posting_location, joining_date, email,
+                    phone, employment_status, initial_password
+                </div>
+
+                <div class="bulk-column-list">
+                    <strong>Important:</strong>
+                    initial_password must contain at least 8 characters.
+                    The server hashes it before storing it in PostgreSQL.
+                    Use the Excel file only as a controlled temporary import file.
+                </div>
+
+                <div id="bulk-result-box"
+                     class="bulk-result-box"></div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="secondary-btn"
+                        id="bulk-template-inside-btn">
+                    Download Template
+                </button>
+
+                <button type="button"
+                        class="secondary-btn"
+                        data-close-modal="bulk-import-modal">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                        class="primary-btn"
+                        id="bulk-upload-submit">
+                    Import Personnel
+                </button>
+
+            </div>
+
+        </form>
+    </div>
+</div>
+
+
+<!-- ADD PERSONNEL MODAL -->
+<div class="modal-backdrop"
+     id="add-modal"
+     aria-hidden="true">
+
+    <div class="modal-card"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="add-modal-title">
+
+        <div class="modal-header">
+            <div>
+                <h2 id="add-modal-title">
+                    Add Personnel
+                </h2>
+
+                <p>
+                    Create a personnel master record and initial login credentials.
+                </p>
+            </div>
+
+            <button type="button"
+                    class="modal-close"
+                    data-close-modal="add-modal"
+                    aria-label="Close">
+                ×
+            </button>
+        </div>
+
+        <form id="add-personnel-form">
+            <div class="modal-body">
+
+                <div id="add-form-notice"
+                     class="notice"></div>
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label>
+                            Personnel ID
+                            <span class="required">*</span>
+                        </label>
+
+                        <input type="text"
+                               id="add-personnel-id"
+                               class="form-control"
+                               maxlength="50"
+                               required
+                               autocomplete="off"
+                               placeholder="Example: ID1234">
+
+                        <p class="field-help">
+                            Letters, numbers, hyphens and underscores only.
+                        </p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            Full Name
+                            <span class="required">*</span>
+                        </label>
+
+                        <input type="text"
+                               id="add-full-name"
+                               class="form-control"
+                               required
+                               autocomplete="off">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Rank / Designation</label>
+
+                        <input type="text"
+                               id="add-rank"
+                               class="form-control"
+                               autocomplete="off">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Unit</label>
+
+                        <input type="text"
+                               id="add-unit"
+                               class="form-control"
+                               autocomplete="off">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Department / Force</label>
+
+                        <input type="text"
+                               id="add-department"
+                               class="form-control"
+                               autocomplete="off">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Posting Location</label>
+
+                        <input type="text"
+                               id="add-posting"
+                               class="form-control"
+                               autocomplete="off">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Joining Date</label>
+
+                        <input type="date"
+                               id="add-joining-date"
+                               class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Employment Status</label>
+
+                        <select id="add-status"
+                                class="form-control">
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                            <option value="Transferred">Transferred</option>
+                            <option value="Retired">Retired</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email</label>
+
+                        <input type="email"
+                               id="add-email"
+                               class="form-control"
+                               autocomplete="off">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Phone</label>
+
+                        <input type="text"
+                               id="add-phone"
+                               class="form-control"
+                               autocomplete="off">
+                    </div>
+
+                    <div class="form-group full">
+                        <label>
+                            Initial Password
+                            <span class="required">*</span>
+                        </label>
+
+                        <input type="password"
+                               id="add-password"
+                               class="form-control"
+                               minlength="8"
+                               required
+                               autocomplete="new-password">
+
+                        <p class="field-help">
+                            Minimum 8 characters. The backend stores a password hash,
+                            not the plain password.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button"
+                        class="secondary-btn"
+                        data-close-modal="add-modal">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                        class="primary-btn"
+                        id="create-personnel-submit">
+                    Create Personnel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- EDIT PERSONNEL MODAL -->
+<div class="modal-backdrop"
+     id="edit-modal"
+     aria-hidden="true">
+
+    <div class="modal-card"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="edit-modal-title">
+
+        <div class="modal-header">
+            <div>
+                <h2 id="edit-modal-title">
+                    Edit Personnel
+                </h2>
+
+                <p id="edit-modal-subtitle">
+                    Update authorized personnel master data.
+                </p>
+            </div>
+
+            <button type="button"
+                    class="modal-close"
+                    data-close-modal="edit-modal"
+                    aria-label="Close">
+                ×
+            </button>
+        </div>
+
+        <form id="edit-personnel-form">
+            <div class="modal-body">
+
+                <div id="edit-form-notice"
+                     class="notice"></div>
+
+                <input type="hidden"
+                       id="edit-personnel-id">
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label>Personnel ID</label>
+
+                        <input type="text"
+                               id="edit-personnel-id-display"
+                               class="form-control"
+                               disabled>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            Full Name
+                            <span class="required">*</span>
+                        </label>
+
+                        <input type="text"
+                               id="edit-full-name"
+                               class="form-control"
+                               required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Rank / Designation</label>
+
+                        <input type="text"
+                               id="edit-rank"
+                               class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Unit</label>
+
+                        <input type="text"
+                               id="edit-unit"
+                               class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Department / Force</label>
+
+                        <input type="text"
+                               id="edit-department"
+                               class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Posting Location</label>
+
+                        <input type="text"
+                               id="edit-posting"
+                               class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Joining Date</label>
+
+                        <input type="date"
+                               id="edit-joining-date"
+                               class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Employment Status</label>
+
+                        <select id="edit-status"
+                                class="form-control">
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                            <option value="Transferred">Transferred</option>
+                            <option value="Retired">Retired</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email</label>
+
+                        <input type="email"
+                               id="edit-email"
+                               class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Phone</label>
+
+                        <input type="text"
+                               id="edit-phone"
+                               class="form-control">
+                    </div>
+
+                    <div class="form-group full">
+                        <label>Reset Password</label>
+
+                        <input type="password"
+                               id="edit-new-password"
+                               class="form-control"
+                               minlength="8"
+                               autocomplete="new-password"
+                               placeholder="Leave blank to keep current password">
+
+                        <p class="field-help">
+                            Optional. Enter at least 8 characters only when an authorized
+                            password reset is required.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button"
+                        class="secondary-btn"
+                        data-close-modal="edit-modal">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                        class="primary-btn"
+                        id="save-personnel-submit">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- OPERATIONAL RECORDS MODAL -->
+<div class="modal-backdrop"
+     id="records-modal"
+     aria-hidden="true">
+
+    <div class="modal-card wide"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="records-modal-title">
+
+        <div class="modal-header">
+            <div>
+                <h2 id="records-modal-title">
+                    Operational Records
+                </h2>
+
+                <p>
+                    Authorized duty, rest, training, deployment and leave context.
+                </p>
+            </div>
+
+            <button type="button"
+                    class="modal-close"
+                    data-close-modal="records-modal"
+                    aria-label="Close">
+                ×
+            </button>
+        </div>
+
+        <div class="modal-body">
+
+            <div id="record-form-notice"
+                 class="notice"></div>
+
+            <div class="records-header-grid">
+
+                <div class="records-personnel-card">
+                    <strong id="records-personnel-name">
+                        —
+                    </strong>
+
+                    <span id="records-personnel-meta">
+                        —
+                    </span>
+                </div>
+
+                <button type="button"
+                        class="primary-btn"
+                        id="new-record-btn">
+                    + Add Operational Record
+                </button>
+            </div>
+
+            <form id="operational-record-form"
+                  class="record-form">
+
+                <h3 id="record-form-title">
+                    Add Operational Record
+                </h3>
+
+                <input type="hidden"
+                       id="record-edit-id">
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label>
+                            Record Date
+                            <span class="required">*</span>
+                        </label>
+
+                        <input type="date"
+                               id="record-date"
+                               class="form-control"
+                               required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Context Type</label>
+
+                        <select id="record-context"
+                                class="form-control">
+                            <option value="Station Duty">Station Duty</option>
+                            <option value="Deployment">Deployment</option>
+                            <option value="Training">Training</option>
+                            <option value="Administrative Duty">Administrative Duty</option>
+                            <option value="Approved Leave">Approved Leave</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Duty Hours</label>
+
+                        <input type="number"
+                               id="record-duty-hours"
+                               class="form-control"
+                               min="0"
+                               max="24"
+                               step="0.5"
+                               placeholder="0 - 24">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Rest Hours</label>
+
+                        <input type="number"
+                               id="record-rest-hours"
+                               class="form-control"
+                               min="0"
+                               max="24"
+                               step="0.5"
+                               placeholder="0 - 24">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Training Hours</label>
+
+                        <input type="number"
+                               id="record-training-hours"
+                               class="form-control"
+                               min="0"
+                               max="24"
+                               step="0.5"
+                               placeholder="0 - 24">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Leave Status</label>
+
+                        <select id="record-leave-status"
+                                class="form-control">
+                            <option value="">None</option>
+                            <option value="Approved Leave">Approved Leave</option>
+                            <option value="Rest Day">Rest Day</option>
+                            <option value="Leave Cancelled">Leave Cancelled</option>
+                            <option value="Leave Denied">Leave Denied</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group full">
+                        <label>Deployment</label>
+
+                        <label class="deployment-check">
+                            <input type="checkbox"
+                                   id="record-deployment">
+                            Deployment is active for this record
+                        </label>
+                    </div>
+                </div>
+
+                <div class="record-form-actions">
+                    <button type="button"
+                            class="secondary-btn"
+                            id="cancel-record-btn">
+                        Cancel
+                    </button>
+
+                    <button type="submit"
+                            class="primary-btn"
+                            id="save-record-btn">
+                        Save Record
+                    </button>
+                </div>
+            </form>
+
+            <div class="table-wrap">
+                <table class="records-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Duty</th>
+                            <th>Rest</th>
+                            <th>Training</th>
+                            <th>Context</th>
+                            <th>Deployment</th>
+                            <th>Leave Status</th>
+                            <th>Source</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="records-table-body">
+                        <tr>
+                            <td colspan="9"
+                                class="loading-state">
+                                Select a personnel record.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button"
+                    class="secondary-btn"
+                    data-close-modal="records-modal">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+(function () {
+    "use strict";
+
+    let personnelItems = [];
+    let selectedPersonnel = null;
+    let operationalRecords = [];
+
+    const $ = (id) => document.getElementById(id);
+
+    function escapeHtml(value) {
+        return String(value ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    function showNotice(element, message, type) {
+        element.className = "notice " + type;
+        element.textContent = message;
+    }
+
+    function clearNotice(element) {
+        element.className = "notice";
+        element.textContent = "";
+    }
+
+    function openModal(id) {
+        const modal = $(id);
+        modal.classList.add("open");
+        modal.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+    }
+
+    function closeModal(id) {
+        const modal = $(id);
+        modal.classList.remove("open");
+        modal.setAttribute("aria-hidden", "true");
+
+        if (!document.querySelector(".modal-backdrop.open")) {
+            document.body.style.overflow = "";
+        }
+    }
+
+    function statusClass(status) {
+        const value = String(status || "").toLowerCase();
+
+        if (value === "active") {
+            return "status-active";
+        }
+
+        if (value === "transferred") {
+            return "status-transferred";
+        }
+
+        if (value === "retired") {
+            return "status-retired";
+        }
+
+        return "status-inactive";
+    }
+
+    function formatDate(value) {
+        if (!value) {
+            return "—";
+        }
+
+        const parsed = new Date(value);
+
+        if (Number.isNaN(parsed.getTime())) {
+            return value;
+        }
+
+        return parsed.toLocaleDateString(
+            undefined,
+            {
+                day: "2-digit",
+                month: "short",
+                year: "numeric"
+            }
+        );
+    }
+
+    async function readJson(response) {
+        let data;
+
+        try {
+            data = await response.json();
+        }
+        catch (error) {
+            throw new Error(
+                "The server returned an unreadable response."
+            );
+        }
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.message || "The request could not be completed."
+            );
+        }
+
+        return data;
+    }
+
+    function updateSummary() {
+        const total = personnelItems.length;
+        const active = personnelItems.filter(
+            (item) => item.employment_status === "Active"
+        ).length;
+
+        const nonActive = personnelItems.filter(
+            (item) =>
+                item.employment_status === "Inactive"
+                || item.employment_status === "Transferred"
+        ).length;
+
+        $("count-total").textContent = total;
+        $("count-active").textContent = active;
+        $("count-nonactive").textContent = nonActive;
+    }
+
+    function filteredPersonnel() {
+        const query = $("personnel-search")
+            .value
+            .trim()
+            .toLowerCase();
+
+        const status = $("status-filter").value;
+
+        return personnelItems.filter((item) => {
+            const searchable = [
+                item.personnel_id,
+                item.full_name,
+                item.rank_designation,
+                item.unit,
+                item.department,
+                item.posting_location
+            ]
+                .filter(Boolean)
+                .join(" ")
+                .toLowerCase();
+
+            const searchMatch =
+                !query || searchable.includes(query);
+
+            const statusMatch =
+                !status
+                || item.employment_status === status;
+
+            return searchMatch && statusMatch;
+        });
+    }
+
+    function renderPersonnel() {
+        const items = filteredPersonnel();
+        const body = $("personnel-table-body");
+
+        $("count-visible").textContent = items.length;
+
+        if (!items.length) {
+            body.innerHTML = `
+                <tr>
+                    <td colspan="8"
+                        class="empty-state">
+                        No personnel records match the current search or filter.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        body.innerHTML = items.map((item) => `
+            <tr>
+                <td>
+                    <strong>${escapeHtml(item.personnel_id)}</strong>
+                </td>
+
+                <td>
+                    <span class="personnel-name">
+                        ${escapeHtml(item.full_name || "—")}
+                    </span>
+                </td>
+
+                <td>
+                    ${escapeHtml(item.rank_designation || "—")}
+                </td>
+
+                <td>
+                    ${escapeHtml(item.unit || "—")}
+                </td>
+
+                <td>
+                    ${escapeHtml(item.department || "—")}
+                </td>
+
+                <td>
+                    <span class="status-badge ${statusClass(item.employment_status)}">
+                        ${escapeHtml(item.employment_status || "Unknown")}
+                    </span>
+                </td>
+
+                <td>
+                    ${escapeHtml(item.posting_location || "—")}
+                </td>
+
+                <td>
+                    <div class="action-group">
+                        <button type="button"
+                                class="table-btn dark"
+                                data-action="edit"
+                                data-id="${escapeHtml(item.personnel_id)}">
+                            Edit
+                        </button>
+
+                        <button type="button"
+                                class="table-btn teal"
+                                data-action="records"
+                                data-id="${escapeHtml(item.personnel_id)}">
+                            Operational Records
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `).join("");
+    }
+
+    async function loadPersonnel() {
+        const body = $("personnel-table-body");
+
+        body.innerHTML = `
+            <tr>
+                <td colspan="8"
+                    class="loading-state">
+                    Loading personnel records...
+                </td>
+            </tr>
+        `;
+
+        try {
+            const response = await fetch(
+                "/api/welfare-officer/personnel",
+                {
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+            const data = await readJson(response);
+
+            personnelItems = Array.isArray(data.personnel)
+                ? data.personnel
+                : [];
+
+            updateSummary();
+            renderPersonnel();
+        }
+        catch (error) {
+            body.innerHTML = `
+                <tr>
+                    <td colspan="8"
+                        class="empty-state">
+                        ${escapeHtml(error.message)}
+                    </td>
+                </tr>
+            `;
+
+            showNotice(
+                $("page-notice"),
+                error.message,
+                "error"
+            );
+        }
+    }
+
+    function clearAddForm() {
+        $("add-personnel-form").reset();
+        $("add-status").value = "Active";
+        clearNotice($("add-form-notice"));
+    }
+
+    function getAddPayload() {
+        return {
+            personnel_id:
+                $("add-personnel-id").value.trim(),
+            full_name:
+                $("add-full-name").value.trim(),
+            rank_designation:
+                $("add-rank").value.trim(),
+            unit:
+                $("add-unit").value.trim(),
+            department:
+                $("add-department").value.trim(),
+            posting_location:
+                $("add-posting").value.trim(),
+            joining_date:
+                $("add-joining-date").value,
+            email:
+                $("add-email").value.trim(),
+            phone:
+                $("add-phone").value.trim(),
+            employment_status:
+                $("add-status").value,
+            initial_password:
+                $("add-password").value
+        };
+    }
+
+    async function createPersonnel(event) {
+        event.preventDefault();
+
+        clearNotice($("add-form-notice"));
+
+        const submit = $("create-personnel-submit");
+        submit.disabled = true;
+        submit.textContent = "Creating...";
+
+        try {
+            const response = await fetch(
+                "/api/welfare-officer/personnel",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify(
+                        getAddPayload()
+                    )
+                }
+            );
+
+            const data = await readJson(response);
+
+            closeModal("add-modal");
+            clearAddForm();
+
+            showNotice(
+                $("page-notice"),
+                data.message
+                    || "Personnel record created successfully.",
+                "success"
+            );
+
+            await loadPersonnel();
+        }
+        catch (error) {
+            showNotice(
+                $("add-form-notice"),
+                error.message,
+                "error"
+            );
+        }
+        finally {
+            submit.disabled = false;
+            submit.textContent = "Create Personnel";
+        }
+    }
+
+    async function openEditPersonnel(personnelId) {
+        clearNotice($("edit-form-notice"));
+
+        try {
+            const response = await fetch(
+                "/api/welfare-officer/personnel/"
+                + encodeURIComponent(personnelId),
+                {
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+            const data = await readJson(response);
+            const item = data.personnel;
+
+            $("edit-personnel-id").value =
+                item.personnel_id || "";
+            $("edit-personnel-id-display").value =
+                item.personnel_id || "";
+            $("edit-full-name").value =
+                item.full_name || "";
+            $("edit-rank").value =
+                item.rank_designation || "";
+            $("edit-unit").value =
+                item.unit || "";
+            $("edit-department").value =
+                item.department || "";
+            $("edit-posting").value =
+                item.posting_location || "";
+            $("edit-joining-date").value =
+                item.joining_date || "";
+            $("edit-email").value =
+                item.email || "";
+            $("edit-phone").value =
+                item.phone || "";
+            $("edit-status").value =
+                item.employment_status || "Active";
+            $("edit-new-password").value = "";
+
+            $("edit-modal-subtitle").textContent =
+                "Editing "
+                + item.personnel_id
+                + " — changes are audit logged.";
+
+            openModal("edit-modal");
+        }
+        catch (error) {
+            showNotice(
+                $("page-notice"),
+                error.message,
+                "error"
+            );
+        }
+    }
+
+    function getEditPayload() {
+        return {
+            full_name:
+                $("edit-full-name").value.trim(),
+            rank_designation:
+                $("edit-rank").value.trim(),
+            unit:
+                $("edit-unit").value.trim(),
+            department:
+                $("edit-department").value.trim(),
+            posting_location:
+                $("edit-posting").value.trim(),
+            joining_date:
+                $("edit-joining-date").value,
+            email:
+                $("edit-email").value.trim(),
+            phone:
+                $("edit-phone").value.trim(),
+            employment_status:
+                $("edit-status").value,
+            new_password:
+                $("edit-new-password").value
+        };
+    }
+
+    async function savePersonnel(event) {
+        event.preventDefault();
+
+        const personnelId =
+            $("edit-personnel-id").value;
+
+        clearNotice($("edit-form-notice"));
+
+        const submit = $("save-personnel-submit");
+        submit.disabled = true;
+        submit.textContent = "Saving...";
+
+        try {
+            const response = await fetch(
+                "/api/welfare-officer/personnel/"
+                + encodeURIComponent(personnelId),
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify(
+                        getEditPayload()
+                    )
+                }
+            );
+
+            const data = await readJson(response);
+
+            closeModal("edit-modal");
+
+            showNotice(
+                $("page-notice"),
+                data.message
+                    || "Personnel record updated successfully.",
+                "success"
+            );
+
+            await loadPersonnel();
+        }
+        catch (error) {
+            showNotice(
+                $("edit-form-notice"),
+                error.message,
+                "error"
+            );
+        }
+        finally {
+            submit.disabled = false;
+            submit.textContent = "Save Changes";
+        }
+    }
+
+    function resetRecordForm() {
+        $("operational-record-form").reset();
+        $("record-edit-id").value = "";
+        $("record-context").value = "Station Duty";
+        $("record-form-title").textContent =
+            "Add Operational Record";
+        $("save-record-btn").textContent =
+            "Save Record";
+        clearNotice($("record-form-notice"));
+    }
+
+    function showNewRecordForm() {
+        resetRecordForm();
+
+        const today = new Date();
+        const localDate = new Date(
+            today.getTime()
+            - today.getTimezoneOffset() * 60000
+        )
+            .toISOString()
+            .slice(0, 10);
+
+        $("record-date").value = localDate;
+
+        $("operational-record-form")
+            .classList.add("open");
+    }
+
+    function hideRecordForm() {
+        $("operational-record-form")
+            .classList.remove("open");
+
+        resetRecordForm();
+    }
+
+    function renderOperationalRecords() {
+        const body = $("records-table-body");
+
+        if (!operationalRecords.length) {
+            body.innerHTML = `
+                <tr>
+                    <td colspan="9"
+                        class="empty-state">
+                        No operational records are available for this personnel.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        body.innerHTML = operationalRecords.map((item) => `
+            <tr>
+                <td>${escapeHtml(formatDate(item.record_date))}</td>
+                <td>${item.duty_hours ?? "—"}</td>
+                <td>${item.rest_hours ?? "—"}</td>
+                <td>${item.training_hours ?? "—"}</td>
+                <td>${escapeHtml(item.context_type || "—")}</td>
+                <td>${item.deployment_active ? "Yes" : "No"}</td>
+                <td>${escapeHtml(item.leave_status || "—")}</td>
+                <td>${escapeHtml(item.source_type || "—")}</td>
+                <td>
+                    <button type="button"
+                            class="table-btn"
+                            data-record-action="edit"
+                            data-record-id="${item.id}">
+                        Edit
+                    </button>
+                </td>
+            </tr>
+        `).join("");
+    }
+
+    async function loadOperationalRecords(personnelId) {
+        const body = $("records-table-body");
+
+        body.innerHTML = `
+            <tr>
+                <td colspan="9"
+                    class="loading-state">
+                    Loading operational records...
+                </td>
+            </tr>
+        `;
+
+        try {
+            const response = await fetch(
+                "/api/welfare-officer/personnel/"
+                + encodeURIComponent(personnelId)
+                + "/operational-records",
+                {
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+            const data = await readJson(response);
+
+            operationalRecords =
+                Array.isArray(data.records)
+                ? data.records
+                : [];
+
+            renderOperationalRecords();
+        }
+        catch (error) {
+            body.innerHTML = `
+                <tr>
+                    <td colspan="9"
+                        class="empty-state">
+                        ${escapeHtml(error.message)}
+                    </td>
+                </tr>
+            `;
+
+            showNotice(
+                $("record-form-notice"),
+                error.message,
+                "error"
+            );
+        }
+    }
+
+    async function openOperationalRecords(personnelId) {
+        selectedPersonnel = personnelItems.find(
+            (item) => item.personnel_id === personnelId
+        ) || null;
+
+        if (!selectedPersonnel) {
+            showNotice(
+                $("page-notice"),
+                "Personnel record not found in the current directory.",
+                "error"
+            );
+            return;
+        }
+
+        $("records-personnel-name").textContent =
+            selectedPersonnel.full_name
+            || selectedPersonnel.personnel_id;
+
+        $("records-personnel-meta").textContent =
+            selectedPersonnel.personnel_id
+            + " | "
+            + (selectedPersonnel.rank_designation || "No rank/designation")
+            + " | "
+            + (selectedPersonnel.unit || "No unit");
+
+        hideRecordForm();
+        openModal("records-modal");
+
+        await loadOperationalRecords(
+            selectedPersonnel.personnel_id
+        );
+    }
+
+    function editOperationalRecord(recordId) {
+        const item = operationalRecords.find(
+            (record) => Number(record.id) === Number(recordId)
+        );
+
+        if (!item) {
+            showNotice(
+                $("record-form-notice"),
+                "Operational record not found.",
+                "error"
+            );
+            return;
+        }
+
+        clearNotice($("record-form-notice"));
+
+        $("record-edit-id").value = item.id;
+        $("record-date").value =
+            item.record_date || "";
+        $("record-duty-hours").value =
+            item.duty_hours ?? "";
+        $("record-rest-hours").value =
+            item.rest_hours ?? "";
+        $("record-training-hours").value =
+            item.training_hours ?? "";
+        $("record-context").value =
+            item.context_type || "Station Duty";
+        $("record-deployment").checked =
+            Boolean(item.deployment_active);
+        $("record-leave-status").value =
+            item.leave_status || "";
+
+        if (
+            !$("record-context")
+                .querySelector(
+                    `option[value="${CSS.escape(item.context_type || "")}"]`
+                )
+            && item.context_type
+        ) {
+            const option = document.createElement("option");
+            option.value = item.context_type;
+            option.textContent = item.context_type;
+            $("record-context").appendChild(option);
+            $("record-context").value = item.context_type;
+        }
+
+        if (
+            item.leave_status
+            && !$("record-leave-status")
+                .querySelector(
+                    `option[value="${CSS.escape(item.leave_status)}"]`
+                )
+        ) {
+            const option = document.createElement("option");
+            option.value = item.leave_status;
+            option.textContent = item.leave_status;
+            $("record-leave-status").appendChild(option);
+            $("record-leave-status").value =
+                item.leave_status;
+        }
+
+        $("record-form-title").textContent =
+            "Edit Operational Record";
+
+        $("save-record-btn").textContent =
+            "Save Changes";
+
+        $("operational-record-form")
+            .classList.add("open");
+
+        $("operational-record-form")
+            .scrollIntoView({
+                behavior: "smooth",
+                block: "nearest"
+            });
+    }
+
+    function optionalNumber(id) {
+        const value = $(id).value.trim();
+
+        if (value === "") {
+            return null;
+        }
+
+        return Number(value);
+    }
+
+    function getRecordPayload() {
+        return {
+            record_date:
+                $("record-date").value,
+            duty_hours:
+                optionalNumber("record-duty-hours"),
+            rest_hours:
+                optionalNumber("record-rest-hours"),
+            training_hours:
+                optionalNumber("record-training-hours"),
+            context_type:
+                $("record-context").value,
+            deployment_active:
+                $("record-deployment").checked,
+            leave_status:
+                $("record-leave-status").value
+        };
+    }
+
+    async function saveOperationalRecord(event) {
+        event.preventDefault();
+
+        if (!selectedPersonnel) {
+            return;
+        }
+
+        clearNotice($("record-form-notice"));
+
+        const editId =
+            $("record-edit-id").value;
+
+        const submit = $("save-record-btn");
+        submit.disabled = true;
+        submit.textContent =
+            editId ? "Saving..." : "Creating...";
+
+        try {
+            let url;
+            let method;
+
+            if (editId) {
+                url =
+                    "/api/welfare-officer/operational-records/"
+                    + encodeURIComponent(editId);
+                method = "PUT";
+            }
+            else {
+                url =
+                    "/api/welfare-officer/personnel/"
+                    + encodeURIComponent(
+                        selectedPersonnel.personnel_id
+                    )
+                    + "/operational-records";
+                method = "POST";
+            }
+
+            const response = await fetch(
+                url,
+                {
+                    method,
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify(
+                        getRecordPayload()
+                    )
+                }
+            );
+
+            const data = await readJson(response);
+
+            showNotice(
+                $("record-form-notice"),
+                data.message
+                    || "Operational record saved successfully.",
+                "success"
+            );
+
+            hideRecordForm();
+
+            await loadOperationalRecords(
+                selectedPersonnel.personnel_id
+            );
+        }
+        catch (error) {
+            showNotice(
+                $("record-form-notice"),
+                error.message,
+                "error"
+            );
+        }
+        finally {
+            submit.disabled = false;
+            submit.textContent =
+                $("record-edit-id").value
+                ? "Save Changes"
+                : "Save Record";
+        }
+    }
+
+    function downloadBulkTemplate() {
+        window.location.href =
+            "/api/welfare-officer/personnel/bulk-template";
+    }
+
+    function clearBulkImport() {
+        $("bulk-import-form").reset();
+        clearNotice(
+            $("bulk-import-notice")
+        );
+
+        const resultBox =
+            $("bulk-result-box");
+
+        resultBox.className =
+            "bulk-result-box";
+
+        resultBox.innerHTML = "";
+    }
+
+    function renderBulkRows(
+        title,
+        rows
+    ) {
+        if (!rows || !rows.length) {
+            return "";
+        }
+
+        const lines = rows
+            .slice(0, 25)
+            .map((item) => {
+                const id =
+                    item.personnel_id
+                    ? " (" + escapeHtml(
+                        item.personnel_id
+                      ) + ")"
+                    : "";
+
+                return (
+                    "Row "
+                    + escapeHtml(item.row)
+                    + id
+                    + ": "
+                    + escapeHtml(
+                        item.reason || "Not imported"
+                    )
+                );
+            })
+            .join("<br>");
+
+        const more =
+            rows.length > 25
+                ? "<br>...and "
+                  + (rows.length - 25)
+                  + " more."
+                : "";
+
+        return (
+            "<strong>"
+            + escapeHtml(title)
+            + "</strong><br>"
+            + lines
+            + more
+            + "<br><br>"
+        );
+    }
+
+    async function bulkImportPersonnel(
+        event
+    ) {
+        event.preventDefault();
+
+        clearNotice(
+            $("bulk-import-notice")
+        );
+
+        const file =
+            $("bulk-excel-file").files[0];
+
+        if (!file) {
+            showNotice(
+                $("bulk-import-notice"),
+                "Please select an Excel .xlsx file.",
+                "error"
+            );
+            return;
+        }
+
+        if (
+            !file.name
+                .toLowerCase()
+                .endsWith(".xlsx")
+        ) {
+            showNotice(
+                $("bulk-import-notice"),
+                "Only .xlsx Excel files are supported.",
+                "error"
+            );
+            return;
+        }
+
+        const formData =
+            new FormData();
+
+        formData.append(
+            "file",
+            file
+        );
+
+        const submit =
+            $("bulk-upload-submit");
+
+        submit.disabled = true;
+        submit.textContent =
+            "Importing...";
+
+        try {
+            const response = await fetch(
+                "/api/welfare-officer/personnel/bulk-import",
+                {
+                    method: "POST",
+                    body: formData,
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+            const data =
+                await readJson(response);
+
+            showNotice(
+                $("bulk-import-notice"),
+                (
+                    data.message
+                    || "Excel import completed."
+                )
+                + " Created: "
+                + (data.created_count ?? 0)
+                + ", Skipped: "
+                + (data.skipped_count ?? 0)
+                + ", Rejected: "
+                + (data.rejected_count ?? 0)
+                + ".",
+                "success"
+            );
+
+            const resultBox =
+                $("bulk-result-box");
+
+            resultBox.innerHTML =
+                renderBulkRows(
+                    "Skipped rows",
+                    data.skipped_rows
+                )
+                + renderBulkRows(
+                    "Rejected rows",
+                    data.rejected_rows
+                );
+
+            if (
+                (data.skipped_rows
+                    && data.skipped_rows.length)
+                || (
+                    data.rejected_rows
+                    && data.rejected_rows.length
+                )
+            ) {
+                resultBox.className =
+                    "bulk-result-box show";
+            }
+            else {
+                resultBox.className =
+                    "bulk-result-box";
+            }
+
+            await loadPersonnel();
+        }
+        catch (error) {
+            showNotice(
+                $("bulk-import-notice"),
+                error.message,
+                "error"
+            );
+        }
+        finally {
+            submit.disabled = false;
+            submit.textContent =
+                "Import Personnel";
+        }
+    }
+
+    $("download-bulk-template-btn")
+        .addEventListener(
+            "click",
+            downloadBulkTemplate
+        );
+
+    $("bulk-template-inside-btn")
+        .addEventListener(
+            "click",
+            downloadBulkTemplate
+        );
+
+    $("bulk-import-btn")
+        .addEventListener(
+            "click",
+            function () {
+                clearBulkImport();
+                openModal(
+                    "bulk-import-modal"
+                );
+            }
+        );
+
+    $("bulk-import-form")
+        .addEventListener(
+            "submit",
+            bulkImportPersonnel
+        );
+
+
+    $("add-personnel-btn")
+        .addEventListener(
+            "click",
+            function () {
+                clearAddForm();
+                openModal("add-modal");
+            }
+        );
+
+    $("add-personnel-form")
+        .addEventListener(
+            "submit",
+            createPersonnel
+        );
+
+    $("edit-personnel-form")
+        .addEventListener(
+            "submit",
+            savePersonnel
+        );
+
+    $("personnel-search")
+        .addEventListener(
+            "input",
+            renderPersonnel
+        );
+
+    $("status-filter")
+        .addEventListener(
+            "change",
+            renderPersonnel
+        );
+
+    $("new-record-btn")
+        .addEventListener(
+            "click",
+            showNewRecordForm
+        );
+
+    $("cancel-record-btn")
+        .addEventListener(
+            "click",
+            hideRecordForm
+        );
+
+    $("operational-record-form")
+        .addEventListener(
+            "submit",
+            saveOperationalRecord
+        );
+
+    document.addEventListener(
+        "click",
+        function (event) {
+            const closeButton =
+                event.target.closest("[data-close-modal]");
+
+            if (closeButton) {
+                closeModal(
+                    closeButton.dataset.closeModal
+                );
+                return;
+            }
+
+            const personnelButton =
+                event.target.closest("[data-action]");
+
+            if (personnelButton) {
+                const action =
+                    personnelButton.dataset.action;
+                const personnelId =
+                    personnelButton.dataset.id;
+
+                if (action === "edit") {
+                    openEditPersonnel(personnelId);
+                }
+                else if (action === "records") {
+                    openOperationalRecords(personnelId);
+                }
+
+                return;
+            }
+
+            const recordButton =
+                event.target.closest(
+                    "[data-record-action='edit']"
+                );
+
+            if (recordButton) {
+                editOperationalRecord(
+                    recordButton.dataset.recordId
+                );
+            }
+        }
+    );
+
+    document.querySelectorAll(".modal-backdrop")
+        .forEach((modal) => {
+            modal.addEventListener(
+                "click",
+                function (event) {
+                    if (event.target === modal) {
+                        closeModal(modal.id);
+                    }
+                }
+            );
+        });
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+            if (event.key !== "Escape") {
+                return;
+            }
+
+            document.querySelectorAll(
+                ".modal-backdrop.open"
+            ).forEach((modal) => {
+                closeModal(modal.id);
+            });
+        }
+    );
+
+    loadPersonnel();
+})();
+</script>
+
+</body>
+</html>

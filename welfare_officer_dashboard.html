@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Welfare Officer Dashboard | VeerPulse</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body.dashboard-page {
+            margin: 0;
+            background: #f4f7f9;
+            color: #24394f;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .dashboard-layout {
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .dashboard-main {
+            flex: 1;
+            min-width: 0;
+            min-height: 100vh;
+            padding: 28px 32px 70px;
+            background: #f4f7f9;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .dashboard-label,
+        .panel-label {
+            margin: 0 0 6px;
+            color: #16858c;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .dashboard-header h1 {
+            margin: 0;
+            color: #163b65;
+            font-size: 28px;
+        }
+
+        .officer-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 13px;
+            background: white;
+            border: 1px solid #e1e7ec;
+            border-radius: 12px;
+        }
+
+        .profile-circle {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            background: #163b65;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .officer-profile strong {
+            display: block;
+            color: #24394f;
+            font-size: 11px;
+        }
+
+        .officer-profile p {
+            margin: 3px 0 0;
+            color: #82909c;
+            font-size: 9px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 15px;
+            margin-bottom: 22px;
+        }
+
+        .summary-card,
+        .panel {
+            background: white;
+            border: 1px solid #e4e9ee;
+            border-radius: 12px;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.04);
+        }
+
+        .summary-card {
+            padding: 17px;
+        }
+
+        .summary-card span {
+            display: block;
+            margin-bottom: 7px;
+            color: #7d8995;
+            font-size: 10px;
+        }
+
+        .summary-card strong {
+            display: block;
+            color: #163b65;
+            font-size: 23px;
+        }
+
+        .summary-card p {
+            margin: 6px 0 0;
+            color: #8a96a1;
+            font-size: 9px;
+            line-height: 1.5;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+
+        .panel {
+            padding: 20px;
+            min-width: 0;
+        }
+
+        .panel h2 {
+            margin: 0 0 6px;
+            color: #163b65;
+            font-size: 17px;
+        }
+
+        .panel-description {
+            margin: 0 0 17px;
+            color: #7a8794;
+            font-size: 10px;
+            line-height: 1.6;
+        }
+
+        .distribution-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .distribution-card {
+            padding: 13px;
+            border: 1px solid #e6ebef;
+            border-radius: 9px;
+            background: #f8fafb;
+        }
+
+        .distribution-card span {
+            display: block;
+            color: #7c8995;
+            font-size: 9px;
+            margin-bottom: 5px;
+        }
+
+        .distribution-card strong {
+            color: #163b65;
+            font-size: 18px;
+        }
+
+        .status-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .status-item {
+            padding: 13px 14px;
+            border: 1px solid #e6ebef;
+            border-radius: 9px;
+            background: #f8fafb;
+        }
+
+        .status-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .status-top strong {
+            color: #29455f;
+            font-size: 11px;
+        }
+
+        .status-top span {
+            color: #89949f;
+            font-size: 8px;
+            white-space: nowrap;
+        }
+
+        .status-item p {
+            margin: 7px 0 0;
+            color: #71808c;
+            font-size: 9px;
+            line-height: 1.55;
+        }
+
+        .tag-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 9px;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 5px 8px;
+            border-radius: 16px;
+            background: #eef3f6;
+            color: #586b7d;
+            font-size: 8px;
+            font-weight: 700;
+        }
+
+        .tag.low {
+            background: #eaf5ef;
+            color: #2d745c;
+        }
+
+        .tag.moderate {
+            background: #fff3d7;
+            color: #936713;
+        }
+
+        .tag.elevated {
+            background: #fdeaea;
+            color: #a54848;
+        }
+
+        .item-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            margin-top: 10px;
+        }
+
+        .action-btn {
+            display: inline-block;
+            padding: 7px 10px;
+            border-radius: 7px;
+            background: #163b65;
+            color: white;
+            text-decoration: none;
+            font-size: 8px;
+            font-weight: 700;
+        }
+
+        .action-btn.secondary {
+            background: #eef3f6;
+            color: #34495e;
+        }
+
+        .empty-state {
+            padding: 14px;
+            border: 1px dashed #d4dde4;
+            border-radius: 9px;
+            background: #f8fafb;
+            color: #788693;
+            font-size: 10px;
+            line-height: 1.6;
+        }
+
+        .dashboard-note {
+            padding: 14px 15px;
+            background: #eef6f6;
+            border-left: 4px solid #16858c;
+            border-radius: 9px;
+            color: #536b70;
+            font-size: 10px;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 1050px) {
+
+            .summary-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+
+            .dashboard-main {
+                padding: 18px 14px 70px;
+            }
+
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .summary-grid,
+            .distribution-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body class="dashboard-page">
+
+<div class="dashboard-layout">
+
+    {% include 'partials/welfare_officer_sidebar.html' %}
+
+
+    <main class="dashboard-main">
+
+        <header class="dashboard-header">
+
+            <div>
+
+                <p class="dashboard-label">
+                    Authorized Welfare Monitoring
+                </p>
+
+                <h1>
+                    Dashboard
+                </h1>
+
+            </div>
+
+
+            <div class="officer-profile">
+
+                <div class="profile-circle">
+                    WO
+                </div>
+
+                <div>
+                    <strong>Welfare Officer</strong>
+                    <p>Authorized Access</p>
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- LIVE DATABASE SUMMARY -->
+        <section class="summary-grid">
+
+            <div class="summary-card">
+                <span>Total Personnel</span>
+                <strong>
+                    {{ dashboard_summary.total_personnel }}
+                </strong>
+                <p>
+                    {{ dashboard_summary.active_personnel }}
+                    currently marked Active
+                </p>
+            </div>
+
+            <div class="summary-card">
+                <span>Current Assessments</span>
+                <strong>
+                    {{ dashboard_summary.current_assessments }}
+                </strong>
+                <p>
+                    Current DB-backed WelfareAssessment records
+                </p>
+            </div>
+
+            <div class="summary-card">
+                <span>Current Welfare Alerts</span>
+                <strong>
+                    {{ dashboard_summary.current_alerts }}
+                </strong>
+                <p>
+                    Moderate + Elevated current assessments
+                </p>
+            </div>
+
+            <div class="summary-card">
+                <span>Elevated Priority</span>
+                <strong>
+                    {{ dashboard_summary.elevated }}
+                </strong>
+                <p>
+                    Current Elevated assessments requiring human review
+                </p>
+            </div>
+
+            <div class="summary-card">
+                <span>Open Support Requests</span>
+                <strong>
+                    {{ dashboard_summary.open_support_requests }}
+                </strong>
+                <p>
+                    Open / In Review / In Progress voluntary requests
+                </p>
+            </div>
+
+            <div class="summary-card">
+                <span>Follow-Up Actions</span>
+                <strong>
+                    {{ dashboard_summary.follow_ups }}
+                </strong>
+                <p>
+                    Welfare actions currently in Follow-Up
+                </p>
+            </div>
+
+        </section>
+
+
+        <div class="content-grid">
+
+            <!-- CURRENT PRIORITY QUEUE -->
+            <section class="panel">
+
+                <p class="panel-label">
+                    Live Priority Queue
+                </p>
+
+                <h2>
+                    Personnel Requiring Attention
+                </h2>
+
+                <p class="panel-description">
+                    Current Moderate and Elevated assessments are shown here.
+                    Elevated cases are listed first. Final interpretation remains
+                    with an authorized human.
+                </p>
+
+
+                <div class="status-list">
+
+                    {% for item in recent_alerts %}
+
+                    {% set assessment = item.assessment %}
+                    {% set personnel = item.personnel %}
+
+                    <div class="status-item">
+
+                        <div class="status-top">
+
+                            <strong>
+                                {{ assessment.personnel_id }}
+                                {% if personnel and personnel.full_name %}
+                                    · {{ personnel.full_name }}
+                                {% endif %}
+                            </strong>
+
+                            <span>
+                                {% if assessment.assessment_time %}
+                                    {{ assessment.assessment_time.strftime("%d %b %Y, %I:%M %p") }}
+                                {% endif %}
+                            </span>
+
+                        </div>
+
+                        <p>
+                            {% if assessment.explanation_summary %}
+                                {{ assessment.explanation_summary }}
+                            {% else %}
+                                Current welfare assessment is available for authorized review.
+                            {% endif %}
+                        </p>
+
+                        <div class="tag-row">
+
+                            <span class="tag {{ assessment.attention_level | lower }}">
+                                {{ assessment.attention_level }}
+                            </span>
+
+                            <span class="tag">
+                                {{ personnel.unit if personnel and personnel.unit else "Unit not recorded" }}
+                            </span>
+
+                            <span class="tag">
+                                Assessment v{{ assessment.assessment_version }}
+                            </span>
+
+                        </div>
+
+                        <div class="item-actions">
+
+                            <a href="{{ url_for(
+                                    'welfare_officer_case_review',
+                                    personnel_id=assessment.personnel_id
+                                ) }}"
+                               class="action-btn">
+                                Open Case
+                            </a>
+
+                            <a href="{{ url_for(
+                                    'welfare_officer_operational_review',
+                                    personnel_id=assessment.personnel_id
+                                ) }}"
+                               class="action-btn secondary">
+                                Operational Context
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                    {% else %}
+
+                    <div class="empty-state">
+                        No current Moderate or Elevated welfare assessments are
+                        stored. The priority queue will update automatically when
+                        a current assessment reaches one of those levels.
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="item-actions"
+                     style="margin-top:14px;">
+
+                    <a href="{{ url_for('welfare_officer_priority_review') }}"
+                       class="action-btn">
+                        Open Full Priority Review
+                    </a>
+
+                    <a href="{{ url_for('welfare_officer_alerts') }}"
+                       class="action-btn secondary">
+                        View Welfare Alerts
+                    </a>
+
+                </div>
+
+            </section>
+
+
+            <!-- ASSESSMENT DISTRIBUTION -->
+            <section class="panel">
+
+                <p class="panel-label">
+                    Current Assessment Distribution
+                </p>
+
+                <h2>
+                    Welfare Attention Overview
+                </h2>
+
+                <p class="panel-description">
+                    Counts use only current stored assessments. Personnel without
+                    a current assessment are shown separately instead of being
+                    assigned an artificial welfare level.
+                </p>
+
+
+                <div class="distribution-grid">
+
+                    <div class="distribution-card">
+                        <span>Low</span>
+                        <strong>
+                            {{ attention_counts["Low"] }}
+                        </strong>
+                    </div>
+
+                    <div class="distribution-card">
+                        <span>Moderate</span>
+                        <strong>
+                            {{ attention_counts["Moderate"] }}
+                        </strong>
+                    </div>
+
+                    <div class="distribution-card">
+                        <span>Elevated</span>
+                        <strong>
+                            {{ attention_counts["Elevated"] }}
+                        </strong>
+                    </div>
+
+                    <div class="distribution-card">
+                        <span>Insufficient Data</span>
+                        <strong>
+                            {{ attention_counts["Insufficient Data"] }}
+                        </strong>
+                    </div>
+
+                    <div class="distribution-card">
+                        <span>No Current Assessment</span>
+                        <strong>
+                            {{ dashboard_summary.no_current_assessment }}
+                        </strong>
+                    </div>
+
+                    <div class="distribution-card">
+                        <span>Priority Queue</span>
+                        <strong>
+                            {{ dashboard_summary.priority_cases }}
+                        </strong>
+                    </div>
+
+                </div>
+
+            </section>
+
+        </div>
+
+
+        <div class="content-grid">
+
+            <!-- SUPPORT REQUESTS -->
+            <section class="panel">
+
+                <p class="panel-label">
+                    Voluntary Support
+                </p>
+
+                <h2>
+                    Open Support Requests
+                </h2>
+
+                <p class="panel-description">
+                    Recent open or active requests submitted voluntarily by personnel.
+                </p>
+
+
+                <div class="status-list">
+
+                    {% for item in recent_support %}
+
+                    {% set request_item = item.request %}
+                    {% set personnel = item.personnel %}
+
+                    <div class="status-item">
+
+                        <div class="status-top">
+
+                            <strong>
+                                {{ request_item.personnel_id }}
+                                {% if personnel and personnel.full_name %}
+                                    · {{ personnel.full_name }}
+                                {% endif %}
+                            </strong>
+
+                            <span>
+                                {{ request_item.status }}
+                            </span>
+
+                        </div>
+
+                        <p>
+                            {{ request_item.support_category }}
+                            · Priority: {{ request_item.priority }}
+                        </p>
+
+                        <div class="tag-row">
+
+                            <span class="tag">
+                                {{ request_item.contact_method }}
+                            </span>
+
+                            <span class="tag">
+                                {{ request_item.status }}
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    {% else %}
+
+                    <div class="empty-state">
+                        No open support requests are currently stored.
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="item-actions"
+                     style="margin-top:14px;">
+
+                    <a href="{{ url_for('welfare_officer_support_requests') }}"
+                       class="action-btn">
+                        Open Support Requests
+                    </a>
+
+                </div>
+
+            </section>
+
+
+            <!-- FOLLOW UPS -->
+            <section class="panel">
+
+                <p class="panel-label">
+                    Follow-Up Workflow
+                </p>
+
+                <h2>
+                    Follow-Ups Requiring Attention
+                </h2>
+
+                <p class="panel-description">
+                    Welfare actions already moved to Follow-Up. These can proceed
+                    to the next assessment without changing the selected personnel ID.
+                </p>
+
+
+                <div class="status-list">
+
+                    {% for item in recent_followups %}
+
+                    {% set action = item.action %}
+                    {% set personnel = item.personnel %}
+
+                    <div class="status-item">
+
+                        <div class="status-top">
+
+                            <strong>
+                                {{ action.personnel_id }}
+                                {% if personnel and personnel.full_name %}
+                                    · {{ personnel.full_name }}
+                                {% endif %}
+                            </strong>
+
+                            <span>
+                                Follow-Up
+                            </span>
+
+                        </div>
+
+                        <p>
+                            {{ action.action_type }}
+                            {% if action.source_assessment_version %}
+                                · From assessment v{{ action.source_assessment_version }}
+                            {% endif %}
+                        </p>
+
+                        <div class="item-actions">
+
+                            <a href="{{ url_for(
+                                    'welfare_officer_intervention_recommendations',
+                                    personnel_id=action.personnel_id
+                                ) }}"
+                               class="action-btn">
+                                Open Follow-Up
+                            </a>
+
+                            <a href="{{ url_for(
+                                    'welfare_officer_reports',
+                                    personnel_id=action.personnel_id
+                                ) }}"
+                               class="action-btn secondary">
+                                View Timeline
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                    {% else %}
+
+                    <div class="empty-state">
+                        No welfare actions are currently in Follow-Up.
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </section>
+
+        </div>
+
+
+        <div class="dashboard-note">
+
+            <strong>
+                Human-Centered Decision Support.
+            </strong>
+
+            Dashboard counts are calculated from the current PostgreSQL records.
+            Missing assessments are not converted into Low, Moderate or Elevated
+            values. VeerPulse supports authorized welfare review and does not make
+            automatic medical, disciplinary, leave, deployment, transfer, posting
+            or training decisions.
+
+        </div>
+
+    </main>
+
+</div>
+
+
+{% include 'partials/welfare_veerassist.html' %}
+
+</body>
+
+</html>

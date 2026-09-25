@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Privacy & Audit | VeerPulse</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        .privacy-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+
+        .privacy-card {
+            background: white;
+            border: 1px solid #e6ebef;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.05);
+        }
+
+        .privacy-card h2 {
+            margin: 0 0 8px;
+            color: #163b65;
+            font-size: 17px;
+        }
+
+        .privacy-card p {
+            margin: 0;
+            color: #6f7d8c;
+            font-size: 11px;
+            line-height: 1.7;
+        }
+
+        .privacy-list {
+            display: flex;
+            flex-direction: column;
+            gap: 11px;
+            margin-top: 15px;
+        }
+
+        .privacy-item {
+            padding: 12px 13px;
+            border: 1px solid #e8edf1;
+            border-radius: 9px;
+            background: #fbfcfd;
+        }
+
+        .privacy-item strong {
+            display: block;
+            color: #34495e;
+            font-size: 11px;
+            margin-bottom: 4px;
+        }
+
+        .privacy-item span {
+            display: block;
+            color: #7e8995;
+            font-size: 10px;
+            line-height: 1.6;
+        }
+
+        .audit-panel {
+            background: white;
+            border: 1px solid #e6ebef;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.05);
+        }
+
+        .audit-panel h2 {
+            margin: 0;
+            color: #163b65;
+            font-size: 18px;
+        }
+
+        .audit-panel > p {
+            margin: 5px 0 16px;
+            color: #7a8794;
+            font-size: 11px;
+        }
+
+        .audit-table-wrap {
+            overflow-x: auto;
+        }
+
+        .audit-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+
+        .audit-table th,
+        .audit-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #edf0f2;
+            text-align: left;
+            font-size: 10px;
+        }
+
+        .audit-table th {
+            color: #637180;
+            background: #f8fafb;
+        }
+
+        .audit-table td {
+            color: #53616f;
+        }
+
+        .access-badge {
+            display: inline-block;
+            padding: 5px 8px;
+            border-radius: 20px;
+            background: #eaf5f3;
+            color: #26756f;
+            font-size: 9px;
+            font-weight: 700;
+        }
+
+        .privacy-note {
+            margin-top: 18px;
+            padding: 14px 15px;
+            background: #eef6f6;
+            border-left: 4px solid #16858c;
+            border-radius: 9px;
+            color: #536b70;
+            font-size: 11px;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 850px) {
+            .privacy-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .audit-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .audit-summary-card {
+            background: white;
+            border: 1px solid #e6ebef;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.04);
+        }
+
+        .audit-summary-card span {
+            display: block;
+            color: #7b8793;
+            font-size: 9px;
+            margin-bottom: 6px;
+        }
+
+        .audit-summary-card strong {
+            display: block;
+            color: #163b65;
+            font-size: 21px;
+        }
+
+        .audit-summary-card p {
+            margin: 5px 0 0;
+            color: #89949f;
+            font-size: 8px;
+            line-height: 1.45;
+        }
+
+        .audit-filter-bar {
+            display: grid;
+            grid-template-columns: minmax(180px, 1fr) minmax(220px, 1fr) auto auto;
+            gap: 10px;
+            margin: 14px 0 18px;
+            align-items: end;
+        }
+
+        .audit-filter-field label {
+            display: block;
+            margin-bottom: 5px;
+            color: #6c7884;
+            font-size: 9px;
+            font-weight: 700;
+        }
+
+        .audit-filter-field input,
+        .audit-filter-field select {
+            width: 100%;
+            padding: 9px 10px;
+            border: 1px solid #dce4ea;
+            border-radius: 8px;
+            background: white;
+            color: #34495e;
+            font-size: 10px;
+        }
+
+        .audit-filter-btn {
+            display: inline-block;
+            padding: 9px 12px;
+            border: none;
+            border-radius: 8px;
+            background: #163b65;
+            color: white;
+            text-decoration: none;
+            font-size: 9px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .audit-filter-btn.secondary {
+            background: #eef3f6;
+            color: #405466;
+        }
+
+        .audit-empty {
+            padding: 16px;
+            border: 1px dashed #d6dfe6;
+            border-radius: 9px;
+            background: #f8fafb;
+            color: #7b8793;
+            font-size: 10px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 1000px) {
+            .audit-summary-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .audit-filter-bar {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .audit-summary-grid,
+            .audit-filter-bar {
+                grid-template-columns: 1fr;
+            }
+        }
+
+
+    </style>
+</head>
+
+<body class="dashboard-page">
+
+<div class="dashboard-layout">
+
+    <!-- SHARED WELFARE OFFICER SIDEBAR -->
+    {% include 'partials/welfare_officer_sidebar.html' %}
+
+<!-- MAIN -->
+    <main class="dashboard-main">
+
+        <header class="dashboard-header">
+
+            <div>
+                <p class="dashboard-label">
+                    Responsible Welfare Data Access
+                </p>
+
+                <h1>
+                    Privacy & Audit
+                </h1>
+            </div>
+
+            <div class="officer-profile">
+
+                <div class="profile-circle">
+                    WO
+                </div>
+
+                <div>
+                    <strong>Welfare Officer</strong>
+                    <p>Authorized Access</p>
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <section class="audit-summary-grid">
+
+            <div class="audit-summary-card">
+                <span>Total Audit Events</span>
+                <strong>
+                    {{ privacy_audit_summary.total_events }}
+                </strong>
+                <p>Stored PostgreSQL audit records</p>
+            </div>
+
+            <div class="audit-summary-card">
+                <span>Events · Last 24 Hours</span>
+                <strong>
+                    {{ privacy_audit_summary.recent_24h }}
+                </strong>
+                <p>Recent recorded activity</p>
+            </div>
+
+            <div class="audit-summary-card">
+                <span>Personnel Referenced</span>
+                <strong>
+                    {{ privacy_audit_summary.personnel_referenced }}
+                </strong>
+                <p>Distinct Personnel IDs appearing in audit events</p>
+            </div>
+
+            <div class="audit-summary-card">
+                <span>HRMS-Style Imports</span>
+                <strong>
+                    {{ privacy_audit_summary.hrms_imports }}
+                </strong>
+                <p>Recorded prototype operational-import events</p>
+            </div>
+
+            <div class="audit-summary-card">
+                <span>Assessment Recalculations</span>
+                <strong>
+                    {{ privacy_audit_summary.assessment_recalculations }}
+                </strong>
+                <p>Versioned welfare-assessment recalculations</p>
+            </div>
+
+            <div class="audit-summary-card">
+                <span>Decision Replay Access</span>
+                <strong>
+                    {{ privacy_audit_summary.decision_replays }}
+                </strong>
+                <p>Recorded assessment replay access events</p>
+            </div>
+
+            <div class="audit-summary-card">
+                <span>Welfare Action Updates</span>
+                <strong>
+                    {{ privacy_audit_summary.welfare_action_updates }}
+                </strong>
+                <p>Recorded welfare-action status changes</p>
+            </div>
+
+            <div class="audit-summary-card">
+                <span>Rows in Current View</span>
+                <strong>
+                    {{ privacy_audit_summary.visible_rows }}
+                </strong>
+                <p>Maximum 100 most recent matching events</p>
+            </div>
+
+        </section>
+
+
+        <section class="privacy-grid">
+
+            <div class="privacy-card">
+
+                <h2>Privacy Principles</h2>
+
+                <p>
+                    VeerPulse is designed around minimum-necessary access,
+                    confidentiality and human welfare support.
+                </p>
+
+                <div class="privacy-list">
+
+                    <div class="privacy-item">
+                        <strong>Minimum Necessary Data</strong>
+                        <span>
+                            Welfare officers should only access information
+                            required for legitimate support and case review.
+                        </span>
+                    </div>
+
+                    <div class="privacy-item">
+                        <strong>Role-Based Access</strong>
+                        <span>
+                            Personnel and Welfare Officer portals have separate
+                            permissions and protected routes.
+                        </span>
+                    </div>
+
+                    <div class="privacy-item">
+                        <strong>Voluntary Wellness Inputs</strong>
+                        <span>
+                            Optional check-ins and camera-derived physiological
+                            estimates should be used only with consent and as
+                            supporting context.
+                        </span>
+                    </div>
+
+                    <div class="privacy-item">
+                        <strong>Human Review Required</strong>
+                        <span>
+                            Welfare alerts must be reviewed by authorized
+                            personnel before any support action is considered.
+                        </span>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="privacy-card">
+
+                <h2>Responsible Use</h2>
+
+                <p>
+                    Welfare information must not be treated as a medical
+                    diagnosis or automatic disciplinary evidence.
+                </p>
+
+                <div class="privacy-list">
+
+                    <div class="privacy-item">
+                        <strong>Non-Disciplinary Purpose</strong>
+                        <span>
+                            Welfare signals are intended for support, workload
+                            awareness and timely human follow-up.
+                        </span>
+                    </div>
+
+                    <div class="privacy-item">
+                        <strong>Explainable Alerts</strong>
+                        <span>
+                            Officers should be able to understand which pattern
+                            changes contributed to a welfare alert.
+                        </span>
+                    </div>
+
+                    <div class="privacy-item">
+                        <strong>No Medical Diagnosis</strong>
+                        <span>
+                            VeerPulse does not diagnose stress disorders,
+                            mental illness or other medical conditions.
+                        </span>
+                    </div>
+
+                    <div class="privacy-item">
+                        <strong>Confidential Handling</strong>
+                        <span>
+                            Sensitive information should only be shared with
+                            authorized personnel where necessary.
+                        </span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- LIVE AUDIT -->
+        <section class="audit-panel">
+
+            <h2>
+                Recent Access & Action Audit
+            </h2>
+
+            <p>
+                Live PostgreSQL audit events from VeerPulse. Filters can narrow
+                the view to one Personnel ID or one recorded event type.
+            </p>
+
+
+            <form method="get"
+                  action="{{ url_for('welfare_officer_privacy_audit') }}"
+                  class="audit-filter-bar">
+
+                <div class="audit-filter-field">
+
+                    <label>
+                        Personnel ID
+                    </label>
+
+                    <input type="text"
+                           name="personnel_id"
+                           value="{{ selected_personnel_id }}"
+                           placeholder="e.g. VP1087">
+
+                </div>
+
+
+                <div class="audit-filter-field">
+
+                    <label>
+                        Event Type
+                    </label>
+
+                    <select name="event_type">
+
+                        <option value="">
+                            All Event Types
+                        </option>
+
+                        {% for event_type in available_event_types %}
+
+                            <option value="{{ event_type }}"
+                                    {% if selected_event_type == event_type %}
+                                        selected
+                                    {% endif %}>
+                                {{ event_type }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <button type="submit"
+                        class="audit-filter-btn">
+                    Apply Filter
+                </button>
+
+
+                <a href="{{ url_for('welfare_officer_privacy_audit') }}"
+                   class="audit-filter-btn secondary">
+                    Clear
+                </a>
+
+            </form>
+
+
+            {% if audit_events %}
+
+                <div class="audit-table-wrap">
+
+                    <table class="audit-table">
+
+                        <thead>
+
+                            <tr>
+                                <th>Time</th>
+                                <th>Actor</th>
+                                <th>Event</th>
+                                <th>Personnel</th>
+                                <th>Resource</th>
+                                <th>Source</th>
+                                <th>Status</th>
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% for event in audit_events %}
+
+                                <tr>
+
+                                    <td>
+                                        {% if event.created_at %}
+                                            {{ event.created_at.strftime("%d %b %Y · %I:%M %p") }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        {{ event.actor_role }}
+                                        {% if event.actor_id %}
+                                            <br>
+                                            <span style="color:#8a96a1;">
+                                                {{ event.actor_id }}
+                                            </span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        <strong>
+                                            {{ event.event_type }}
+                                        </strong>
+
+                                        {% if event.event_summary %}
+                                            <br>
+                                            <span style="color:#7d8995;">
+                                                {{ event.event_summary }}
+                                            </span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        {{ event.personnel_id or "Aggregate / System" }}
+                                    </td>
+
+                                    <td>
+                                        {{ event.resource_type or "—" }}
+
+                                        {% if event.resource_id %}
+                                            <br>
+                                            <span style="color:#8a96a1;">
+                                                ID {{ event.resource_id }}
+                                            </span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        {{ event.source_type or "VeerPulse Application" }}
+                                    </td>
+
+                                    <td>
+                                        <span class="access-badge">
+                                            Recorded
+                                        </span>
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            {% else %}
+
+                <div class="audit-empty">
+
+                    No audit events match the selected filters.
+                    VeerPulse does not create sample rows when no matching
+                    PostgreSQL audit event exists.
+
+                </div>
+
+            {% endif %}
+
+
+            <div class="privacy-note">
+
+                <strong>
+                    Auditability Boundary.
+                </strong>
+
+                These rows are real application audit records already stored by
+                the prototype. This page does not prove enterprise-grade
+                tamper-evident logging, SIEM integration or a legally approved
+                retention policy; those remain production deployment controls.
+
+            </div>
+
+        </section>
+
+
+        {% if recent_import_events %}
+
+        <section class="audit-panel"
+                 style="margin-top:18px;">
+
+            <h2>
+                Recent HRMS-Style Import Audit
+            </h2>
+
+            <p>
+                Latest recorded prototype operational-data import events.
+                This is not a claim of live government HRMS connectivity.
+            </p>
+
+
+            <div class="audit-table-wrap">
+
+                <table class="audit-table">
+
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Actor</th>
+                            <th>Summary</th>
+                            <th>Source</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for event in recent_import_events %}
+
+                            <tr>
+
+                                <td>
+                                    {{ event.created_at.strftime("%d %b %Y · %I:%M %p") if event.created_at else "—" }}
+                                </td>
+
+                                <td>
+                                    {{ event.actor_role }}
+                                    {% if event.actor_id %}
+                                        · {{ event.actor_id }}
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {{ event.event_summary }}
+                                </td>
+
+                                <td>
+                                    {{ event.source_type }}
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+        {% endif %}
+
+
+    </main>
+
+</div>
+{% include 'partials/welfare_veerassist.html' %}
+</body>
+</html>

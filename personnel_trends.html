@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My Trends | VeerPulse</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+
+        .trend-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .trend-summary-card {
+            background: white;
+            border-radius: 12px;
+            padding: 18px;
+            border: 1px solid #e7ebef;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.05);
+        }
+
+        .trend-summary-card span {
+            display: block;
+            font-size: 11px;
+            color: #7a8794;
+            margin-bottom: 8px;
+        }
+
+        .trend-summary-card strong {
+            display: block;
+            font-size: 24px;
+            color: #163b65;
+        }
+
+        .trend-summary-card p {
+            margin: 6px 0 0;
+            font-size: 11px;
+            color: #8d97a2;
+        }
+
+        .trend-grid {
+            display: grid;
+            grid-template-columns: 1.3fr 0.7fr;
+            gap: 22px;
+            margin-bottom: 22px;
+        }
+
+        .trend-row {
+            margin-bottom: 22px;
+        }
+
+        .trend-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .trend-row-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            gap: 15px;
+        }
+
+        .trend-row-header span {
+            color: #6f7d8c;
+            font-size: 12px;
+        }
+
+        .trend-row-header strong {
+            color: #2d4054;
+            font-size: 12px;
+        }
+
+        .trend-bar {
+            height: 9px;
+            background: #edf1f4;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .trend-fill {
+            height: 100%;
+            border-radius: 20px;
+        }
+
+        .trend-normal {
+            background: #2d8a6e;
+        }
+
+        .trend-moderate {
+            background: #d89a24;
+        }
+
+        .trend-elevated {
+            background: #c95a5a;
+        }
+
+        .pattern-status {
+            display: inline-block;
+            padding: 7px 12px;
+            border-radius: 20px;
+            background: #fff3d7;
+            color: #936713;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .pattern-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .pattern-item {
+            padding: 14px;
+            border-radius: 10px;
+            background: #f7f9fb;
+            border: 1px solid #e7ebef;
+        }
+
+        .pattern-item span {
+            display: block;
+            color: #7b8794;
+            font-size: 11px;
+            margin-bottom: 6px;
+        }
+
+        .pattern-item strong {
+            color: #24394f;
+            font-size: 13px;
+        }
+
+        .pattern-item p {
+            margin: 5px 0 0;
+            color: #8a95a1;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        .explanation-box {
+            background: #eef6f6;
+            border-left: 4px solid #16858c;
+            border-radius: 9px;
+            padding: 16px;
+            color: #536b70;
+            line-height: 1.7;
+            font-size: 12px;
+        }
+
+        .wellness-source-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 15px;
+        }
+
+        .wellness-source {
+            padding: 16px;
+            background: #f7f9fb;
+            border: 1px solid #e6ebef;
+            border-radius: 10px;
+        }
+
+        .wellness-source span {
+            display: block;
+            color: #788595;
+            font-size: 11px;
+            margin-bottom: 7px;
+        }
+
+        .wellness-source strong {
+            color: #163b65;
+            font-size: 14px;
+        }
+
+        .wellness-source p {
+            margin: 5px 0 0;
+            color: #8a95a1;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+
+
+        /* =========================
+           OPTIONAL WELLNESS CONTEXT
+        ========================== */
+
+        .wellness-context-box {
+            margin-top: 14px;
+            padding: 15px 16px;
+            background: #f5faf9;
+            border: 1px solid #dcebea;
+            border-left: 4px solid #16858c;
+            border-radius: 10px;
+        }
+
+        .wellness-context-box strong {
+            display: block;
+            color: #163b65;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .wellness-context-box p {
+            margin: 0;
+            color: #61767b;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .wellness-context-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .wellness-context-tag {
+            padding: 6px 9px;
+            background: white;
+            border: 1px solid #dce5e7;
+            border-radius: 20px;
+            color: #49676c;
+            font-size: 9px;
+            font-weight: 700;
+        }
+
+        /* =========================
+           SAVED WELLNESS SCAN HISTORY
+        ========================== */
+
+        .scan-history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .scan-history-card {
+            padding: 16px;
+            background: #f7f9fb;
+            border: 1px solid #e6ebef;
+            border-radius: 10px;
+        }
+
+        .scan-history-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        .scan-history-header strong {
+            color: #24394f;
+            font-size: 13px;
+        }
+
+        .scan-history-header span {
+            color: #7a8794;
+            font-size: 10px;
+        }
+
+        .scan-history-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .scan-history-item {
+            padding: 11px;
+            background: white;
+            border: 1px solid #e7ebef;
+            border-radius: 9px;
+        }
+
+        .scan-history-item span {
+            display: block;
+            color: #7b8794;
+            font-size: 9px;
+            margin-bottom: 5px;
+        }
+
+        .scan-history-item strong {
+            color: #163b65;
+            font-size: 12px;
+        }
+
+        .scan-history-empty {
+            padding: 18px;
+            background: #f7f9fb;
+            border: 1px dashed #d6dde3;
+            border-radius: 10px;
+            color: #7d8996;
+            font-size: 11px;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        @media (max-width: 1000px) {
+
+            .trend-summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .trend-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .wellness-source-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .scan-history-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 550px) {
+
+            .trend-summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .scan-history-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .scan-history-header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+
+    </style>
+</head>
+
+
+<body class="dashboard-page">
+
+<div class="dashboard-layout">
+
+    <!-- SIDEBAR -->
+    {% include 'partials/personnel_sidebar.html' %}
+
+
+    <!-- MAIN CONTENT -->
+    <main class="dashboard-main">
+        {% set supplied_analysis = current_analysis %}
+        {% set valid_assessment = current_assessment and personnel and current_assessment.personnel_id == personnel.personnel_id %}
+        {% if not valid_assessment %}{% set current_assessment = none %}{% endif %}
+        {% set analysis_matches = current_analysis and current_assessment and current_analysis.personnel_id == personnel.personnel_id and current_analysis.assessment_id == current_assessment.id %}
+        {% if not analysis_matches %}{% set current_analysis = none %}{% set analysis_factors = [] %}{% endif %}
+        {% if personnel %}
+            {% set analysis_history = analysis_history|selectattr('personnel_id', 'equalto', personnel.personnel_id)|list %}
+            {% set wellness_scan_history = wellness_scan_history|selectattr('personnel_id', 'equalto', personnel.personnel_id)|list %}
+        {% else %}{% set analysis_history = [] %}{% set wellness_scan_history = [] %}{% endif %}
+        {% if latest_checkin and (not personnel or latest_checkin.personnel_id != personnel.personnel_id) %}{% set latest_checkin = none %}{% endif %}
+        {% if current_analysis %}{% set analysis_factors = analysis_factors|selectattr('analysis_result_id', 'equalto', current_analysis.id)|list %}{% endif %}
+
+
+        <header class="dashboard-header">
+
+            <div>
+                <p class="dashboard-label">
+                    Personal Pattern Analysis
+                </p>
+
+                <h1>
+                    My Trends
+                </h1>
+            </div>
+
+            <div class="officer-profile">
+
+                <div class="profile-circle">
+                    VP
+                </div>
+
+                <div>
+                    <strong>
+                        Personnel {{ personnel.personnel_id if personnel else (session.get("personnel_id") or "Unavailable") }}
+                    </strong>
+                    <p>
+                        {{ personnel.full_name if personnel and personnel.full_name else "Secure Personal Access" }}
+                    </p>
+                </div>
+
+            </div>
+
+        </header>
+
+
+        {% if supplied_analysis and not analysis_matches %}<div class="explanation-box">Stored analysis does not match this person's current assessment. Its score and factors are withheld here; this is a linkage issue, not a new welfare category.</div>{% endif %}
+        {% if current_assessment %}<p>Current assessment v{{ current_assessment.assessment_version }} · {{ current_assessment.assessment_time.strftime('%d %b %Y, %H:%M') if current_assessment.assessment_time else 'Time unavailable' }}</p>{% endif %}
+        <!-- DATABASE-DRIVEN BRAIN SUMMARY -->
+        <section class="trend-summary-grid">
+
+            <div class="trend-summary-card">
+                <span>Welfare Attention</span>
+                <strong>
+                    {% if current_analysis %}
+                        {{ current_analysis.attention_level }}
+                    {% elif current_assessment %}
+                        {{ current_assessment.attention_level }}
+                    {% else %}
+                        Insufficient Data
+                    {% endif %}
+                </strong>
+                <p>
+                    {% if current_analysis %}
+                        VeerPulse {{ current_analysis.rules_version }}
+                    {% else %}
+                        No matching current analysis available
+                    {% endif %}
+                </p>
+            </div>
+
+            <div class="trend-summary-card">
+                <span>Early-Warning Score</span>
+                <strong>
+                    {% if current_analysis and current_analysis.overall_score is not none %}
+                        {{ "%.1f"|format(current_analysis.overall_score) }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </strong>
+                <p>
+                    Stored in PostgreSQL
+                </p>
+            </div>
+
+            <div class="trend-summary-card">
+                <span>Longitudinal Trend</span>
+                <strong style="font-size:14px;">
+                    {% if current_analysis %}
+                        {{ current_analysis.trend_direction or "Unavailable" }}
+                    {% else %}
+                        Unavailable
+                    {% endif %}
+                </strong>
+                <p>
+                    {% if current_analysis %}
+                        {{ current_analysis.trend_strength or "Insufficient history" }}
+                    {% else %}
+                        No analysis history yet
+                    {% endif %}
+                </p>
+            </div>
+
+            <div class="trend-summary-card">
+                <span>Signal Agreement</span>
+                <strong style="font-size:14px;">
+                    {% if current_analysis %}
+                        {{ current_analysis.signal_agreement or "Unavailable" }}
+                    {% else %}
+                        Unavailable
+                    {% endif %}
+                </strong>
+                <p>
+                    Confidence:
+                    {{ current_analysis.confidence if current_analysis and current_analysis.confidence else "Unavailable" }}
+                </p>
+            </div>
+
+        </section>
+
+
+        <!-- STORED ANALYSIS HISTORY -->
+        <section class="trend-grid">
+
+            <div class="dashboard-panel">
+
+                <div class="panel-heading">
+
+                    <div>
+                        <p class="panel-label">
+                            Longitudinal Analysis
+                        </p>
+
+                        <h2>
+                            Stored Assessment History
+                        </h2>
+                    </div>
+
+                </div>
+
+                <p>Up to five latest stored analysis versions, shown oldest to newest. Recalculations are not necessarily separate days or independent observations.</p>
+                {% if analysis_history %}
+
+                    <div class="pattern-list">
+
+                        {% for item in analysis_history %}
+
+                            <div class="pattern-item">
+
+                                <span>
+                                    Assessment v{{ item.assessment_version }}
+                                    · {{ 'Current' if current_assessment and item.assessment_id == current_assessment.id else 'Historical' }}
+                                </span>
+
+                                <strong>
+                                    {% if item.overall_score is not none %}
+                                        {{ "%.1f"|format(item.overall_score) }} / 100
+                                        · {{ item.attention_level }}
+                                    {% else %}
+                                        {{ item.attention_level }}
+                                    {% endif %}
+                                </strong>
+
+                                <p>
+                                    {{ item.created_at.strftime("%d %b %Y %H:%M") if item.created_at else "Time unavailable" }}
+                                    · Trend:
+                                    {{ item.trend_direction or "Unavailable" }}
+                                </p>
+
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                {% else %}
+
+                    <div class="pattern-list">
+
+                        <div class="pattern-item">
+                            <span>History</span>
+                            <strong>No stored VeerPulse analysis yet</strong>
+                            <p>
+                                New assessments will populate this timeline.
+                            </p>
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="dashboard-panel">
+
+                <div class="panel-heading">
+
+                    <div>
+                        <p class="panel-label">
+                            Current Explain-Why
+                        </p>
+
+                        <h2>
+                            Database Analysis Factors
+                        </h2>
+                    </div>
+
+                </div>
+
+                {% if analysis_factors %}
+
+                    <div class="pattern-list">
+
+                        {% for factor in analysis_factors %}
+
+                            <div class="pattern-item">
+
+                                <span>
+                                    {{ factor.factor_label }}
+                                </span>
+
+                                <strong>
+                                    {% if factor.factor_score is not none %}
+                                        {{ "%.1f"|format(factor.factor_score) }} / 100
+                                    {% else %}
+                                        {{ factor.severity or "Score unavailable" }}
+                                    {% endif %}
+                                </strong>
+
+                                <p>
+                                    {{ factor.explanation or 'No factor explanation stored.' }}<br>
+                                    {{ factor.direction or "" }}
+                                    {% if factor.deviation_pct is not none %}
+                                        · {{ "%+.1f"|format(factor.deviation_pct) }}%
+                                        vs personal baseline
+                                    {% endif %}
+                                </p>
+
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                {% else %}
+
+                    <div class="pattern-list">
+
+                        <div class="pattern-item">
+                            <span>Factors</span>
+                            <strong>No stored factor analysis</strong>
+                            <p>
+                                VeerPulse will not invent baseline or pattern values.
+                            </p>
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <!-- OPTIONAL WELLNESS SOURCES -->
+        <section class="dashboard-panel explain-panel">
+
+            <div class="panel-heading">
+
+                <div>
+                    <p class="panel-label">
+                        Optional Wellness Indicators
+                    </p>
+
+                    <h2>
+                        Wellness Data Sources
+                    </h2>
+                </div>
+
+            </div>
+
+
+            <div class="wellness-source-grid">
+
+                <div class="wellness-source">
+                    <span>Voluntary Check-In</span>
+
+                    <strong>
+                        {% if current_analysis and current_analysis.checkin_score is not none %}
+                            Concern Score:
+                            {{ "%.1f"|format(current_analysis.checkin_score) }} / 100
+                        {% elif latest_checkin %}
+                            Saved Check-In Available
+                        {% else %}
+                            No Saved Check-In
+                        {% endif %}
+                    </strong>
+
+                    <p>
+                        Self-reported wellness input is voluntary and stored
+                        as supporting evidence.
+                        {% if latest_checkin %}<br>Latest submission: {{ latest_checkin.submitted_at.strftime('%d %b %Y, %H:%M') if latest_checkin.submitted_at else 'Time unavailable' }}{% endif %}
+                    </p>
+                </div>
+
+                <div class="wellness-source">
+                    <span>Wearable Data</span>
+                    <strong>Not available in this view</strong>
+                    <p>
+                        No wearable connection status is supplied to this page. Wearables are optional.
+                    </p>
+                </div>
+
+                <div class="wellness-source">
+                    <span>Camera Wellness Scan</span>
+
+                    {% if wellness_scan_history %}
+
+                        {% set latest_scan = wellness_scan_history[0] %}
+
+                        <strong>
+                            HR {{ latest_scan.heart_rate if latest_scan.heart_rate not in [None, "", "—"] else "—" }} BPM
+                            ·
+                            Breathing {{ latest_scan.breathing_rate if latest_scan.breathing_rate not in [None, "", "—"] else "—" }} / min
+                        </strong>
+
+                        <p>
+                            Latest saved voluntary camera scan.
+                            Saved: {{ latest_scan.saved_at or 'Time unavailable' }}.
+                            Signal quality: {{ latest_scan.signal_quality if latest_scan.signal_quality not in [none, ''] else 'Unavailable' }}.
+                            Confidence: {{ latest_scan.confidence if latest_scan.confidence not in [none, ''] else 'Unavailable' }}.
+                        </p>
+
+                    {% else %}
+
+                        <strong>No Saved Scan</strong>
+
+                        <p>
+                            No camera measurement is stored. Optional nonparticipation is not adverse evidence.
+                        </p>
+
+                    {% endif %}
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- OPTIONAL CAMERA WELLNESS CONTEXT -->
+        <section class="dashboard-panel explain-panel">
+
+            <div class="panel-heading">
+
+                <div>
+
+                    <p class="panel-label">
+                        Optional Supporting Indicator
+                    </p>
+
+                    <h2>
+                        Latest Wellness Scan Context
+                    </h2>
+
+                </div>
+
+            </div>
+
+            {% if wellness_scan_history %}
+
+                {% set latest_scan = wellness_scan_history[0] %}
+
+                <div class="wellness-context-box">
+
+                    <strong>
+                        Camera wellness data is available as supporting context.
+                    </strong>
+
+                    <p>
+                        The latest voluntary scan may be reviewed alongside duty,
+                        rest, workload and check-in trends. It does not independently
+                        determine welfare status and is not a medical diagnosis.
+                    </p>
+
+                    <div class="wellness-context-meta">
+
+                        <span class="wellness-context-tag">
+                            HR:
+                            {{ latest_scan.heart_rate if latest_scan.heart_rate not in [None, "", "—"] else "—" }}
+                            BPM
+                        </span>
+
+                        <span class="wellness-context-tag">
+                            Breathing:
+                            {{ latest_scan.breathing_rate if latest_scan.breathing_rate not in [None, "", "—"] else "—" }}
+                            / min
+                        </span>
+
+                        <span class="wellness-context-tag">
+                            Signal:
+                            {{ latest_scan.signal_quality if latest_scan.signal_quality not in [none, ''] else 'Unavailable' }}
+                        </span>
+
+                        <span class="wellness-context-tag">
+                            Confidence:
+                            {{ latest_scan.confidence if latest_scan.confidence not in [none, ''] else 'Unavailable' }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+            {% else %}
+
+                <div class="wellness-context-box">
+
+                    <strong>
+                        No saved camera wellness context is available.
+                    </strong>
+
+                    <p>
+                        Welfare status continues to rely on personal baseline,
+                        duty, rest, workload and voluntary check-in patterns.
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        </section>
+
+
+        <!-- SAVED WELLNESS SCAN HISTORY -->
+        <section class="dashboard-panel explain-panel">
+
+            <div class="panel-heading">
+
+                <div>
+
+                    <p class="panel-label">
+                        Personal Wellness Measurements
+                    </p>
+
+                    <h2>
+                        Saved Wellness Scan History
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            {% if wellness_scan_history %}
+
+                <div class="scan-history-list">
+
+                    {% for scan in wellness_scan_history %}
+
+                        <div class="scan-history-card">
+
+                            <div class="scan-history-header">
+
+                                <strong>
+                                    Wellness Scan
+                                </strong>
+
+                                <span>
+                                    {{ scan.saved_at if scan.saved_at not in [none, ''] else 'Unavailable' }}
+                                </span>
+
+                            </div>
+
+
+                            <div class="scan-history-grid">
+
+                                <div class="scan-history-item">
+
+                                    <span>
+                                        Heart Rate
+                                    </span>
+
+                                    <strong>
+                                        {{ scan.heart_rate if scan.heart_rate not in [None, "", "—"] else "—" }} BPM
+                                    </strong>
+
+                                </div>
+
+
+                                <div class="scan-history-item">
+
+                                    <span>
+                                        Breathing Rate
+                                    </span>
+
+                                    <strong>
+                                        {{ scan.breathing_rate if scan.breathing_rate not in [None, "", "—"] else "—" }} / min
+                                    </strong>
+
+                                </div>
+
+
+                                <div class="scan-history-item">
+
+                                    <span>
+                                        Signal Quality
+                                    </span>
+
+                                    <strong>
+                                        {{ scan.signal_quality if scan.signal_quality not in [none, ''] else 'Unavailable' }}
+                                    </strong>
+
+                                </div>
+
+
+                                <div class="scan-history-item">
+
+                                    <span>
+                                        Signal Confidence
+                                    </span>
+
+                                    <strong>
+                                        {{ scan.confidence if scan.confidence not in [none, ''] else 'Unavailable' }}
+                                    </strong>
+
+                                </div>
+
+
+                                <div class="scan-history-item">
+
+                                    <span>
+                                        Measurement Time
+                                    </span>
+
+                                    <strong>
+                                        {{ scan.measurement_time if scan.measurement_time not in [none, ''] else 'Unavailable' }}
+                                    </strong>
+
+                                </div>
+
+
+                                <div class="scan-history-item">
+
+                                    <span>
+                                        Scan Duration
+                                    </span>
+
+                                    <strong>
+                                        {{ scan.scan_duration if scan.scan_duration not in [none, ''] else 'Unavailable' }}
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <div class="scan-history-empty">
+
+                    No saved wellness scans are available yet.
+                    Complete a valid Wellness Scan and choose
+                    <strong>Save Valid Measurement to My Trends</strong>.
+
+                </div>
+
+            {% endif %}
+
+        </section>
+
+
+        <!-- DATABASE-DRIVEN EXPLANATION -->
+        <section class="dashboard-panel explain-panel">
+
+            <div class="panel-heading">
+
+                <div>
+                    <p class="panel-label">
+                        Explainable Welfare Insight
+                    </p>
+
+                    <h2>
+                        Why did my current analysis result occur?
+                    </h2>
+                </div>
+
+            </div>
+
+
+            <div class="explanation-box">
+
+                {% if current_analysis and current_analysis.analysis_reason %}
+
+                    {{ current_analysis.analysis_reason }}
+
+                    <br><br>
+
+                    <strong>System recommendation:</strong>
+                    {{ current_analysis.recommendation or "No recommendation is stored." }}
+
+                {% elif current_assessment and current_assessment.explanation_summary %}
+
+                    {{ current_assessment.explanation_summary }}
+
+                {% else %}
+
+                    No current stored analysis explanation is available.
+                    VeerPulse does not fill missing analysis with prototype values.
+
+                {% endif %}
+
+                <br><br>
+
+                VeerPulse produces a welfare-support early-warning indicator,
+                not a medical diagnosis. Any welfare action remains subject to
+                authorized human review.
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+{% include 'partials/veerassist.html' %}
+</body>
+
+</html>

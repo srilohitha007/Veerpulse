@@ -1,0 +1,27 @@
+<section class="summary-grid" style="margin-top: 20px;">
+
+    <div class="summary-card">
+        <span>Current Deployment</span>
+        <strong>21 Days</strong>
+        <p>Extended deployment</p>
+    </div>
+
+    <div class="summary-card">
+        <span>Recent Transfers</span>
+        <strong>2 / 7 Months</strong>
+        <p>Increased frequency</p>
+    </div>
+
+    <div class="summary-card">
+        <span>Upcoming Training</span>
+        <strong>5 Days</strong>
+        <p>Duty overlap detected</p>
+    </div>
+
+    <div class="summary-card">
+        <span>Leave Pattern</span>
+        <strong>1 Cancellation</strong>
+        <p>Recovery review needed</p>
+    </div>
+
+</section>
