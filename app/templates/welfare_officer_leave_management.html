@@ -1,0 +1,1878 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Leave Management | VeerPulse</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        .leave-management-page {
+            color: #24394f;
+        }
+
+        .leave-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 15px;
+            margin-bottom: 22px;
+        }
+
+        .leave-summary-card,
+        .leave-panel {
+            background: #ffffff;
+            border: 1px solid #e5eaee;
+            border-radius: 12px;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.05);
+        }
+
+        .leave-summary-card {
+            padding: 17px;
+        }
+
+        .leave-summary-card span {
+            display: block;
+            margin-bottom: 7px;
+            color: #7d8995;
+            font-size: 10px;
+        }
+
+        .leave-summary-card strong {
+            display: block;
+            color: #163b65;
+            font-size: 23px;
+        }
+
+        .leave-summary-card p {
+            margin: 6px 0 0;
+            color: #8995a0;
+            font-size: 9px;
+            line-height: 1.5;
+        }
+
+        .leave-panel {
+            padding: 20px;
+        }
+
+        .leave-toolbar {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .leave-toolbar h2 {
+            margin: 0;
+            color: #163b65;
+            font-size: 19px;
+        }
+
+        .leave-toolbar p {
+            margin: 5px 0 0;
+            color: #778594;
+            font-size: 10px;
+            line-height: 1.6;
+        }
+
+        .toolbar-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .search-box,
+        .filter-select,
+        .form-control {
+            border: 1px solid #d8e0e6;
+            border-radius: 8px;
+            background: #ffffff;
+            color: #34495e;
+            padding: 9px 11px;
+            font-family: inherit;
+            font-size: 10px;
+            outline: none;
+        }
+
+        .search-box:focus,
+        .filter-select:focus,
+        .form-control:focus {
+            border-color: #16858c;
+            box-shadow: 0 0 0 3px rgba(22, 133, 140, 0.08);
+        }
+
+        .search-box {
+            min-width: 210px;
+        }
+
+        .filter-select {
+            min-width: 130px;
+        }
+
+        .primary-btn,
+        .secondary-btn,
+        .approve-btn,
+        .deny-btn,
+        .review-btn {
+            border: 0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 9px;
+            font-weight: 800;
+        }
+
+        .primary-btn {
+            padding: 9px 12px;
+            background: #163b65;
+            color: #ffffff;
+        }
+
+        .secondary-btn {
+            padding: 9px 12px;
+            background: #eef3f7;
+            color: #31536e;
+        }
+
+        .review-btn {
+            padding: 7px 10px;
+            background: #eef4f7;
+            color: #31536e;
+        }
+
+        .approve-btn {
+            padding: 10px 14px;
+            background: #27725f;
+            color: #ffffff;
+        }
+
+        .deny-btn {
+            padding: 10px 14px;
+            background: #a94e4e;
+            color: #ffffff;
+        }
+
+        button:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border: 1px solid #edf0f2;
+            border-radius: 10px;
+        }
+
+        .leave-table {
+            width: 100%;
+            min-width: 1180px;
+            border-collapse: collapse;
+        }
+
+        .leave-table th {
+            padding: 11px 10px;
+            text-align: left;
+            border-bottom: 1px solid #e5eaee;
+            background: #f7f9fb;
+            color: #6d7b89;
+            font-size: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.35px;
+        }
+
+        .leave-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #edf0f2;
+            color: #46596a;
+            font-size: 9px;
+            vertical-align: top;
+        }
+
+        .leave-table tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .request-code {
+            color: #163b65;
+            font-weight: 800;
+        }
+
+        .personnel-name {
+            display: block;
+            margin-top: 3px;
+            color: #7b8794;
+            font-size: 8px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 8px;
+            border-radius: 20px;
+            font-size: 8px;
+            font-weight: 800;
+        }
+
+        .status-pending {
+            background: #fff4d8;
+            color: #916d13;
+        }
+
+        .status-approved {
+            background: #e8f5ee;
+            color: #26705c;
+        }
+
+        .status-denied {
+            background: #fdecec;
+            color: #a34646;
+        }
+
+        .status-cancelled {
+            background: #eef1f4;
+            color: #64717d;
+        }
+
+        .reason-cell {
+            max-width: 250px;
+            line-height: 1.55;
+        }
+
+        .notice {
+            display: none;
+            margin-bottom: 14px;
+            padding: 11px 13px;
+            border-radius: 8px;
+            font-size: 9px;
+            line-height: 1.5;
+        }
+
+        .notice.success {
+            display: block;
+            background: #eaf5f0;
+            color: #26705c;
+            border: 1px solid #cfe7dc;
+        }
+
+        .notice.error {
+            display: block;
+            background: #fdeeee;
+            color: #a54848;
+            border: 1px solid #f2cece;
+        }
+
+        .guardrail-note {
+            margin-top: 16px;
+            padding: 13px 14px;
+            border-left: 4px solid #16858c;
+            border-radius: 8px;
+            background: #eef6f6;
+            color: #536b70;
+            font-size: 9px;
+            line-height: 1.65;
+        }
+
+        .empty-state,
+        .loading-state {
+            padding: 28px 18px !important;
+            text-align: center;
+            color: #7e8a95 !important;
+            font-size: 10px !important;
+        }
+
+        /* MODAL */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1600;
+            padding: 20px;
+            overflow-y: auto;
+            background: rgba(18, 35, 53, 0.5);
+        }
+
+        .modal-backdrop.open {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        .modal-card {
+            width: min(820px, 100%);
+            margin: 25px auto;
+            background: #ffffff;
+            border: 1px solid #e0e6eb;
+            border-radius: 14px;
+            box-shadow: 0 20px 65px rgba(19, 39, 57, 0.22);
+            overflow: hidden;
+        }
+
+        .modal-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid #e7ebee;
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            align-items: flex-start;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #163b65;
+            font-size: 19px;
+        }
+
+        .modal-header p {
+            margin: 5px 0 0;
+            color: #7b8794;
+            font-size: 10px;
+            line-height: 1.5;
+        }
+
+        .modal-close {
+            border: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: #f1f4f6;
+            color: #52616e;
+            cursor: pointer;
+            font-size: 17px;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .review-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .detail-item {
+            padding: 12px 13px;
+            border: 1px solid #e7ebee;
+            border-radius: 9px;
+            background: #f9fbfc;
+        }
+
+        .detail-item.full {
+            grid-column: 1 / -1;
+        }
+
+        .detail-item span {
+            display: block;
+            margin-bottom: 5px;
+            color: #7d8995;
+            font-size: 8px;
+            text-transform: uppercase;
+            font-weight: 800;
+        }
+
+        .detail-item strong,
+        .detail-item p {
+            margin: 0;
+            color: #344c61;
+            font-size: 10px;
+            line-height: 1.6;
+        }
+
+        .metrics-title {
+            margin: 19px 0 10px;
+            color: #163b65;
+            font-size: 13px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 9px;
+        }
+
+        .metric-item {
+            padding: 11px;
+            border: 1px solid #e6ebef;
+            border-radius: 8px;
+            background: #ffffff;
+        }
+
+        .metric-item span {
+            display: block;
+            margin-bottom: 4px;
+            color: #7b8794;
+            font-size: 8px;
+        }
+
+        .metric-item strong {
+            color: #163b65;
+            font-size: 14px;
+        }
+
+        .decision-area {
+            margin-top: 19px;
+            padding-top: 17px;
+            border-top: 1px solid #e7ebee;
+        }
+
+        .decision-area h3 {
+            margin: 0 0 5px;
+            color: #163b65;
+            font-size: 14px;
+        }
+
+        .decision-area > p {
+            margin: 0 0 12px;
+            color: #7a8794;
+            font-size: 9px;
+            line-height: 1.55;
+        }
+
+        .decision-form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .form-group {
+            min-width: 0;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #536577;
+            font-size: 8px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        textarea.form-control {
+            width: 100%;
+            min-height: 76px;
+            resize: vertical;
+            line-height: 1.55;
+        }
+
+        .denial-fields {
+            display: none;
+        }
+
+        .denial-fields.open {
+            display: block;
+        }
+
+        .decision-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+        }
+
+        .existing-decision {
+            margin-top: 17px;
+            padding: 13px;
+            border-radius: 9px;
+            background: #f7f9fb;
+            border: 1px solid #e4e9ed;
+            color: #596a79;
+            font-size: 9px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 1050px) {
+            .leave-summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .leave-toolbar {
+                flex-direction: column;
+            }
+
+            .toolbar-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+        }
+
+        @media (max-width: 650px) {
+            .leave-summary-grid,
+            .review-grid,
+            .decision-form-grid,
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .detail-item.full,
+            .form-group.full {
+                grid-column: auto;
+            }
+
+            .toolbar-actions {
+                display: grid;
+                grid-template-columns: 1fr;
+            }
+
+            .search-box,
+            .filter-select {
+                min-width: 0;
+                width: 100%;
+            }
+
+            .modal-backdrop {
+                padding: 8px;
+            }
+
+            .modal-card {
+                margin: 10px auto;
+            }
+        }
+    </style>
+</head>
+
+<body class="dashboard-page leave-management-page">
+
+<div class="dashboard-layout">
+
+    {% include 'partials/welfare_officer_sidebar.html' %}
+
+    <main class="dashboard-main">
+
+        <header class="dashboard-header">
+            <div>
+                <p class="dashboard-label">
+                    Authorized Human Decision Workflow
+                </p>
+
+                <h1>
+                    Leave Management
+                </h1>
+            </div>
+
+            <div class="officer-profile">
+                <div class="profile-circle">
+                    WO
+                </div>
+
+                <div>
+                    <strong>Welfare Officer</strong>
+                    <p>Authorized Access</p>
+                </div>
+            </div>
+        </header>
+
+        <div id="page-notice"
+             class="notice"></div>
+
+        <section class="leave-summary-grid">
+
+            <div class="leave-summary-card">
+                <span>Pending</span>
+                <strong id="count-pending">—</strong>
+                <p>Awaiting authorized review</p>
+            </div>
+
+            <div class="leave-summary-card">
+                <span>Approved</span>
+                <strong id="count-approved">—</strong>
+                <p>Approved leave requests</p>
+            </div>
+
+            <div class="leave-summary-card">
+                <span>Denied</span>
+                <strong id="count-denied">—</strong>
+                <p>Decision reason recorded</p>
+            </div>
+
+            <div class="leave-summary-card">
+                <span>Cancelled</span>
+                <strong id="count-cancelled">—</strong>
+                <p>Cancelled before decision</p>
+            </div>
+
+        </section>
+
+
+        <section class="leave-panel">
+
+            <div class="leave-toolbar">
+                <div>
+                    <h2>
+                        Leave Requests
+                    </h2>
+
+                    <p>
+                        Review personnel requests and record a human approval
+                        or denial decision.
+                    </p>
+                </div>
+
+                <div class="toolbar-actions">
+
+                    <input type="text"
+                           id="personnel-search"
+                           class="search-box"
+                           placeholder="Search personnel ID or name"
+                           autocomplete="off">
+
+                    <select id="status-filter"
+                            class="filter-select">
+                        <option value="">
+                            All Statuses
+                        </option>
+                        <option value="Pending">
+                            Pending
+                        </option>
+                        <option value="Approved">
+                            Approved
+                        </option>
+                        <option value="Denied">
+                            Denied
+                        </option>
+                        <option value="Cancelled">
+                            Cancelled
+                        </option>
+                    </select>
+
+                    <button type="button"
+                            class="secondary-btn"
+                            id="refresh-btn">
+                        Refresh
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table class="leave-table">
+                    <thead>
+                        <tr>
+                            <th>Request</th>
+                            <th>Personnel</th>
+                            <th>Type</th>
+                            <th>Period</th>
+                            <th>Days</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Submitted</th>
+                            <th>Decision</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="leave-table-body">
+                        <tr>
+                            <td colspan="9"
+                                class="loading-state">
+                                Loading leave requests...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="guardrail-note">
+                Leave approval must remain a human administrative decision.
+                VeerPulse wellness scans, HR/HRV, facial-stress cues or welfare
+                attention levels are not used here to automatically approve or
+                deny leave. Leave activity is retained only as authorized
+                operational context.
+            </div>
+        </section>
+
+    </main>
+</div>
+
+
+<div class="modal-backdrop"
+     id="review-modal"
+     aria-hidden="true">
+
+    <div class="modal-card"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="review-title">
+
+        <div class="modal-header">
+            <div>
+                <h2 id="review-title">
+                    Review Leave Request
+                </h2>
+
+                <p id="review-subtitle">
+                    —
+                </p>
+            </div>
+
+            <button type="button"
+                    class="modal-close"
+                    id="close-review-btn"
+                    aria-label="Close">
+                ×
+            </button>
+        </div>
+
+        <div class="modal-body">
+
+            <div id="review-notice"
+                 class="notice"></div>
+
+            <div class="review-grid">
+
+                <div class="detail-item">
+                    <span>Personnel</span>
+                    <strong id="review-personnel">—</strong>
+                </div>
+
+                <div class="detail-item">
+                    <span>Status</span>
+                    <strong id="review-status">—</strong>
+                </div>
+
+                <div class="detail-item">
+                    <span>Leave Type</span>
+                    <strong id="review-type">—</strong>
+                </div>
+
+                <div class="detail-item">
+                    <span>Duration</span>
+                    <strong id="review-duration">—</strong>
+                </div>
+
+                <div class="detail-item">
+                    <span>From</span>
+                    <strong id="review-start">—</strong>
+                </div>
+
+                <div class="detail-item">
+                    <span>To</span>
+                    <strong id="review-end">—</strong>
+                </div>
+
+                <div class="detail-item full">
+                    <span>Reason Category</span>
+                    <strong id="review-category">—</strong>
+                </div>
+
+                <div class="detail-item full">
+                    <span>Personnel Reason</span>
+                    <p id="review-reason">—</p>
+                </div>
+
+                <div class="detail-item full">
+                    <span>Additional Note</span>
+                    <p id="review-additional-note">—</p>
+                </div>
+            </div>
+
+            <h3 class="metrics-title">
+                Leave Activity — Last 90 Days
+            </h3>
+
+            <div class="metrics-grid">
+                <div class="metric-item">
+                    <span>Applications</span>
+                    <strong id="metric-applications">—</strong>
+                </div>
+
+                <div class="metric-item">
+                    <span>Approved</span>
+                    <strong id="metric-approved">—</strong>
+                </div>
+
+                <div class="metric-item">
+                    <span>Denied</span>
+                    <strong id="metric-denied">—</strong>
+                </div>
+
+                <div class="metric-item">
+                    <span>Cancelled</span>
+                    <strong id="metric-cancelled">—</strong>
+                </div>
+
+                <div class="metric-item">
+                    <span>Approved Days</span>
+                    <strong id="metric-approved-days">—</strong>
+                </div>
+
+                <div class="metric-item">
+                    <span>Applications / 30 Days</span>
+                    <strong id="metric-frequency">—</strong>
+                </div>
+
+                <div class="metric-item">
+                    <span>Average Gap</span>
+                    <strong id="metric-gap">—</strong>
+                </div>
+
+                <div class="metric-item">
+                    <span>Denial Rate</span>
+                    <strong id="metric-denial-rate">—</strong>
+                </div>
+            </div>
+
+
+            <div class="decision-area"
+                 id="decision-area">
+
+                <h3>
+                    Officer Decision
+                </h3>
+
+                <p>
+                    Review normal administrative and operational considerations.
+                    Do not use a wellness or physiological score as the decision rule.
+                </p>
+
+                <div id="denial-fields"
+                     class="denial-fields">
+
+                    <div class="decision-form-grid">
+
+                        <div class="form-group full">
+                            <label>
+                                Denial Reason *
+                            </label>
+
+                            <select id="denial-reason"
+                                    class="form-control">
+                                <option value="">
+                                    Select a clear reason
+                                </option>
+
+                                <option value="Minimum staffing requirement">
+                                    Minimum staffing requirement
+                                </option>
+
+                                <option value="Critical duty or deployment conflict">
+                                    Critical duty or deployment conflict
+                                </option>
+
+                                <option value="Mandatory training or operational commitment conflict">
+                                    Mandatory training or operational commitment conflict
+                                </option>
+
+                                <option value="Requested dates require clarification">
+                                    Requested dates require clarification
+                                </option>
+
+                                <option value="Other">
+                                    Other
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="form-group full">
+                            <label>
+                                Denial Explanation *
+                            </label>
+
+                            <textarea id="denial-note"
+                                      class="form-control"
+                                      maxlength="500"
+                                      placeholder="Give the personnel member a clear explanation for the denial."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group"
+                     style="margin-top: 12px;">
+                    <label>
+                        Approval / Review Note
+                        <span style="font-weight:400;text-transform:none;">
+                            (optional)
+                        </span>
+                    </label>
+
+                    <textarea id="decision-note"
+                              class="form-control"
+                              maxlength="500"
+                              placeholder="Optional administrative note for the recorded decision."></textarea>
+                </div>
+
+                <div class="decision-actions">
+                    <button type="button"
+                            class="secondary-btn"
+                            id="cancel-denial-btn"
+                            style="display:none;">
+                        Back
+                    </button>
+
+                    <button type="button"
+                            class="deny-btn"
+                            id="deny-btn">
+                        Deny
+                    </button>
+
+                    <button type="button"
+                            class="approve-btn"
+                            id="approve-btn">
+                        Approve
+                    </button>
+
+                    <button type="button"
+                            class="deny-btn"
+                            id="confirm-deny-btn"
+                            style="display:none;">
+                        Confirm Denial
+                    </button>
+                </div>
+            </div>
+
+            <div class="existing-decision"
+                 id="existing-decision"
+                 style="display:none;">
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+(function () {
+    "use strict";
+
+    let leaveRequests = [];
+    let personnelMap = {};
+    let currentRequest = null;
+    let lastPendingCount = null;
+
+    const $ = (id) =>
+        document.getElementById(id);
+
+    function escapeHtml(value) {
+        return String(value ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    function showNotice(element, message, type) {
+        element.className =
+            "notice " + type;
+        element.textContent = message;
+    }
+
+    function clearNotice(element) {
+        element.className = "notice";
+        element.textContent = "";
+    }
+
+    async function readJson(response) {
+        let data;
+
+        try {
+            data = await response.json();
+        }
+        catch (error) {
+            throw new Error(
+                "The server returned an unreadable response."
+            );
+        }
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.message
+                || "The request could not be completed."
+            );
+        }
+
+        return data;
+    }
+
+    function formatDate(value) {
+        if (!value) {
+            return "—";
+        }
+
+        const date = new Date(
+            value.includes("T")
+                ? value
+                : value + "T00:00:00"
+        );
+
+        if (Number.isNaN(date.getTime())) {
+            return value;
+        }
+
+        return date.toLocaleDateString(
+            undefined,
+            {
+                day: "2-digit",
+                month: "short",
+                year: "numeric"
+            }
+        );
+    }
+
+    function formatDateTime(value) {
+        if (!value) {
+            return "—";
+        }
+
+        const date = new Date(value);
+
+        if (Number.isNaN(date.getTime())) {
+            return value;
+        }
+
+        return date.toLocaleString(
+            undefined,
+            {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+            }
+        );
+    }
+
+    function statusClass(status) {
+        const value =
+            String(status || "").toLowerCase();
+
+        if (value === "approved") {
+            return "status-approved";
+        }
+
+        if (value === "denied") {
+            return "status-denied";
+        }
+
+        if (value === "cancelled") {
+            return "status-cancelled";
+        }
+
+        return "status-pending";
+    }
+
+    function updateCounts(counts) {
+        $("count-pending").textContent =
+            counts.Pending ?? 0;
+
+        $("count-approved").textContent =
+            counts.Approved ?? 0;
+
+        $("count-denied").textContent =
+            counts.Denied ?? 0;
+
+        $("count-cancelled").textContent =
+            counts.Cancelled ?? 0;
+    }
+
+    function filteredRequests() {
+        const query =
+            $("personnel-search")
+            .value
+            .trim()
+            .toLowerCase();
+
+        const status =
+            $("status-filter").value;
+
+        return leaveRequests.filter((item) => {
+            const person =
+                personnelMap[item.personnel_id]
+                || {};
+
+            const searchable = [
+                item.request_code,
+                item.personnel_id,
+                person.full_name,
+                person.unit,
+                item.leave_type,
+                item.reason_category
+            ]
+                .filter(Boolean)
+                .join(" ")
+                .toLowerCase();
+
+            return (
+                (!query || searchable.includes(query))
+                && (!status || item.status === status)
+            );
+        });
+    }
+
+    function renderRequests() {
+        const body =
+            $("leave-table-body");
+
+        const items =
+            filteredRequests();
+
+        if (!items.length) {
+            body.innerHTML = `
+                <tr>
+                    <td colspan="9"
+                        class="empty-state">
+                        No leave requests match the current search or filter.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        body.innerHTML =
+            items.map((item) => {
+                const person =
+                    personnelMap[item.personnel_id]
+                    || {};
+
+                return `
+                    <tr>
+                        <td>
+                            <span class="request-code">
+                                ${escapeHtml(
+                                    item.request_code
+                                    || ("LR-" + item.id)
+                                )}
+                            </span>
+                        </td>
+
+                        <td>
+                            <strong>
+                                ${escapeHtml(
+                                    item.personnel_id
+                                )}
+                            </strong>
+
+                            <span class="personnel-name">
+                                ${escapeHtml(
+                                    person.full_name
+                                    || "Personnel"
+                                )}
+                            </span>
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                item.leave_type || "—"
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                formatDate(item.start_date)
+                            )}
+                            →
+                            ${escapeHtml(
+                                formatDate(item.end_date)
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                item.requested_days ?? "—"
+                            )}
+                        </td>
+
+                        <td>
+                            <div class="reason-cell">
+                                <strong>
+                                    ${escapeHtml(
+                                        item.reason_category || "—"
+                                    )}
+                                </strong>
+                                <br>
+                                ${escapeHtml(
+                                    item.reason || "—"
+                                )}
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="status-badge ${statusClass(item.status)}">
+                                ${escapeHtml(
+                                    item.status || "Pending"
+                                )}
+                            </span>
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                formatDateTime(
+                                    item.created_at
+                                )
+                            )}
+                        </td>
+
+                        <td>
+                            <button type="button"
+                                    class="review-btn"
+                                    data-review-id="${item.id}">
+                                ${
+                                    item.status === "Pending"
+                                        ? "Review"
+                                        : "View"
+                                }
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join("");
+    }
+
+    async function loadPersonnel() {
+        const response = await fetch(
+            "/api/welfare-officer/personnel",
+            {
+                headers: {
+                    "Accept": "application/json"
+                }
+            }
+        );
+
+        const data =
+            await readJson(response);
+
+        personnelMap = {};
+
+        (data.personnel || [])
+            .forEach((item) => {
+                personnelMap[
+                    item.personnel_id
+                ] = item;
+            });
+    }
+
+    async function loadLeaveRequests(showError = true) {
+        try {
+            const response = await fetch(
+                "/api/welfare-officer/leave-requests",
+                {
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+            const data =
+                await readJson(response);
+
+            leaveRequests =
+                Array.isArray(data.leave_requests)
+                    ? data.leave_requests
+                    : [];
+
+            updateCounts(
+                data.counts || {}
+            );
+
+            renderRequests();
+
+            const pending =
+                data.counts?.Pending ?? 0;
+
+            if (
+                lastPendingCount !== null
+                && pending > lastPendingCount
+            ) {
+                showNotice(
+                    $("page-notice"),
+                    "A new pending leave request has arrived.",
+                    "success"
+                );
+            }
+
+            lastPendingCount = pending;
+        }
+        catch (error) {
+            if (showError) {
+                showNotice(
+                    $("page-notice"),
+                    error.message,
+                    "error"
+                );
+            }
+        }
+    }
+
+    async function loadAll() {
+        const body =
+            $("leave-table-body");
+
+        body.innerHTML = `
+            <tr>
+                <td colspan="9"
+                    class="loading-state">
+                    Loading leave requests...
+                </td>
+            </tr>
+        `;
+
+        try {
+            await loadPersonnel();
+            await loadLeaveRequests();
+        }
+        catch (error) {
+            body.innerHTML = `
+                <tr>
+                    <td colspan="9"
+                        class="empty-state">
+                        ${escapeHtml(error.message)}
+                    </td>
+                </tr>
+            `;
+
+            showNotice(
+                $("page-notice"),
+                error.message,
+                "error"
+            );
+        }
+    }
+
+    function openModal() {
+        $("review-modal")
+            .classList.add("open");
+
+        $("review-modal")
+            .setAttribute(
+                "aria-hidden",
+                "false"
+            );
+
+        document.body.style.overflow =
+            "hidden";
+    }
+
+    function closeModal() {
+        $("review-modal")
+            .classList.remove("open");
+
+        $("review-modal")
+            .setAttribute(
+                "aria-hidden",
+                "true"
+            );
+
+        document.body.style.overflow = "";
+        currentRequest = null;
+    }
+
+    function resetDecisionUI() {
+        $("denial-fields")
+            .classList.remove("open");
+
+        $("deny-btn").style.display = "";
+        $("approve-btn").style.display = "";
+        $("confirm-deny-btn").style.display =
+            "none";
+        $("cancel-denial-btn").style.display =
+            "none";
+
+        $("denial-reason").value = "";
+        $("denial-note").value = "";
+        $("decision-note").value = "";
+
+        clearNotice(
+            $("review-notice")
+        );
+    }
+
+    async function loadMetrics(personnelId) {
+        const fields = [
+            "metric-applications",
+            "metric-approved",
+            "metric-denied",
+            "metric-cancelled",
+            "metric-approved-days",
+            "metric-frequency",
+            "metric-gap",
+            "metric-denial-rate"
+        ];
+
+        fields.forEach((id) => {
+            $(id).textContent = "…";
+        });
+
+        try {
+            const response = await fetch(
+                "/api/welfare-officer/personnel/"
+                + encodeURIComponent(personnelId)
+                + "/leave-metrics?days=90",
+                {
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+            const data =
+                await readJson(response);
+
+            const m =
+                data.metrics || {};
+
+            $("metric-applications").textContent =
+                m.applications ?? 0;
+
+            $("metric-approved").textContent =
+                m.approved ?? 0;
+
+            $("metric-denied").textContent =
+                m.denied ?? 0;
+
+            $("metric-cancelled").textContent =
+                m.cancelled ?? 0;
+
+            $("metric-approved-days").textContent =
+                m.approved_leave_days ?? 0;
+
+            $("metric-frequency").textContent =
+                m.applications_per_30_days ?? 0;
+
+            $("metric-gap").textContent =
+                m.average_days_between_requests
+                == null
+                    ? "—"
+                    : m.average_days_between_requests
+                      + " days";
+
+            $("metric-denial-rate").textContent =
+                (m.denial_rate_percent ?? 0)
+                + "%";
+        }
+        catch (error) {
+            fields.forEach((id) => {
+                $(id).textContent = "—";
+            });
+        }
+    }
+
+    function showExistingDecision(item) {
+        $("decision-area").style.display =
+            "none";
+
+        $("existing-decision").style.display =
+            "block";
+
+        let text =
+            "Decision: "
+            + item.status;
+
+        if (item.decision_reason) {
+            text +=
+                " | Reason: "
+                + item.decision_reason;
+        }
+
+        if (item.decision_note) {
+            text +=
+                " | Note: "
+                + item.decision_note;
+        }
+
+        if (item.decided_by) {
+            text +=
+                " | Officer: "
+                + item.decided_by;
+        }
+
+        if (item.decided_at) {
+            text +=
+                " | "
+                + formatDateTime(
+                    item.decided_at
+                );
+        }
+
+        $("existing-decision").textContent =
+            text;
+    }
+
+    async function reviewRequest(id) {
+        const item =
+            leaveRequests.find(
+                (request) =>
+                    Number(request.id)
+                    === Number(id)
+            );
+
+        if (!item) {
+            showNotice(
+                $("page-notice"),
+                "Leave request not found.",
+                "error"
+            );
+            return;
+        }
+
+        currentRequest = item;
+
+        const person =
+            personnelMap[item.personnel_id]
+            || {};
+
+        resetDecisionUI();
+
+        $("review-title").textContent =
+            item.status === "Pending"
+                ? "Review Leave Request"
+                : "Leave Request Details";
+
+        $("review-subtitle").textContent =
+            (item.request_code || ("LR-" + item.id))
+            + " • Submitted "
+            + formatDateTime(item.created_at);
+
+        $("review-personnel").textContent =
+            item.personnel_id
+            + (
+                person.full_name
+                    ? " — " + person.full_name
+                    : ""
+            );
+
+        $("review-status").innerHTML =
+            `<span class="status-badge ${statusClass(item.status)}">${escapeHtml(item.status)}</span>`;
+
+        $("review-type").textContent =
+            item.leave_type || "—";
+
+        $("review-duration").textContent =
+            item.requested_days
+            + (
+                Number(item.requested_days) === 1
+                    ? " day"
+                    : " days"
+            );
+
+        $("review-start").textContent =
+            formatDate(item.start_date);
+
+        $("review-end").textContent =
+            formatDate(item.end_date);
+
+        $("review-category").textContent =
+            item.reason_category || "—";
+
+        $("review-reason").textContent =
+            item.reason || "—";
+
+        $("review-additional-note").textContent =
+            item.additional_note || "None";
+
+        if (item.status === "Pending") {
+            $("decision-area").style.display =
+                "block";
+
+            $("existing-decision").style.display =
+                "none";
+        }
+        else {
+            showExistingDecision(item);
+        }
+
+        openModal();
+
+        await loadMetrics(
+            item.personnel_id
+        );
+    }
+
+    function beginDenial() {
+        if (!currentRequest) {
+            return;
+        }
+
+        $("denial-fields")
+            .classList.add("open");
+
+        $("deny-btn").style.display =
+            "none";
+
+        $("approve-btn").style.display =
+            "none";
+
+        $("confirm-deny-btn").style.display =
+            "";
+
+        $("cancel-denial-btn").style.display =
+            "";
+    }
+
+    function cancelDenial() {
+        $("denial-fields")
+            .classList.remove("open");
+
+        $("deny-btn").style.display =
+            "";
+
+        $("approve-btn").style.display =
+            "";
+
+        $("confirm-deny-btn").style.display =
+            "none";
+
+        $("cancel-denial-btn").style.display =
+            "none";
+
+        $("denial-reason").value = "";
+        $("denial-note").value = "";
+
+        clearNotice(
+            $("review-notice")
+        );
+    }
+
+    async function submitDecision(
+        decision
+    ) {
+        if (!currentRequest) {
+            return;
+        }
+
+        clearNotice(
+            $("review-notice")
+        );
+
+        let decisionReason = "";
+        let decisionNote =
+            $("decision-note")
+            .value
+            .trim();
+
+        if (decision === "Denied") {
+            const selectedReason =
+                $("denial-reason")
+                .value
+                .trim();
+
+            const explanation =
+                $("denial-note")
+                .value
+                .trim();
+
+            if (!selectedReason) {
+                showNotice(
+                    $("review-notice"),
+                    "Select a clear denial reason.",
+                    "error"
+                );
+                return;
+            }
+
+            if (explanation.length < 3) {
+                showNotice(
+                    $("review-notice"),
+                    "A clear denial explanation is required.",
+                    "error"
+                );
+                return;
+            }
+
+            decisionReason =
+                selectedReason === "Other"
+                    ? explanation
+                    : selectedReason;
+
+            decisionNote =
+                explanation;
+        }
+
+        const actionButton =
+            decision === "Approved"
+                ? $("approve-btn")
+                : $("confirm-deny-btn");
+
+        actionButton.disabled = true;
+
+        const originalText =
+            actionButton.textContent;
+
+        actionButton.textContent =
+            decision === "Approved"
+                ? "Approving..."
+                : "Denying...";
+
+        try {
+            const response = await fetch(
+                "/api/welfare-officer/leave-requests/"
+                + encodeURIComponent(
+                    currentRequest.id
+                )
+                + "/decision",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+                        "Accept":
+                            "application/json"
+                    },
+                    body: JSON.stringify({
+                        decision,
+                        decision_reason:
+                            decisionReason,
+                        decision_note:
+                            decisionNote
+                    })
+                }
+            );
+
+            const data =
+                await readJson(response);
+
+            closeModal();
+
+            showNotice(
+                $("page-notice"),
+                data.message
+                || "Leave decision saved successfully.",
+                "success"
+            );
+
+            await loadLeaveRequests();
+        }
+        catch (error) {
+            showNotice(
+                $("review-notice"),
+                error.message,
+                "error"
+            );
+        }
+        finally {
+            actionButton.disabled = false;
+            actionButton.textContent =
+                originalText;
+        }
+    }
+
+    $("personnel-search")
+        .addEventListener(
+            "input",
+            renderRequests
+        );
+
+    $("status-filter")
+        .addEventListener(
+            "change",
+            renderRequests
+        );
+
+    $("refresh-btn")
+        .addEventListener(
+            "click",
+            loadAll
+        );
+
+    $("close-review-btn")
+        .addEventListener(
+            "click",
+            closeModal
+        );
+
+    $("review-modal")
+        .addEventListener(
+            "click",
+            function (event) {
+                if (
+                    event.target
+                    === $("review-modal")
+                ) {
+                    closeModal();
+                }
+            }
+        );
+
+    $("deny-btn")
+        .addEventListener(
+            "click",
+            beginDenial
+        );
+
+    $("cancel-denial-btn")
+        .addEventListener(
+            "click",
+            cancelDenial
+        );
+
+    $("approve-btn")
+        .addEventListener(
+            "click",
+            function () {
+                submitDecision(
+                    "Approved"
+                );
+            }
+        );
+
+    $("confirm-deny-btn")
+        .addEventListener(
+            "click",
+            function () {
+                submitDecision(
+                    "Denied"
+                );
+            }
+        );
+
+    document.addEventListener(
+        "click",
+        function (event) {
+            const button =
+                event.target.closest(
+                    "[data-review-id]"
+                );
+
+            if (!button) {
+                return;
+            }
+
+            reviewRequest(
+                button.dataset.reviewId
+            );
+        }
+    );
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+            if (
+                event.key === "Escape"
+                && $("review-modal")
+                    .classList
+                    .contains("open")
+            ) {
+                closeModal();
+            }
+        }
+    );
+
+    loadAll();
+
+    // Lightweight auto-refresh. It does not interrupt an open review modal.
+    window.setInterval(
+        function () {
+            if (
+                !$("review-modal")
+                    .classList
+                    .contains("open")
+            ) {
+                loadLeaveRequests(false);
+            }
+        },
+        5000
+    );
+})();
+</script>
+{% include 'partials/welfare_veerassist.html' %}
+</body>
+</html>

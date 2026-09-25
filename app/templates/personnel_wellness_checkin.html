@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Wellness Check-In | VeerPulse</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+
+        .wellness-wrapper {
+            max-width: 1050px;
+        }
+
+        .wellness-intro {
+            background: #eef6f6;
+            border-left: 4px solid #16858c;
+            border-radius: 10px;
+            padding: 17px 19px;
+            margin-bottom: 22px;
+
+            color: #526a70;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+
+        /* PROGRESS */
+
+        .questionnaire-progress {
+            background: white;
+            border: 1px solid #e7ebef;
+            border-radius: 12px;
+
+            padding: 17px 20px;
+            margin-bottom: 22px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+
+            margin-bottom: 9px;
+
+            font-size: 12px;
+            color: #748191;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 7px;
+
+            background: #edf1f4;
+
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            width: 20%;
+            height: 100%;
+
+            background: #16858c;
+        }
+
+
+        /* QUESTION CARD */
+
+        .question-section {
+            background: white;
+
+            border: 1px solid #e7ebef;
+            border-radius: 14px;
+
+            padding: 26px;
+
+            margin-bottom: 20px;
+
+            box-shadow:
+                0 5px 18px rgba(31, 55, 80, 0.05);
+        }
+
+        .section-number {
+            display: inline-block;
+
+            padding: 5px 10px;
+
+            background: #edf6f6;
+
+            border-radius: 20px;
+
+            color: #14747a;
+
+            font-size: 10px;
+            font-weight: 700;
+
+            margin-bottom: 10px;
+        }
+
+        .question-section h2 {
+            margin: 0 0 6px;
+
+            color: #163b65;
+            font-size: 19px;
+        }
+
+        .section-description {
+            margin: 0 0 22px;
+
+            color: #7c8895;
+            font-size: 12px;
+        }
+
+
+        /* QUESTION */
+
+        .question-row {
+            padding: 18px 0;
+
+            border-bottom: 1px solid #edf0f3;
+        }
+
+        .question-row:last-child {
+            border-bottom: none;
+        }
+
+        .question-text {
+            margin-bottom: 13px;
+
+            color: #2d4055;
+
+            font-size: 13px;
+            font-weight: 600;
+
+            line-height: 1.5;
+        }
+
+
+        /* ANSWERS */
+
+        .answer-options {
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, minmax(0, 1fr));
+
+            gap: 10px;
+        }
+
+        .answer-option input {
+            display: none;
+        }
+
+        .answer-option label {
+            display: block;
+
+            padding: 10px 8px;
+
+            text-align: center;
+
+            background: #f8fafb;
+
+            border: 1px solid #dfe5eb;
+
+            border-radius: 8px;
+
+            color: #697686;
+
+            font-size: 11px;
+            font-weight: 600;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+        .answer-option label:hover {
+            border-color: #8fbfc2;
+        }
+
+        .answer-option input:checked + label {
+            background: #eaf6f6;
+
+            border-color: #16858c;
+
+            color: #126d73;
+        }
+
+
+        /* SUPPORT SECTION */
+
+        .support-choice {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+
+            gap: 12px;
+        }
+
+
+        /* NOTE */
+
+        .wellness-note {
+            width: 100%;
+            min-height: 110px;
+
+            padding: 13px 14px;
+
+            border: 1px solid #dce3e9;
+            border-radius: 9px;
+
+            outline: none;
+            resize: vertical;
+
+            font-family: inherit;
+            font-size: 13px;
+
+            color: #32465b;
+        }
+
+        .wellness-note:focus {
+            border-color: #16858c;
+
+            box-shadow:
+                0 0 0 3px rgba(22, 133, 140, 0.08);
+        }
+
+
+        /* SUBMIT */
+
+        .questionnaire-actions {
+            display: flex;
+            justify-content: flex-end;
+
+            margin: 24px 0;
+        }
+
+        .wellness-submit {
+            padding: 13px 23px;
+
+            border: none;
+            border-radius: 9px;
+
+            background: #163b65;
+
+            color: white;
+
+            font-size: 13px;
+            font-weight: 700;
+
+            cursor: pointer;
+        }
+
+        .wellness-submit:hover {
+            background: #102f52;
+        }
+
+
+        /* PRIVACY */
+
+        .privacy-message {
+            padding: 14px 16px;
+
+            border-radius: 9px;
+
+            background: #f7f9fb;
+
+            color: #788594;
+
+            font-size: 11px;
+            line-height: 1.7;
+        }
+
+
+        /* DATABASE SUBMISSION STATUS */
+
+        .checkin-status {
+            display: none;
+            margin: 0 0 18px;
+            padding: 13px 15px;
+            border-radius: 9px;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .checkin-status.show {
+            display: block;
+        }
+
+        .checkin-status.success {
+            background: #eaf6f1;
+            border-left: 4px solid #2d8a6e;
+            color: #356b59;
+        }
+
+        .checkin-status.error {
+            background: #fdeeee;
+            border-left: 4px solid #c95a5a;
+            color: #8b4a4a;
+        }
+
+        .recent-checkins {
+            background: white;
+            border: 1px solid #e7ebef;
+            border-radius: 14px;
+            padding: 22px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.05);
+        }
+
+        .recent-checkins h2 {
+            margin: 0 0 5px;
+            color: #163b65;
+            font-size: 17px;
+        }
+
+        .recent-checkins > p {
+            margin: 0 0 14px;
+            color: #7c8895;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .checkin-history-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .checkin-history-item {
+            padding: 13px 14px;
+            border: 1px solid #e6ebef;
+            border-radius: 9px;
+            background: #f8fafb;
+        }
+
+        .checkin-history-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .checkin-history-top strong {
+            color: #2d4055;
+            font-size: 11px;
+        }
+
+        .checkin-history-top span {
+            color: #8a96a1;
+            font-size: 9px;
+            white-space: nowrap;
+        }
+
+        .checkin-history-item p {
+            margin: 6px 0 0;
+            color: #70808e;
+            font-size: 10px;
+            line-height: 1.5;
+        }
+
+        .empty-checkin-history {
+            padding: 13px 14px;
+            border: 1px dashed #d4dde4;
+            border-radius: 9px;
+            background: #f8fafb;
+            color: #7a8794;
+            font-size: 10px;
+            line-height: 1.6;
+        }
+
+
+        @media (max-width: 800px) {
+
+            .answer-options {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .support-choice {
+                grid-template-columns: 1fr;
+            }
+        }
+
+
+        @media (max-width: 500px) {
+
+            .answer-options {
+                grid-template-columns: 1fr;
+            }
+        }
+
+    </style>
+</head>
+
+
+<body class="dashboard-page">
+
+<div class="dashboard-layout">
+
+
+    <!-- SHARED PERSONNEL SIDEBAR -->
+    {% include 'partials/personnel_sidebar.html' %}
+
+
+    <!-- MAIN -->
+
+    <main class="dashboard-main">
+
+        <div class="wellness-wrapper">
+
+
+            <!-- HEADER -->
+
+            <header class="dashboard-header">
+
+                <div>
+
+                    <p class="dashboard-label">
+                        Voluntary Personnel Wellness
+                    </p>
+
+                    <h1>
+                        Wellness Check-In
+                    </h1>
+
+                </div>
+
+            </header>
+
+
+            <!-- INTRO -->
+
+            <div class="wellness-intro">
+
+                This voluntary check-in helps VeerPulse understand
+                changes in your normal wellbeing pattern.
+
+                Your responses are considered together with duty,
+                rest, leave and workload information.
+
+                VeerPulse does not use this questionnaire to make
+                a medical diagnosis.
+
+            </div>
+
+
+            <!-- PROGRESS -->
+
+            <div class="questionnaire-progress">
+
+                <div class="progress-header">
+
+                    <span>
+                        Wellness Questionnaire
+                    </span>
+
+                    <span>
+                        5 Sections
+                    </span>
+
+                </div>
+
+                <div class="progress-track">
+
+                    <div class="progress-fill" id="wellness-progress-fill"></div>
+
+                </div>
+
+            </div>
+
+
+            <form id="wellness-checkin-form">
+
+
+                <!-- SECTION 1 -->
+
+                <section class="question-section">
+
+                    <span class="section-number">
+                        SECTION 01
+                    </span>
+
+                    <h2>
+                        Work & Duty Pressure
+                    </h2>
+
+                    <p class="section-description">
+                        Think about your recent duty experience.
+                    </p>
+
+
+                    <div class="question-row">
+
+                        <div class="question-text">
+                            My current workload feels difficult to manage.
+                        </div>
+
+                        <div class="answer-options">
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="work1-a"
+                                       name="workload_pressure"
+                                       value="Not at all">
+
+                                <label for="work1-a">
+                                    Not at all
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="work1-b"
+                                       name="workload_pressure"
+                                       value="Slightly">
+
+                                <label for="work1-b">
+                                    Slightly
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="work1-c"
+                                       name="workload_pressure"
+                                       value="Moderately">
+
+                                <label for="work1-c">
+                                    Moderately
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="work1-d"
+                                       name="workload_pressure"
+                                       value="Very much">
+
+                                <label for="work1-d">
+                                    Very much
+                                </label>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="question-row">
+
+                        <div class="question-text">
+                            I have had enough recovery time between recent duties.
+                        </div>
+
+                        <div class="answer-options">
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="work2-a"
+                                       name="recovery_time"
+                                       value="Not at all">
+
+                                <label for="work2-a">
+                                    Not at all
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="work2-b"
+                                       name="recovery_time"
+                                       value="Slightly">
+
+                                <label for="work2-b">
+                                    Slightly
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="work2-c"
+                                       name="recovery_time"
+                                       value="Moderately">
+
+                                <label for="work2-c">
+                                    Moderately
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="work2-d"
+                                       name="recovery_time"
+                                       value="Very much">
+
+                                <label for="work2-d">
+                                    Very much
+                                </label>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="question-row">
+
+                        <div class="question-text">
+                            Recent changes in duty or deployment have been difficult to adjust to.
+                        </div>
+
+                        <div class="answer-options">
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="work3-a"
+                                       name="duty_adjustment"
+                                       value="Not at all">
+
+                                <label for="work3-a">
+                                    Not at all
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="work3-b"
+                                       name="duty_adjustment"
+                                       value="Slightly">
+
+                                <label for="work3-b">
+                                    Slightly
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="work3-c"
+                                       name="duty_adjustment"
+                                       value="Moderately">
+
+                                <label for="work3-c">
+                                    Moderately
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="work3-d"
+                                       name="duty_adjustment"
+                                       value="Very much">
+
+                                <label for="work3-d">
+                                    Very much
+                                </label>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- SECTION 2 -->
+
+                <section class="question-section">
+
+                    <span class="section-number">
+                        SECTION 02
+                    </span>
+
+                    <h2>
+                        Rest & Energy
+                    </h2>
+
+                    <p class="section-description">
+                        Consider your recent sleep, rest and physical recovery.
+                    </p>
+
+
+                    <div class="question-row">
+
+                        <div class="question-text">
+                            My recent sleep and rest quality has been good.
+                        </div>
+
+                        <div class="answer-options">
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="rest1-a"
+                                       name="rest_quality"
+                                       value="Not at all">
+
+                                <label for="rest1-a">
+                                    Not at all
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="rest1-b"
+                                       name="rest_quality"
+                                       value="Slightly">
+
+                                <label for="rest1-b">
+                                    Slightly
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="rest1-c"
+                                       name="rest_quality"
+                                       value="Moderately">
+
+                                <label for="rest1-c">
+                                    Moderately
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="rest1-d"
+                                       name="rest_quality"
+                                       value="Very much">
+
+                                <label for="rest1-d">
+                                    Very much
+                                </label>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="question-row">
+
+                        <div class="question-text">
+                            My energy level has been lower than usual.
+                        </div>
+
+                        <div class="answer-options">
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="energy-a"
+                                       name="low_energy"
+                                       value="Not at all">
+
+                                <label for="energy-a">
+                                    Not at all
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="energy-b"
+                                       name="low_energy"
+                                       value="Slightly">
+
+                                <label for="energy-b">
+                                    Slightly
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="energy-c"
+                                       name="low_energy"
+                                       value="Moderately">
+
+                                <label for="energy-c">
+                                    Moderately
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="energy-d"
+                                       name="low_energy"
+                                       value="Very much">
+
+                                <label for="energy-d">
+                                    Very much
+                                </label>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- SECTION 3 -->
+
+                <section class="question-section">
+
+                    <span class="section-number">
+                        SECTION 03
+                    </span>
+
+                    <h2>
+                        Family & Social Connection
+                    </h2>
+
+                    <p class="section-description">
+                        Consider your recent connection with family or trusted people.
+                    </p>
+
+
+                    <div class="question-row">
+
+                        <div class="question-text">
+                            I have been able to stay connected with family or people important to me.
+                        </div>
+
+                        <div class="answer-options">
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="family1-a"
+                                       name="family_connection"
+                                       value="Not at all">
+
+                                <label for="family1-a">
+                                    Not at all
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="family1-b"
+                                       name="family_connection"
+                                       value="Slightly">
+
+                                <label for="family1-b">
+                                    Slightly
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="family1-c"
+                                       name="family_connection"
+                                       value="Moderately">
+
+                                <label for="family1-c">
+                                    Moderately
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="family1-d"
+                                       name="family_connection"
+                                       value="Very much">
+
+                                <label for="family1-d">
+                                    Very much
+                                </label>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="question-row">
+
+                        <div class="question-text">
+                            Being away from family has been difficult for me recently.
+                        </div>
+
+                        <div class="answer-options">
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="family2-a"
+                                       name="family_separation"
+                                       value="Not at all">
+
+                                <label for="family2-a">
+                                    Not at all
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="family2-b"
+                                       name="family_separation"
+                                       value="Slightly">
+
+                                <label for="family2-b">
+                                    Slightly
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="family2-c"
+                                       name="family_separation"
+                                       value="Moderately">
+
+                                <label for="family2-c">
+                                    Moderately
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="family2-d"
+                                       name="family_separation"
+                                       value="Very much">
+
+                                <label for="family2-d">
+                                    Very much
+                                </label>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- SECTION 4 -->
+
+                <section class="question-section">
+
+                    <span class="section-number">
+                        SECTION 04
+                    </span>
+
+                    <h2>
+                        General Wellbeing
+                    </h2>
+
+                    <p class="section-description">
+                        Compare how you feel now with your usual pattern.
+                    </p>
+
+
+                    <div class="question-row">
+
+                        <div class="question-text">
+                            I have been able to stay calm and focused during my normal activities.
+                        </div>
+
+                        <div class="answer-options">
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="wellbeing1-a"
+                                       name="focus"
+                                       value="Not at all">
+
+                                <label for="wellbeing1-a">
+                                    Not at all
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="wellbeing1-b"
+                                       name="focus"
+                                       value="Slightly">
+
+                                <label for="wellbeing1-b">
+                                    Slightly
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="wellbeing1-c"
+                                       name="focus"
+                                       value="Moderately">
+
+                                <label for="wellbeing1-c">
+                                    Moderately
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="wellbeing1-d"
+                                       name="focus"
+                                       value="Very much">
+
+                                <label for="wellbeing1-d">
+                                    Very much
+                                </label>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="question-row">
+
+                        <div class="question-text">
+                            I have felt more mentally tired or irritable than usual.
+                        </div>
+
+                        <div class="answer-options">
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="wellbeing2-a"
+                                       name="mental_tiredness"
+                                       value="Not at all">
+
+                                <label for="wellbeing2-a">
+                                    Not at all
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="wellbeing2-b"
+                                       name="mental_tiredness"
+                                       value="Slightly">
+
+                                <label for="wellbeing2-b">
+                                    Slightly
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="wellbeing2-c"
+                                       name="mental_tiredness"
+                                       value="Moderately">
+
+                                <label for="wellbeing2-c">
+                                    Moderately
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="wellbeing2-d"
+                                       name="mental_tiredness"
+                                       value="Very much">
+
+                                <label for="wellbeing2-d">
+                                    Very much
+                                </label>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="question-row">
+
+                        <div class="question-text">
+                            I feel noticeably different from my usual wellbeing pattern.
+                        </div>
+
+                        <div class="answer-options">
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="wellbeing3-a"
+                                       name="pattern_change"
+                                       value="Not at all">
+
+                                <label for="wellbeing3-a">
+                                    Not at all
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="wellbeing3-b"
+                                       name="pattern_change"
+                                       value="Slightly">
+
+                                <label for="wellbeing3-b">
+                                    Slightly
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="wellbeing3-c"
+                                       name="pattern_change"
+                                       value="Moderately">
+
+                                <label for="wellbeing3-c">
+                                    Moderately
+                                </label>
+                            </div>
+
+                            <div class="answer-option">
+                                <input type="radio"
+                                       id="wellbeing3-d"
+                                       name="pattern_change"
+                                       value="Very much">
+
+                                <label for="wellbeing3-d">
+                                    Very much
+                                </label>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- SECTION 5 -->
+
+                <section class="question-section">
+
+                    <span class="section-number">
+                        SECTION 05
+                    </span>
+
+                    <h2>
+                        Welfare Support
+                    </h2>
+
+                    <p class="section-description">
+                        You can voluntarily request confidential welfare support.
+                    </p>
+
+
+                    <div class="question-row">
+
+                        <div class="question-text">
+                            Would you like confidential welfare support?
+                        </div>
+
+                        <div class="support-choice">
+
+                            <div class="answer-option">
+
+                                <input type="radio"
+                                       id="support-no"
+                                       name="support_request"
+                                       value="No">
+
+                                <label for="support-no">
+                                    No
+                                </label>
+
+                            </div>
+
+
+                            <div class="answer-option">
+
+                                <input type="radio"
+                                       id="support-later"
+                                       name="support_request"
+                                       value="Maybe Later">
+
+                                <label for="support-later">
+                                    Maybe Later
+                                </label>
+
+                            </div>
+
+
+                            <div class="answer-option">
+
+                                <input type="radio"
+                                       id="support-yes"
+                                       name="support_request"
+                                       value="Yes">
+
+                                <label for="support-yes">
+                                    Yes, Request Support
+                                </label>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="question-row">
+
+                        <div class="question-text">
+                            Optional confidential note
+                        </div>
+
+                        <textarea
+                            class="wellness-note"
+                            name="optional_note"
+                            placeholder="You may add a short welfare-related note here..."></textarea>
+
+                    </div>
+
+                </section>
+
+
+                <!-- SUBMIT -->
+
+                <div class="questionnaire-actions">
+
+                    <button type="submit"
+                            class="wellness-submit"
+                            id="wellness-submit-btn">
+
+                        Submit Wellness Check-In
+
+                    </button>
+
+                </div>
+
+
+
+                <div id="checkin-status"
+                     class="checkin-status">
+                </div>
+
+
+                <section class="recent-checkins">
+
+                    <h2>
+                        Recent Wellness Check-Ins
+                    </h2>
+
+                    <p>
+                        Your recent voluntary submissions are stored in PostgreSQL.
+                        Only a safe summary is shown here; the confidential note is
+                        not copied into the welfare-assessment explanation.
+                    </p>
+
+                    <div class="checkin-history-list">
+
+                        {% if recent_checkins %}
+
+                            {% for item in recent_checkins %}
+
+                                <div class="checkin-history-item">
+
+                                    <div class="checkin-history-top">
+
+                                        <strong>
+                                            {{ item.summary_label }}
+                                        </strong>
+
+                                        <span>
+                                            {{ item.submitted_at.strftime("%d %b %Y, %I:%M %p") }}
+                                        </span>
+
+                                    </div>
+
+                                    <p>
+                                        Supporting indicators:
+                                        {{ item.concern_count }} concern item(s)
+                                        · Support choice:
+                                        {{ item.support_request }}.
+                                        This did not independently set a welfare-attention level.
+                                    </p>
+
+                                </div>
+
+                            {% endfor %}
+
+                        {% else %}
+
+                            <div class="empty-checkin-history">
+                                No saved Wellness Check-In is available yet.
+                                Complete the questionnaire above to create the
+                                first database-backed record.
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </section>
+
+
+                <div class="privacy-message">
+
+                    Your responses are intended for welfare support and
+                    personal trend analysis. VeerPulse compares changes
+                    against your personal baseline rather than assigning
+                    a medical diagnosis.
+
+                    When meaningful changes are detected, the system may
+                    suggest an optional Wellness Scan or confidential
+                    human welfare support.
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<script>
+(function () {
+
+    const form =
+        document.getElementById(
+            "wellness-checkin-form"
+        );
+
+    const submitButton =
+        document.getElementById(
+            "wellness-submit-btn"
+        );
+
+    const statusBox =
+        document.getElementById(
+            "checkin-status"
+        );
+
+    const progressFill =
+        document.getElementById(
+            "wellness-progress-fill"
+        );
+
+    const requiredGroups = [
+        "workload_pressure",
+        "recovery_time",
+        "duty_adjustment",
+        "rest_quality",
+        "low_energy",
+        "family_connection",
+        "family_separation",
+        "focus",
+        "mental_tiredness",
+        "pattern_change"
+    ];
+
+
+    function selectedValue(name) {
+
+        const selected =
+            form.querySelector(
+                'input[name="' +
+                name +
+                '"]:checked'
+            );
+
+        return selected
+            ? selected.value
+            : "";
+    }
+
+
+    function updateProgress() {
+
+        let completed = 0;
+
+        requiredGroups.forEach(
+            function (name) {
+
+                if (selectedValue(name)) {
+                    completed += 1;
+                }
+            }
+        );
+
+        const supportChoice =
+            selectedValue(
+                "support_request"
+            );
+
+        if (supportChoice) {
+            completed += 1;
+        }
+
+        const total =
+            requiredGroups.length + 1;
+
+        const percent =
+            Math.round(
+                completed
+                * 100
+                / total
+            );
+
+        progressFill.style.width =
+            percent + "%";
+    }
+
+
+    function showStatus(
+        message,
+        kind
+    ) {
+
+        statusBox.textContent =
+            message;
+
+        statusBox.className =
+            "checkin-status show "
+            + kind;
+    }
+
+
+    form.addEventListener(
+        "change",
+        updateProgress
+    );
+
+
+    form.addEventListener(
+        "submit",
+        async function (event) {
+
+            event.preventDefault();
+
+            const missing =
+                requiredGroups.filter(
+                    function (name) {
+                        return !selectedValue(
+                            name
+                        );
+                    }
+                );
+
+            if (missing.length) {
+
+                showStatus(
+                    "Please answer all wellness questions before submitting.",
+                    "error"
+                );
+
+                return;
+            }
+
+            const payload = {};
+
+            requiredGroups.forEach(
+                function (name) {
+                    payload[name] =
+                        selectedValue(
+                            name
+                        );
+                }
+            );
+
+            payload.support_request =
+                selectedValue(
+                    "support_request"
+                ) || "Not Answered";
+
+            const note =
+                form.querySelector(
+                    '[name="optional_note"]'
+                );
+
+            payload.optional_note =
+                note
+                ? note.value.trim()
+                : "";
+
+            submitButton.disabled =
+                true;
+
+            submitButton.textContent =
+                "Saving Check-In...";
+
+            try {
+
+                const saveResponse =
+                    await fetch(
+                        "/api/personnel/wellness-checkins",
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+                            body:
+                                JSON.stringify(
+                                    payload
+                                )
+                        }
+                    );
+
+                const saveResult =
+                    await saveResponse.json();
+
+                if (
+                    !saveResponse.ok
+                    || !saveResult.success
+                ) {
+
+                    throw new Error(
+                        saveResult.message
+                        || "Check-in could not be saved."
+                    );
+                }
+
+                let assessmentMessage =
+                    "Assessment refresh was not completed.";
+
+                try {
+
+                    const assessmentResponse =
+                        await fetch(
+                            "/api/personnel/recalculate-assessment",
+                            {
+                                method: "POST"
+                            }
+                        );
+
+                    const assessmentResult =
+                        await assessmentResponse.json();
+
+                    if (
+                        assessmentResponse.ok
+                        && assessmentResult.success
+                    ) {
+
+                        const assessment =
+                            assessmentResult.assessment;
+
+                        assessmentMessage =
+                            "Current assessment: "
+                            + assessment.attention_level
+                            + ".";
+                    }
+
+                } catch (assessmentError) {
+
+                    assessmentMessage =
+                        "The check-in was saved, but the assessment refresh could not be completed.";
+                }
+
+                let supportMessage = "";
+
+                if (
+                    saveResult
+                        .support_request_created
+                ) {
+
+                    supportMessage =
+                        " A confidential human-support request was also routed.";
+                }
+
+                showStatus(
+                    "Wellness Check-In saved to PostgreSQL. "
+                    + assessmentMessage
+                    + supportMessage
+                    + " Your check-in is supporting context only and does not independently set the attention level.",
+                    "success"
+                );
+
+                window.setTimeout(
+                    function () {
+                        window.location.reload();
+                    },
+                    1400
+                );
+
+            } catch (error) {
+
+                showStatus(
+                    error.message
+                    || "The Wellness Check-In could not be saved.",
+                    "error"
+                );
+
+                submitButton.disabled =
+                    false;
+
+                submitButton.textContent =
+                    "Submit Wellness Check-In";
+            }
+        }
+    );
+
+
+    updateProgress();
+
+})();
+</script>
+{% include 'partials/veerassist.html' %}
+</body>
+
+</html>

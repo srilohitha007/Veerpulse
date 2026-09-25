@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy | VeerPulse</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .privacy-grid { display:grid; grid-template-columns:1.1fr 0.9fr; gap:22px; }
+        .privacy-card { background:white; border:1px solid #e6ebef; border-radius:12px; padding:20px; box-shadow:0 5px 18px rgba(31,55,80,.05); }
+        .privacy-card h2 { margin:0 0 8px; color:#163b65; font-size:20px; }
+        .privacy-card > p { margin:0 0 18px; color:#748291; font-size:12px; line-height:1.7; }
+        .privacy-item { padding:14px 0; border-bottom:1px solid #edf0f2; }
+        .privacy-item:last-child { border-bottom:none; }
+        .privacy-item strong { display:block; color:#2d4054; font-size:13px; margin-bottom:5px; }
+        .privacy-item p { margin:0; color:#7a8794; font-size:11px; line-height:1.6; }
+        .privacy-badge { display:inline-block; padding:6px 10px; margin-bottom:12px; border-radius:20px; background:#eaf5f3; color:#26756f; font-size:10px; font-weight:700; }
+        .consent-box { padding:14px; background:#f7f9fb; border:1px solid #e6ebef; border-radius:10px; margin-bottom:12px; }
+        .consent-box strong { display:block; color:#24394f; font-size:12px; margin-bottom:5px; }
+        .consent-box p { margin:0; color:#7a8794; font-size:11px; line-height:1.6; }
+        .privacy-note { margin-top:16px; padding:14px 15px; background:#eef6f6; border-left:4px solid #16858c; border-radius:9px; color:#536b70; font-size:11px; line-height:1.7; }
+        @media(max-width:900px) { .privacy-grid { grid-template-columns:1fr; } }
+    </style>
+</head>
+<body class="dashboard-page">
+<div class="dashboard-layout">
+    {% include 'partials/personnel_sidebar.html' %}
+    <main class="dashboard-main">
+        <header class="dashboard-header">
+            <div><p class="dashboard-label">Personal Data Protection</p><h1>Privacy</h1></div>
+            <div class="officer-profile">
+                <div class="profile-circle">VP</div>
+                <div><strong>Personnel {{ personnel.personnel_id if personnel else (session.get('personnel_id') or 'Unavailable') }}</strong><p>{{ personnel.full_name if personnel and personnel.full_name else 'Name unavailable' }}</p></div>
+            </div>
+        </header>
+        <section class="privacy-grid">
+            <div class="privacy-card">
+                <span class="privacy-badge">Privacy-First Welfare Support</span>
+                <h2>How VeerPulse Uses Your Data</h2>
+                <p>VeerPulse is designed to support personnel welfare using minimum necessary information, controlled access and explainable indicators. The following principles describe the intended use of the system.</p>
+                <div class="privacy-item"><strong>Minimum Necessary Data</strong><p>Only information needed for welfare-support functions should be collected and displayed.</p></div>
+                <div class="privacy-item"><strong>Role-Based Access</strong><p>Personnel access is intended for their own records. Officer access should be limited to authorised welfare review.</p></div>
+                <div class="privacy-item"><strong>Non-Disciplinary Use</strong><p>Welfare indicators support human review, rather than automatic disciplinary decisions.</p></div>
+                <div class="privacy-item"><strong>Explainable Indicators</strong><p>Welfare attention should be linked to recorded evidence and understandable contributing changes.</p></div>
+                <div class="privacy-item"><strong>No Medical Diagnosis</strong><p>Wellness indicators and experimental camera measurements are not medical diagnoses.</p></div>
+                <div class="privacy-item">
+                    <strong>Your Stored Records</strong>
+                    {% if data_inventory is defined and data_inventory %}
+                    <p>Valid operational records: {{ data_inventory.operational_records }}<br>
+                    Wellness check-ins: {{ data_inventory.wellness_checkins }}<br>
+                    Saved scans: {{ data_inventory.wellness_scans }}<br>
+                    Assessment versions: {{ data_inventory.assessments }}<br>
+                    Support requests: {{ data_inventory.support_requests }}<br>
+                    Leave requests: {{ data_inventory.leave_requests }}</p>
+                    {% else %}<p>Record counts unavailable.</p>{% endif %}
+                    <p>Counts cover stored records for your account, not only active requests or the last seven days.</p>
+                </div>
+            </div>
+            <div class="privacy-card">
+                <h2>Consent & Optional Data</h2>
+                <p>Wellness inputs are optional. Saved-record counts describe data already stored; they do not establish consent or authorise future collection.</p>
+                <div class="consent-box">
+                    <strong>Wellness Check-In</strong>
+                    <p>Self-reported wellness information is voluntary and intended for welfare support.</p>
+                    {% if voluntary_sources is defined and voluntary_sources %}
+                    <p>Saved check-ins: {{ voluntary_sources.checkin.record_count }}<br>Latest submission: {{ voluntary_sources.checkin.last_used.strftime('%d %b %Y, %H:%M') if voluntary_sources.checkin.last_used else 'No saved check-in' }}</p>
+                    {% else %}<p>Saved check-in information unavailable.</p>{% endif %}
+                </div>
+                <div class="consent-box">
+                    <strong>Camera Wellness Scan</strong>
+                    <p>Camera-derived pulse and breathing estimates are optional, experimental supporting signals, not independent medical or welfare decisions.</p>
+                    {% if voluntary_sources is defined and voluntary_sources %}
+                    <p>Saved scans: {{ voluntary_sources.scan.record_count }}<br>Latest save: {{ voluntary_sources.scan.last_used.strftime('%d %b %Y, %H:%M') if voluntary_sources.scan.last_used else 'No saved scan' }}</p>
+                    {% else %}<p>Saved scan information unavailable.</p>{% endif %}
+                </div>
+                <div class="consent-box"><strong>Optional Participation</strong><p>Choosing not to submit a check-in or camera scan should not itself count as adverse welfare evidence. Wearables are not required.</p></div>
+                <div class="consent-box"><strong>Human Welfare Review</strong><p>Welfare support decisions remain subject to authorised human review.</p></div>
+                <div class="privacy-note">This page provides privacy information and stored-data summaries. It does not grant, revoke or save consent preferences, and it does not delete records or change retention settings. For help with your data, <a href="{{ url_for('personnel_support') }}">request support</a>.</div>
+            </div>
+        </section>
+    </main>
+</div>
+{% include 'partials/veerassist.html' %}
+</body>
+</html>

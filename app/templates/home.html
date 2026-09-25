@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>VeerPulse</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        /* =========================================
+           HOMEPAGE LOGIN MODAL
+        ========================================= */
+
+        .login-modal-overlay {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(10, 30, 52, 0.58);
+            z-index: 9999;
+        }
+
+        .login-modal-overlay.active {
+            display: flex;
+        }
+
+        .login-modal {
+            width: 100%;
+            max-width: 720px;
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 28px;
+            box-shadow: 0 24px 70px rgba(17, 47, 78, 0.22);
+            position: relative;
+        }
+
+        .login-modal-close {
+            position: absolute;
+            top: 16px;
+            right: 18px;
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 50%;
+            background: #f1f5f8;
+            color: #163b65;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .login-modal-close:hover {
+            background: #e7eef3;
+        }
+
+        .login-modal-header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding: 0 40px;
+        }
+
+        .login-modal-header span {
+            display: inline-block;
+            margin-bottom: 7px;
+            color: #16858c;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        .login-modal-header h2 {
+            margin: 0;
+            color: #163b65;
+            font-size: 25px;
+        }
+
+        .login-modal-header p {
+            margin: 8px 0 0;
+            color: #7a8794;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .login-role-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .login-role-card {
+            border: 2px solid #e4ebf0;
+            border-radius: 14px;
+            padding: 24px;
+            background: #f9fbfc;
+            transition: 0.2s ease;
+        }
+
+        .login-role-card:hover {
+            border-color: #16858c;
+            transform: translateY(-2px);
+        }
+
+        .login-role-card.selected {
+            border-color: #16858c;
+            background: #eef8f8;
+            box-shadow: 0 8px 24px rgba(22, 133, 140, 0.10);
+        }
+
+        .login-role-icon {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            background: #163b65;
+            color: white;
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .login-role-card.selected .login-role-icon {
+            background: #16858c;
+        }
+
+        .login-role-card h3 {
+            margin: 0 0 8px;
+            color: #163b65;
+            font-size: 18px;
+        }
+
+        .login-role-card p {
+            min-height: 44px;
+            margin: 0 0 18px;
+            color: #7b8794;
+            font-size: 12px;
+            line-height: 1.55;
+        }
+
+        .login-role-button {
+            width: 100%;
+            display: block;
+            box-sizing: border-box;
+            padding: 12px 16px;
+            border-radius: 9px;
+            text-decoration: none;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 700;
+            background: #163b65;
+            color: white;
+            transition: 0.2s ease;
+        }
+
+        .login-role-button:hover {
+            background: #102f52;
+        }
+
+        .login-role-card.selected .login-role-button {
+            background: #16858c;
+        }
+
+        .login-role-card.selected .login-role-button:hover {
+            background: #116f75;
+        }
+
+        .login-modal-note {
+            margin: 20px 0 0;
+            text-align: center;
+            color: #8a95a1;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 650px) {
+            .login-role-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .login-modal {
+                padding: 24px 18px;
+            }
+
+            .login-role-card p {
+                min-height: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+
+        <div class="brand">
+            <h2>VeerPulse</h2>
+        </div>
+
+        <div class="nav-links">
+            <a href="#home">Home</a>
+            <a href="#about">About</a>
+            <a href="#features">Features</a>
+            <a href="#privacy">Privacy</a>
+            <a href="#contact">Contact</a>
+        </div>
+
+        <div class="nav-actions">
+
+            <a href="#"
+               class="btn-outline"
+               onclick="openLoginModal('all'); return false;">
+                Login
+            </a>
+
+            <a href="#" class="btn-primary">
+                Sign Up
+            </a>
+
+        </div>
+
+    </nav>
+
+
+    <!-- HERO -->
+    <section class="hero" id="home">
+
+        <div class="hero-content">
+
+            <span class="hero-badge">
+                AI-Assisted Personnel Welfare Monitoring
+            </span>
+
+            <h1>
+                Guarding the Guardians,
+                <span>Before Stress Takes Over.</span>
+            </h1>
+
+            <p>
+                VeerPulse helps uniformed forces identify meaningful changes
+                in duty, workload, rest, leave, deployment and voluntary
+                wellness patterns so that timely human support can be provided.
+            </p>
+</div>
+
+        <div class="hero-panel">
+
+            <div class="status-card">
+
+                <div class="status-header">
+                    <span>Welfare Overview</span>
+                    <span class="status-dot"></span>
+                </div>
+
+                <div class="metric-row">
+
+                    <div class="metric">
+                        <h3>54 hrs</h3>
+                        <p>Weekly Duty</p>
+                    </div>
+
+                    <div class="metric">
+                        <h3>1 Day</h3>
+                        <p>Rest</p>
+                    </div>
+
+                </div>
+
+                <div class="risk-preview">
+
+                    <p>Current Welfare Status</p>
+
+                    <span class="risk-badge">
+                        Moderate
+                    </span>
+
+                </div>
+
+                <div class="trend-preview">
+                    <div class="trend-line"></div>
+                </div>
+
+                <p class="privacy-note">
+                    AI assists welfare review. Final decisions remain with
+                    authorized human officers.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ABOUT -->
+    <section class="about-section" id="about">
+
+        <div class="section-heading">
+            <span>About VeerPulse</span>
+            <h2>Early welfare support through explainable insights</h2>
+        </div>
+
+        <p>
+            Personnel serving in uniformed forces often work under demanding
+            schedules, extended deployments, irregular duty hours and prolonged
+            separation from family. VeerPulse focuses on identifying changes
+            from an individual's normal pattern rather than making medical
+            diagnoses.
+        </p>
+
+    </section>
+
+
+    <!-- FEATURES -->
+    <section class="features-section" id="features">
+
+        <div class="section-heading">
+
+            <span>Core Features</span>
+
+            <h2>
+                What VeerPulse Provides
+            </h2>
+
+        </div>
+
+        <div class="feature-grid">
+
+            <div class="feature-card">
+                <div class="feature-icon">01</div>
+                <h3>Personal Baseline Monitoring</h3>
+                <p>
+                    Understands each person's normal duty, rest and workload
+                    pattern.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">02</div>
+                <h3>Trend & Change Analysis</h3>
+                <p>
+                    Identifies sustained changes in welfare-related indicators.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">03</div>
+                <h3>Explainable Welfare Alerts</h3>
+                <p>
+                    Clearly explains why a Low, Moderate or Elevated alert
+                    was generated.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">04</div>
+                <h3>Voluntary Wellness Check-ins</h3>
+                <p>
+                    Allows personnel to securely share simple wellness feedback.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">05</div>
+                <h3>Human Support Workflow</h3>
+                <p>
+                    Connects elevated welfare concerns to authorized officers
+                    for review and follow-up.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">06</div>
+                <h3>Privacy-First Monitoring</h3>
+                <p>
+                    Uses role-based access, limited data collection and human
+                    verification.
+                </p>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- PRIVACY -->
+    <section class="privacy-section" id="privacy">
+
+        <div class="privacy-content">
+
+            <span class="privacy-label">
+                Privacy & Trust
+            </span>
+
+            <h2>
+                Welfare support, not surveillance or disciplinary automation.
+            </h2>
+
+            <p>
+                VeerPulse is designed to support personnel welfare through
+                privacy-aware monitoring, voluntary inputs and authorized
+                human review.
+            </p>
+
+            <div class="privacy-points">
+
+                <span>Role-Based Access</span>
+                <span>Voluntary Wellness Inputs</span>
+                <span>Human Verification</span>
+                <span>Minimum Necessary Data</span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- CONTACT -->
+    <section class="contact-section" id="contact">
+
+        <div>
+            <h2>VeerPulse</h2>
+            <p>
+                AI-assisted welfare intelligence for uniformed forces.
+            </p>
+        </div>
+
+        <div class="contact-info">
+            <p>Email: support@veerpulse.demo</p>
+            <p>Contact: +91 XXXXX XXXXX</p>
+            <p>Prototype for Smart India Hackathon 2026</p>
+        </div>
+
+    </section>
+
+
+    <!-- FOOTER -->
+    <footer>
+
+        <p>
+            © 2026 VeerPulse. Built for personnel welfare support.
+        </p>
+
+    </footer>
+
+
+    <!-- =========================================
+         LOGIN ROLE SELECTION MODAL
+    ========================================== -->
+    <div class="login-modal-overlay"
+         id="login-modal"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="login-modal-title">
+
+        <div class="login-modal">
+
+            <button type="button"
+                    class="login-modal-close"
+                    onclick="closeLoginModal()"
+                    aria-label="Close login window">
+                ×
+            </button>
+
+            <div class="login-modal-header">
+
+                <span>
+                    Secure Access
+                </span>
+
+                <h2 id="login-modal-title">
+                    Login to VeerPulse
+                </h2>
+
+                <p id="login-modal-description">
+                    Select your authorized role to continue.
+                </p>
+
+            </div>
+
+            <div class="login-role-grid">
+
+                <!-- PERSONNEL -->
+                <div class="login-role-card"
+                     id="personnel-role-card">
+
+                    <div class="login-role-icon">
+                        P
+                    </div>
+
+                    <h3>
+                        Personnel Login
+                    </h3>
+
+                    <p>
+                        Access your personal welfare dashboard,
+                        voluntary check-ins, wellness scan and support options.
+                    </p>
+
+                    <a href="{{ url_for('personnel_login') }}"
+                       class="login-role-button">
+                        Continue as Personnel
+                    </a>
+
+                </div>
+
+
+                <!-- WELFARE OFFICER -->
+                <div class="login-role-card"
+                     id="officer-role-card">
+
+                    <div class="login-role-icon">
+                        W
+                    </div>
+
+                    <h3>
+                        Welfare Officer Login
+                    </h3>
+
+                    <p>
+                        Access authorized welfare reviews,
+                        prioritized cases, recovery planning and follow-up.
+                    </p>
+
+                    <a href="{{ url_for('welfare_officer_login') }}"
+                       class="login-role-button">
+                        Continue as Welfare Officer
+                    </a>
+
+                </div>
+
+            </div>
+
+            <p class="login-modal-note">
+                Access is role-based. Welfare information should only be
+                viewed by authorized users.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <script>
+        function openLoginModal(role) {
+
+            const modal =
+                document.getElementById("login-modal");
+
+            const personnelCard =
+                document.getElementById("personnel-role-card");
+
+            const officerCard =
+                document.getElementById("officer-role-card");
+
+            const description =
+                document.getElementById("login-modal-description");
+
+
+            personnelCard.classList.remove("selected");
+            officerCard.classList.remove("selected");
+
+
+            if (role === "personnel") {
+
+                personnelCard.classList.add("selected");
+
+                description.textContent =
+                    "Personnel access selected. Continue below to enter your login credentials.";
+            }
+
+            else if (role === "officer") {
+
+                officerCard.classList.add("selected");
+
+                description.textContent =
+                    "Welfare Officer access selected. Continue below to enter your login credentials.";
+            }
+
+            else {
+
+                description.textContent =
+                    "Select your authorized role to continue.";
+            }
+
+
+            modal.classList.add("active");
+
+            document.body.style.overflow = "hidden";
+        }
+
+
+        function closeLoginModal() {
+
+            const modal =
+                document.getElementById("login-modal");
+
+            modal.classList.remove("active");
+
+            document.body.style.overflow = "";
+        }
+
+
+        document.addEventListener(
+            "keydown",
+            function(event) {
+
+                if (event.key === "Escape") {
+                    closeLoginModal();
+                }
+            }
+        );
+    </script>
+
+</body>
+
+</html>

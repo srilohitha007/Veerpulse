@@ -1,0 +1,405 @@
+<!-- =========================================
+     VEERPULSE - WELFARE OFFICER VEERASSIST
+     Floating explainability / navigation assistant
+========================================= -->
+
+<style>
+    .wo-veerassist-launcher {
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        z-index: 9998;
+        min-width: 158px;
+        height: 46px;
+        padding: 0 18px;
+        border: none;
+        border-radius: 24px;
+        background: #163b65;
+        color: #ffffff;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 10px 28px rgba(22, 59, 101, 0.28);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .wo-veerassist-launcher:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 13px 32px rgba(22, 59, 101, 0.34);
+    }
+
+    .wo-veerassist-panel {
+        position: fixed;
+        right: 24px;
+        bottom: 94px;
+        z-index: 9999;
+        width: 340px;
+        max-height: 570px;
+        display: none;
+        overflow: hidden;
+        background: #ffffff;
+        border: 1px solid #dfe7ed;
+        border-radius: 16px;
+        box-shadow: 0 18px 50px rgba(31, 55, 80, 0.22);
+    }
+
+    .wo-veerassist-panel.open {
+        display: block;
+    }
+
+    .wo-veerassist-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px 17px;
+        background: #163b65;
+        color: #ffffff;
+    }
+
+    .wo-veerassist-header-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    .wo-veerassist-icon {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.14);
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+    .wo-veerassist-title strong {
+        display: block;
+        font-size: 13px;
+    }
+
+    .wo-veerassist-title span {
+        display: block;
+        margin-top: 3px;
+        color: #c9d8e5;
+        font-size: 9px;
+        line-height: 1.4;
+    }
+
+    .wo-veerassist-close {
+        border: none;
+        background: transparent;
+        color: #ffffff;
+        font-size: 18px;
+        cursor: pointer;
+    }
+
+    .wo-veerassist-body {
+        max-height: 470px;
+        overflow-y: auto;
+        padding: 15px;
+    }
+
+    .wo-veerassist-intro {
+        margin-bottom: 13px;
+        padding: 12px 13px;
+        background: #eef7f7;
+        border-left: 4px solid #16858c;
+        border-radius: 9px;
+        color: #526b70;
+        font-size: 10px;
+        line-height: 1.6;
+    }
+
+    .wo-veerassist-options {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .wo-veerassist-option {
+        width: 100%;
+        padding: 11px 12px;
+        border: 1px solid #e1e8ed;
+        border-radius: 9px;
+        background: #f8fafb;
+        color: #314b63;
+        font-size: 10px;
+        font-weight: 700;
+        text-align: left;
+        cursor: pointer;
+        transition: 0.2s ease;
+    }
+
+    .wo-veerassist-option:hover {
+        background: #eef6f6;
+        border-color: #c7dfe1;
+    }
+
+    .wo-veerassist-response {
+        display: none;
+        margin-top: 13px;
+        padding: 13px;
+        background: #f7f9fb;
+        border: 1px solid #e3e9ee;
+        border-radius: 10px;
+        color: #5b6d7c;
+        font-size: 10px;
+        line-height: 1.7;
+    }
+
+    .wo-veerassist-response.show {
+        display: block;
+    }
+
+    .wo-veerassist-response strong {
+        color: #163b65;
+    }
+
+    .wo-veerassist-link {
+        display: inline-block;
+        margin-top: 9px;
+        color: #16858c;
+        font-size: 10px;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .wo-veerassist-footer {
+        padding: 11px 15px;
+        border-top: 1px solid #e6ebef;
+        background: #fbfcfd;
+        color: #89949f;
+        font-size: 8px;
+        line-height: 1.5;
+    }
+
+    @media (max-width: 600px) {
+        .wo-veerassist-panel {
+            right: 12px;
+            left: 12px;
+            bottom: 82px;
+            width: auto;
+        }
+
+        .wo-veerassist-launcher {
+            right: 16px;
+            bottom: 16px;
+        }
+    }
+</style>
+
+
+<button
+    type="button"
+    class="wo-veerassist-launcher"
+    id="wo-veerassist-launcher"
+    onclick="toggleWelfareVeerAssist()"
+    aria-label="Open VeerAssist">
+    Talk with VeerAssist
+</button>
+
+
+<div
+    class="wo-veerassist-panel"
+    id="wo-veerassist-panel">
+
+    <div class="wo-veerassist-header">
+
+        <div class="wo-veerassist-header-left">
+
+            <div class="wo-veerassist-icon">
+                VA
+            </div>
+
+            <div class="wo-veerassist-title">
+                <strong>VeerAssist</strong>
+                <span>Welfare Officer Decision-Support Guide</span>
+            </div>
+
+        </div>
+
+        <button
+            type="button"
+            class="wo-veerassist-close"
+            onclick="toggleWelfareVeerAssist()"
+            aria-label="Close VeerAssist">
+            ×
+        </button>
+
+    </div>
+
+
+    <div class="wo-veerassist-body">
+
+        <div class="wo-veerassist-intro">
+            I can help explain authorized welfare-review information.
+            VeerAssist does not make the final personnel, medical,
+            disciplinary or operational decision.
+        </div>
+
+
+        <div class="wo-veerassist-options">
+
+            <button
+                type="button"
+                class="wo-veerassist-option"
+                onclick="showWelfareVeerAssist('priority')">
+                Why is this case prioritized?
+            </button>
+
+            <button
+                type="button"
+                class="wo-veerassist-option"
+                onclick="showWelfareVeerAssist('evidence')">
+                Show evidence status
+            </button>
+
+            <button
+                type="button"
+                class="wo-veerassist-option"
+                onclick="showWelfareVeerAssist('withheld')">
+                Why can an assessment be withheld?
+            </button>
+
+            <button
+                type="button"
+                class="wo-veerassist-option"
+                onclick="showWelfareVeerAssist('operational')">
+                Open operational context
+            </button>
+
+            <button
+                type="button"
+                class="wo-veerassist-option"
+                onclick="showWelfareVeerAssist('action')">
+                Show available welfare actions
+            </button>
+
+            <button
+                type="button"
+                class="wo-veerassist-option"
+                onclick="showWelfareVeerAssist('followup')">
+                Explain follow-up status
+            </button>
+
+        </div>
+
+
+        <div
+            class="wo-veerassist-response"
+            id="wo-veerassist-response">
+        </div>
+
+    </div>
+
+
+    <div class="wo-veerassist-footer">
+        Minimum-necessary authorized access only.
+        VeerAssist explains application evidence and workflow;
+        it is not a diagnostic system.
+    </div>
+
+</div>
+
+
+<script>
+    function toggleWelfareVeerAssist() {
+
+        const panel =
+            document.getElementById(
+                "wo-veerassist-panel"
+            );
+
+        if (!panel) {
+            return;
+        }
+
+        panel.classList.toggle(
+            "open"
+        );
+    }
+
+
+    function showWelfareVeerAssist(topic) {
+
+        const responseBox =
+            document.getElementById(
+                "wo-veerassist-response"
+            );
+
+        if (!responseBox) {
+            return;
+        }
+
+        let content = "";
+
+        if (topic === "priority") {
+
+            content =
+                "<strong>Priority explanation</strong><br>" +
+                "VeerPulse prioritizes a case only when the current assessment has sufficient, eligible evidence. " +
+                "A single duty event, transfer, leave record or camera reading should not determine welfare attention by itself.";
+        }
+
+        else if (topic === "evidence") {
+
+            content =
+                "<strong>Evidence status</strong><br>" +
+                "The assessment can use authorized operational records, voluntary check-ins and optional usable camera measurements. " +
+                "Rejected, missing or stale evidence should be identified separately instead of being converted into a negative score.";
+        }
+
+        else if (topic === "withheld") {
+
+            content =
+                "<strong>Assessment withheld</strong><br>" +
+                "If evidence is insufficient, stale or unreliable, VeerPulse should return <em>Insufficient Data</em> rather than manufacturing Low, Moderate or Elevated attention. " +
+                "A direct support request can still reach a Welfare Officer.";
+        }
+
+        else if (topic === "operational") {
+
+            content =
+                "<strong>Operational context</strong><br>" +
+                "Review duty, rest, deployment, transfer, training and leave context. " +
+                "These records provide welfare-review context and should not automatically be interpreted as proof of stress." +
+                "<br><a class='wo-veerassist-link' href='/welfare-officer-operational-review'>Open Operational Review →</a>";
+        }
+
+        else if (topic === "action") {
+
+            content =
+                "<strong>Available welfare actions</strong><br>" +
+                "VeerPulse may suggest actions such as a confidential welfare conversation, duty/rest review, recovery opportunity review, training-load review or follow-up. " +
+                "The authorized human officer accepts, modifies or dismisses the suggestion." +
+                "<br><a class='wo-veerassist-link' href='/welfare-officer-intervention-recommendations'>Open Recommendations →</a>";
+        }
+
+        else if (topic === "followup") {
+
+            content =
+                "<strong>Follow-up status</strong><br>" +
+                "A recommendation, an officer approval and evidence that support was actually delivered are separate states. " +
+                "VeerPulse should preserve that distinction and return unresolved or unverifiable actions for human follow-up.";
+        }
+
+        else {
+
+            content =
+                "<strong>VeerAssist</strong><br>" +
+                "Select an option above to view an explanation.";
+        }
+
+        responseBox.innerHTML =
+            content;
+
+        responseBox.classList.add(
+            "show"
+        );
+    }
+</script>

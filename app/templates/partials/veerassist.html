@@ -1,0 +1,439 @@
+<!-- =========================================
+     VEERPULSE - PERSONNEL VEERASSIST
+     Same visual model as Welfare Officer VeerAssist
+========================================= -->
+
+<style>
+    .personnel-veerassist-launcher {
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        z-index: 9998;
+        min-width: 158px;
+        height: 46px;
+        padding: 0 18px;
+        border: none;
+        border-radius: 24px;
+        background: #163b65;
+        color: #ffffff;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 10px 28px rgba(22, 59, 101, 0.28);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .personnel-veerassist-launcher:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 13px 32px rgba(22, 59, 101, 0.34);
+    }
+
+    .personnel-veerassist-panel {
+        position: fixed;
+        right: 24px;
+        bottom: 94px;
+        z-index: 9999;
+        width: 340px;
+        max-height: 570px;
+        display: none;
+        overflow: hidden;
+        background: #ffffff;
+        border: 1px solid #dfe7ed;
+        border-radius: 16px;
+        box-shadow: 0 18px 50px rgba(31, 55, 80, 0.22);
+    }
+
+    .personnel-veerassist-panel.open {
+        display: block;
+    }
+
+    .personnel-veerassist-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px 17px;
+        background: #163b65;
+        color: #ffffff;
+    }
+
+    .personnel-veerassist-header-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    .personnel-veerassist-icon {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.14);
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+    .personnel-veerassist-title strong {
+        display: block;
+        font-size: 13px;
+    }
+
+    .personnel-veerassist-title span {
+        display: block;
+        margin-top: 3px;
+        color: #c9d8e5;
+        font-size: 9px;
+        line-height: 1.4;
+    }
+
+    .personnel-veerassist-close {
+        border: none;
+        background: transparent;
+        color: #ffffff;
+        font-size: 18px;
+        cursor: pointer;
+    }
+
+    .personnel-veerassist-body {
+        max-height: 470px;
+        overflow-y: auto;
+        padding: 15px;
+    }
+
+    .personnel-veerassist-intro {
+        margin-bottom: 13px;
+        padding: 12px 13px;
+        background: #eef7f7;
+        border-left: 4px solid #16858c;
+        border-radius: 9px;
+        color: #526b70;
+        font-size: 10px;
+        line-height: 1.6;
+    }
+
+    .personnel-veerassist-options {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .personnel-veerassist-option {
+        width: 100%;
+        padding: 11px 12px;
+        border: 1px solid #e1e8ed;
+        border-radius: 9px;
+        background: #f8fafb;
+        color: #314b63;
+        font-size: 10px;
+        font-weight: 700;
+        text-align: left;
+        cursor: pointer;
+        transition: 0.2s ease;
+    }
+
+    .personnel-veerassist-option:hover {
+        background: #eef6f6;
+        border-color: #c7dfe1;
+    }
+
+    .personnel-veerassist-response {
+        display: none;
+        margin-top: 13px;
+        padding: 13px;
+        background: #f7f9fb;
+        border: 1px solid #e3e9ee;
+        border-radius: 10px;
+        color: #5b6d7c;
+        font-size: 10px;
+        line-height: 1.7;
+    }
+
+    .personnel-veerassist-response.show {
+        display: block;
+    }
+
+    .personnel-veerassist-response strong {
+        color: #163b65;
+    }
+
+    .personnel-veerassist-link {
+        display: inline-block;
+        margin-top: 9px;
+        color: #16858c;
+        font-size: 10px;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .personnel-veerassist-footer {
+        padding: 11px 15px;
+        border-top: 1px solid #e6ebef;
+        background: #fbfcfd;
+        color: #89949f;
+        font-size: 8px;
+        line-height: 1.5;
+    }
+
+    @media (max-width: 600px) {
+        .personnel-veerassist-panel {
+            right: 12px;
+            left: 12px;
+            bottom: 82px;
+            width: auto;
+        }
+
+        .personnel-veerassist-launcher {
+            right: 16px;
+            bottom: 16px;
+        }
+    }
+</style>
+
+
+<button
+    type="button"
+    class="personnel-veerassist-launcher"
+    id="personnel-veerassist-launcher"
+    onclick="togglePersonnelVeerAssist()"
+    aria-label="Open VeerAssist">
+    Talk with VeerAssist
+</button>
+
+
+<div
+    class="personnel-veerassist-panel"
+    id="personnel-veerassist-panel">
+
+    <div class="personnel-veerassist-header">
+
+        <div class="personnel-veerassist-header-left">
+
+            <div class="personnel-veerassist-icon">
+                VA
+            </div>
+
+            <div class="personnel-veerassist-title">
+                <strong>VeerAssist</strong>
+                <span>Personnel Welfare Support Assistant</span>
+            </div>
+
+        </div>
+
+        <button
+            type="button"
+            class="personnel-veerassist-close"
+            onclick="togglePersonnelVeerAssist(false)"
+            aria-label="Close VeerAssist">
+            ×
+        </button>
+
+    </div>
+
+
+    <div class="personnel-veerassist-body">
+
+        <div class="personnel-veerassist-intro">
+            I can help you access your welfare-support information,
+            personal trends, voluntary check-in, Wellness Scan,
+            and human support options.
+        </div>
+
+
+        <div class="personnel-veerassist-options">
+
+            <button
+                type="button"
+                class="personnel-veerassist-option"
+                onclick="showPersonnelVeerAssist('status')">
+                View My Current Welfare Status
+            </button>
+
+            <button
+                type="button"
+                class="personnel-veerassist-option"
+                onclick="showPersonnelVeerAssist('trends')">
+                Open My Trends
+            </button>
+
+            <button
+                type="button"
+                class="personnel-veerassist-option"
+                onclick="showPersonnelVeerAssist('checkin')">
+                Start a Wellness Check-In
+            </button>
+
+            <button
+                type="button"
+                class="personnel-veerassist-option"
+                onclick="showPersonnelVeerAssist('scan')">
+                Open Wellness Scan
+            </button>
+
+            <button
+                type="button"
+                class="personnel-veerassist-option"
+                onclick="showPersonnelVeerAssist('support')">
+                Request Welfare Support
+            </button>
+
+            <button
+                type="button"
+                class="personnel-veerassist-option"
+                onclick="showPersonnelVeerAssist('privacy')">
+                Explain My Privacy & Consent
+            </button>
+
+        </div>
+
+
+        <div
+            class="personnel-veerassist-response"
+            id="personnel-veerassist-response">
+        </div>
+
+    </div>
+
+
+    <div class="personnel-veerassist-footer">
+        VeerAssist provides navigation and welfare-support guidance only.
+        It does not diagnose medical or psychological conditions and does not
+        replace authorized human welfare support.
+    </div>
+
+</div>
+
+
+<script>
+    function togglePersonnelVeerAssist(forceState) {
+
+        const panel =
+            document.getElementById(
+                "personnel-veerassist-panel"
+            );
+
+        if (!panel) {
+            return;
+        }
+
+        const shouldOpen =
+            typeof forceState === "boolean"
+                ? forceState
+                : !panel.classList.contains("open");
+
+        panel.classList.toggle(
+            "open",
+            shouldOpen
+        );
+    }
+
+
+    function showPersonnelVeerAssist(topic) {
+
+        const responseBox =
+            document.getElementById(
+                "personnel-veerassist-response"
+            );
+
+        if (!responseBox) {
+            return;
+        }
+
+        let content = "";
+
+
+        if (topic === "status") {
+
+            content =
+                "<strong>Current welfare status</strong><br>" +
+                "Your latest VeerPulse welfare-support assessment is available on the VeerPulse Analysis page. " +
+                "The result is an early-warning welfare indicator, not a medical diagnosis." +
+                "<br><a class='personnel-veerassist-link' href='{{ url_for('personnel_analysis_page') }}'>" +
+                "Open VeerPulse Analysis →</a>";
+        }
+
+
+        else if (topic === "trends") {
+
+            content =
+                "<strong>Personal trends</strong><br>" +
+                "My Trends shows your available operational and welfare-support history. " +
+                "Where enough assessment history is unavailable, VeerPulse should show insufficient trend data rather than inventing a trend." +
+                "<br><a class='personnel-veerassist-link' href='{{ url_for('personnel_trends') }}'>" +
+                "Open My Trends →</a>";
+        }
+
+
+        else if (topic === "checkin") {
+
+            content =
+                "<strong>Voluntary Wellness Check-In</strong><br>" +
+                "The Wellness Check-In is voluntary and provides self-reported supporting context. " +
+                "Choosing not to participate should not create a negative welfare label." +
+                "<br><a class='personnel-veerassist-link' href='{{ url_for('personnel_wellness_checkin') }}'>" +
+                "Open Wellness Check-In →</a>";
+        }
+
+
+        else if (topic === "scan") {
+
+            content =
+                "<strong>Wellness Scan</strong><br>" +
+                "The optional Wellness Scan uses experimental camera-based physiological signal processing. " +
+                "Unreliable pulse or breathing measurements are withheld instead of being fabricated." +
+                "<br><a class='personnel-veerassist-link' href='{{ url_for('personnel_wellness_scan') }}'>" +
+                "Open Wellness Scan →</a>";
+        }
+
+
+        else if (topic === "support") {
+
+            content =
+                "<strong>Human welfare support</strong><br>" +
+                "You can request human welfare support at any time, regardless of your current welfare-attention category." +
+                "<br><a class='personnel-veerassist-link' href='{{ url_for('personnel_support') }}'>" +
+                "Open Support →</a>";
+        }
+
+
+        else if (topic === "privacy") {
+
+            content =
+                "<strong>Privacy & consent</strong><br>" +
+                "Voluntary wellness information and optional camera measurements are intended for welfare-support use. " +
+                "Final personnel or operational decisions remain with authorized humans." +
+                "<br><a class='personnel-veerassist-link' href='{{ url_for('personnel_privacy') }}'>" +
+                "Open Privacy & Consent →</a>";
+        }
+
+
+        else {
+
+            content =
+                "<strong>VeerAssist</strong><br>" +
+                "Select an option above to continue.";
+        }
+
+
+        responseBox.innerHTML =
+            content;
+
+        responseBox.classList.add(
+            "show"
+        );
+    }
+
+
+    document.addEventListener(
+        "keydown",
+        function(event) {
+
+            if (event.key === "Escape") {
+                togglePersonnelVeerAssist(false);
+            }
+        }
+    );
+</script>

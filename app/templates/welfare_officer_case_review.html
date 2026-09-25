@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Case Review | VeerPulse</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        .case-grid {
+            display: grid;
+            grid-template-columns: 1.25fr 0.75fr;
+            gap: 18px;
+        }
+
+        .case-panel,
+        .case-side-panel {
+            background: white;
+            border: 1px solid #e6ebef;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.05);
+        }
+
+        .case-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 18px;
+        }
+
+        .case-heading h2 {
+            margin: 0;
+            color: #163b65;
+            font-size: 20px;
+        }
+
+        .case-heading p {
+            margin: 5px 0 0;
+            color: #7a8794;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .case-id {
+            background: #eef3f6;
+            color: #4e6477;
+            border-radius: 20px;
+            padding: 7px 10px;
+            font-size: 9px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .personnel-card {
+            padding: 15px;
+            border: 1px solid #e8edf1;
+            border-radius: 10px;
+            background: #fbfcfd;
+            margin-bottom: 16px;
+        }
+
+        .personnel-card strong {
+            color: #24394f;
+            font-size: 14px;
+        }
+
+        .personnel-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .meta-tag {
+            padding: 6px 9px;
+            border-radius: 20px;
+            background: #f1f4f6;
+            color: #53616f;
+            font-size: 9px;
+            font-weight: 700;
+        }
+
+        .risk-badge {
+            display: inline-block;
+            padding: 6px 9px;
+            border-radius: 20px;
+            background: #fff3d7;
+            color: #936713;
+            font-size: 9px;
+            font-weight: 700;
+            margin-top: 9px;
+        }
+
+        .section-box {
+            border: 1px solid #e6ebef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 14px;
+        }
+
+        .section-box h3 {
+            margin: 0 0 9px;
+            color: #24394f;
+            font-size: 13px;
+        }
+
+        .section-box p {
+            margin: 0;
+            color: #6f7d8c;
+            font-size: 11px;
+            line-height: 1.7;
+        }
+
+        .change-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .change-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 9px 10px;
+            background: #f7f9fa;
+            border-radius: 8px;
+            font-size: 10px;
+            color: #556575;
+        }
+
+        .change-item strong {
+            color: #31485e;
+            font-size: 10px;
+        }
+
+        .case-form label {
+            display: block;
+            margin-bottom: 6px;
+            color: #425466;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .case-form select,
+        .case-form textarea {
+            width: 100%;
+            border: 1px solid #d8e0e6;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 11px;
+            margin-bottom: 13px;
+            box-sizing: border-box;
+        }
+
+        .case-form textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .case-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .action-btn {
+            border: none;
+            cursor: pointer;
+            padding: 9px 12px;
+            border-radius: 7px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .primary-btn {
+            background: #163b65;
+            color: white;
+        }
+
+        .secondary-btn {
+            background: #eef3f6;
+            color: #34495e;
+        }
+
+        .case-side-panel h3 {
+            margin: 0 0 14px;
+            color: #163b65;
+            font-size: 15px;
+        }
+
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 18px;
+        }
+
+        .timeline-item::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #16858c;
+            position: absolute;
+            left: 0;
+            top: 4px;
+        }
+
+        .timeline-item strong {
+            display: block;
+            color: #354b60;
+            font-size: 10px;
+        }
+
+        .timeline-item span {
+            display: block;
+            margin-top: 4px;
+            color: #87929d;
+            font-size: 9px;
+        }
+
+        .timeline-item p {
+            margin: 5px 0 0;
+            color: #6f7d8c;
+            font-size: 10px;
+            line-height: 1.6;
+        }
+
+        .privacy-note {
+            margin-top: 18px;
+            padding: 13px 14px;
+            border-left: 4px solid #16858c;
+            background: #eef6f6;
+            border-radius: 8px;
+            color: #536b70;
+            font-size: 10px;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 950px) {
+            .case-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body class="dashboard-page">
+<div class="dashboard-layout">
+    {% include 'partials/welfare_officer_sidebar.html' %}
+    <main class="dashboard-main">
+        <header class="dashboard-header">
+            <div><p class="dashboard-label">Human Welfare Review</p><h1>Case Review</h1></div>
+            <div class="officer-profile"><div class="profile-circle">WO</div><div><strong>Welfare Officer</strong><p>Authorized Access</p></div></div>
+        </header>
+        <div class="case-grid">
+            <section class="case-panel">
+                <div class="case-heading">
+                    <div><h2>Personnel Welfare Case</h2><p>Current assessment and linked supporting evidence for the explicitly selected personnel record.</p></div>
+                    <span class="case-id">{{ selected_personnel_id }}</span>
+                </div>
+                <div class="personnel-card">
+                    <strong>{{ personnel.full_name if personnel else 'Personnel record unavailable' }} · {{ selected_personnel_id }}</strong>
+                    <div class="personnel-meta">
+                        <span class="meta-tag">{{ personnel.unit if personnel and personnel.unit else 'Unit not recorded' }}</span>
+                        <span class="meta-tag">{{ personnel.rank_designation if personnel and personnel.rank_designation else 'Rank not recorded' }}</span>
+                        <span class="meta-tag">{{ personnel.employment_status if personnel and personnel.employment_status else 'Status not recorded' }}</span>
+                    </div>
+                    <span class="risk-badge">{{ current_assessment.attention_level if current_assessment else 'Insufficient Data' }}</span>
+                </div>
+                <div class="section-box">
+                    <h3>Why This Case Was Flagged</h3>
+                    <p>{% if current_assessment %}{{ current_assessment.explanation_summary or 'No explanation summary was stored for this current assessment.' }}{% else %}No current assessment is stored for this personnel record. VeerPulse will not substitute an older assessment as current.{% endif %}</p>
+                </div>
+                <div class="section-box">
+                    <h3>Current Assessment</h3>
+                    <div class="change-list">
+                        <div class="change-item"><strong>Attention Level</strong><span>{{ current_assessment.attention_level if current_assessment else 'Insufficient Data' }}</span></div>
+                        <div class="change-item"><strong>Evidence Status</strong><span>{{ current_assessment.evidence_status if current_assessment and current_assessment.evidence_status else 'Not recorded' }}</span></div>
+                        <div class="change-item"><strong>Confidence</strong><span>{{ current_assessment.confidence if current_assessment and current_assessment.confidence else 'Not recorded' }}</span></div>
+                        <div class="change-item"><strong>Assessment Version</strong><span>{{ current_assessment.assessment_version if current_assessment else 'Not recorded' }}</span></div>
+                        <div class="change-item"><strong>Assessment Time</strong><span>{{ current_assessment.assessment_time.strftime('%d %b %Y, %I:%M %p') if current_assessment and current_assessment.assessment_time else 'Not recorded' }}</span></div>
+                    </div>
+                </div>
+                <div class="case-actions">
+                    <a class="action-btn primary-btn" href="{{ url_for('welfare_officer_analysis_page', personnel_id=selected_personnel_id) }}">Open Analysis</a>
+                    <a class="action-btn secondary-btn" href="{{ url_for('welfare_officer_operational_review', personnel_id=selected_personnel_id) }}">Operational Review</a>
+                    <a class="action-btn secondary-btn" href="{{ url_for('welfare_officer_intervention_recommendations', personnel_id=selected_personnel_id) }}">Intervention & Recommendations</a>
+                </div>
+            </section>
+            <aside class="case-side-panel">
+                <div class="section-box">
+                    <h3>Linked Check-In Evidence</h3>
+                    {% if assessment_checkin_evidence %}
+                    <p>Assessment-linked Check-In evidence is available for assessment version {{ assessment_checkin_evidence.assessment_version }}.</p>
+                    {% elif latest_checkin %}
+                    <p>A newer or unlinked Check-In exists, but it is not presented as evidence for the current assessment.</p>
+                    {% else %}<p>Not recorded.</p>{% endif %}
+                </div>
+                <div class="section-box">
+                    <h3>Linked Camera Evidence</h3>
+                    {% if assessment_scan_evidence %}
+                    <p>Assessment-linked camera evidence is available. Camera measurements are supplementary and are not independently interpreted as welfare risk.</p>
+                    {% elif latest_scan %}
+                    <p>A usable scan exists, but it is not presented as linked evidence for the current assessment.</p>
+                    {% else %}<p>Not recorded.</p>{% endif %}
+                </div>
+                <div class="timeline">
+                    <div class="timeline-item"><strong>Selected Personnel</strong><span>{{ selected_personnel_id }}</span><p>All links on this page preserve this Personnel ID.</p></div>
+                    {% if current_assessment %}<div class="timeline-item"><strong>Current Assessment</strong><span>Version {{ current_assessment.assessment_version }}</span><p>{{ current_assessment.attention_level }} welfare attention · {{ current_assessment.evidence_status or 'Evidence status not recorded' }}</p></div>{% endif %}
+                </div>
+                <div class="privacy-note">This screen distinguishes current assessment status from historical or merely latest source records. No missing value is converted to zero or a default status.</div>
+            </aside>
+        </div>
+    </main>
+</div>
+</body>
+</html>

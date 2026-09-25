@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Support Requests | VeerPulse</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        .support-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .support-summary-card {
+            background: white;
+            border: 1px solid #e6ebef;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.05);
+        }
+
+        .support-summary-card span {
+            display: block;
+            color: #7c8996;
+            font-size: 11px;
+            margin-bottom: 7px;
+        }
+
+        .support-summary-card strong {
+            display: block;
+            color: #163b65;
+            font-size: 24px;
+        }
+
+        .support-summary-card p {
+            margin: 6px 0 0;
+            color: #8c97a2;
+            font-size: 10px;
+        }
+
+        .support-panel {
+            background: white;
+            border: 1px solid #e6ebef;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.05);
+        }
+
+        .support-heading {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .support-heading h2 {
+            margin: 0;
+            color: #163b65;
+            font-size: 20px;
+        }
+
+        .support-heading p {
+            margin: 4px 0 0;
+            color: #7a8794;
+            font-size: 11px;
+        }
+
+        .support-filter-tools {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .support-search {
+            min-width: 210px;
+            padding: 9px 11px;
+            border: 1px solid #d8e0e6;
+            border-radius: 8px;
+            font-size: 11px;
+            color: #24394f;
+            background: white;
+            outline: none;
+        }
+
+        .support-search:focus,
+        .filter-select:focus {
+            border-color: #16858c;
+            box-shadow: 0 0 0 3px rgba(22, 133, 140, 0.08);
+        }
+
+        .filter-select {
+            padding: 9px 11px;
+            border: 1px solid #d8e0e6;
+            border-radius: 8px;
+            font-size: 11px;
+            color: #24394f;
+            background: white;
+            outline: none;
+        }
+
+        .filter-empty-message {
+            display: none;
+            padding: 22px;
+            border: 1px dashed #cfd9e1;
+            border-radius: 11px;
+            background: #f8fafb;
+            color: #6b7885;
+            font-size: 11px;
+            line-height: 1.7;
+            text-align: center;
+        }
+
+        .request-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .request-card {
+            background: #fbfcfd;
+            border: 1px solid #e6ebef;
+            border-radius: 11px;
+            padding: 16px;
+        }
+
+        .request-card.prompt {
+            border-left: 4px solid #c95a5a;
+        }
+
+        .request-card.soon {
+            border-left: 4px solid #d89a24;
+        }
+
+        .request-card.routine {
+            border-left: 4px solid #16858c;
+        }
+
+        .request-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .request-top strong {
+            color: #24394f;
+            font-size: 13px;
+        }
+
+        .request-time {
+            color: #8a95a1;
+            font-size: 10px;
+            white-space: nowrap;
+        }
+
+        .priority-badge {
+            display: inline-block;
+            padding: 6px 9px;
+            border-radius: 20px;
+            font-size: 9px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .priority-prompt {
+            background: #fdeaea;
+            color: #a54848;
+        }
+
+        .priority-soon {
+            background: #fff3d7;
+            color: #936713;
+        }
+
+        .priority-routine {
+            background: #eaf5f3;
+            color: #26756f;
+        }
+
+        .request-card p {
+            margin: 0;
+            color: #6f7d8c;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .request-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .meta-tag {
+            padding: 6px 9px;
+            border-radius: 20px;
+            background: #f1f4f6;
+            color: #53616f;
+            font-size: 9px;
+            font-weight: 700;
+        }
+
+        .request-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .action-btn {
+            text-decoration: none;
+            padding: 8px 11px;
+            border-radius: 7px;
+            font-size: 10px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+        }
+
+        .primary-btn {
+            background: #163b65;
+            color: white;
+        }
+
+        .secondary-btn {
+            background: #eef3f6;
+            color: #34495e;
+        }
+
+        .support-note {
+            margin-top: 18px;
+            padding: 14px 15px;
+            background: #eef6f6;
+            border-left: 4px solid #16858c;
+            border-radius: 9px;
+            color: #536b70;
+            font-size: 11px;
+            line-height: 1.7;
+        }
+
+        .request-empty {
+            padding: 22px;
+            border: 1px dashed #cfd9e1;
+            border-radius: 11px;
+            background: #f8fafb;
+            color: #6b7885;
+            font-size: 11px;
+            line-height: 1.7;
+            text-align: center;
+        }
+
+        .status-open {
+            background: #eef3f6;
+            color: #34495e;
+        }
+
+        .status-progress {
+            background: #fff3d7;
+            color: #936713;
+        }
+
+        .status-closed {
+            background: #e8f5ec;
+            color: #3c7d4a;
+        }
+
+        .status-action-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .status-action-btn {
+            border: none;
+            cursor: pointer;
+        }
+
+        .status-action-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.55;
+        }
+
+        .request-status-message {
+            margin-top: 8px;
+            min-height: 15px;
+            color: #6f7d8c;
+            font-size: 9px;
+        }
+
+        @media (max-width: 1000px) {
+            .support-summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .support-heading {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 550px) {
+            .support-summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+
+<body class="dashboard-page">
+
+<div class="dashboard-layout">
+
+    <!-- SHARED WELFARE OFFICER SIDEBAR -->
+    {% include 'partials/welfare_officer_sidebar.html' %}
+
+<!-- MAIN CONTENT -->
+    <main class="dashboard-main">
+
+        <header class="dashboard-header">
+
+            <div>
+                <p class="dashboard-label">
+                    Authorized Human Support
+                </p>
+
+                <h1>
+                    Support Requests
+                </h1>
+            </div>
+
+            <div class="officer-profile">
+
+                <div class="profile-circle">
+                    WO
+                </div>
+
+                <div>
+                    <strong>Welfare Officer</strong>
+                    <p>Authorized Access</p>
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- SUMMARY -->
+        <section class="support-summary-grid">
+
+            <div class="support-summary-card">
+                <span>Total Requests</span>
+                <strong>{{ support_requests | length }}</strong>
+                <p>Stored in PostgreSQL</p>
+            </div>
+
+            <div class="support-summary-card">
+                <span>Open Requests</span>
+                <strong>{{ open_count }}</strong>
+                <p>Awaiting welfare review</p>
+            </div>
+
+            <div class="support-summary-card">
+                <span>In Progress</span>
+                <strong>{{ in_progress_count }}</strong>
+                <p>Currently being handled</p>
+            </div>
+
+            <div class="support-summary-card">
+                <span>Closed</span>
+                <strong>{{ closed_count }}</strong>
+                <p>Support workflow completed</p>
+            </div>
+
+        </section>
+
+
+        <!-- REQUEST LIST -->
+        <section class="support-panel">
+
+            <div class="support-heading">
+
+                <div>
+                    <h2>Personnel Support Requests</h2>
+
+                    <p>
+                        Voluntary requests submitted for authorized human
+                        welfare assistance.
+                    </p>
+                </div>
+
+                <div class="support-filter-tools">
+
+                    <input
+                        type="search"
+                        class="support-search"
+                        id="support-search"
+                        placeholder="Search Personnel ID..."
+                        aria-label="Search support requests">
+
+                    <select class="filter-select"
+                            id="support-status-filter"
+                            aria-label="Support request filter">
+                        <option value="all">All Requests</option>
+                        <option value="Open">Open</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Closed">Closed</option>
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <div class="request-list">
+
+                {% if support_requests %}
+
+                    {% for request_item in support_requests %}
+
+                    <div class="request-card
+                                {% if request_item.priority == 'Prompt Follow-Up' %}
+                                    prompt
+                                {% elif request_item.priority == 'Soon' %}
+                                    soon
+                                {% else %}
+                                    routine
+                                {% endif %}"
+                         data-personnel-id="{{ request_item.personnel_id | lower }}"
+                         data-status="{{ request_item.status }}"
+                         data-category="{{ request_item.support_category | lower }}"
+                         data-contact="{{ request_item.contact_method | lower }}"
+                         data-message="{{ (request_item.message or '') | lower }}">
+
+                        <div class="request-top">
+
+                            <strong>
+                                Personnel {{ request_item.personnel_id }}
+                            </strong>
+
+                            <span class="request-time">
+                                {% if request_item.created_at %}
+                                    {{ request_item.created_at.strftime("%d %b %Y, %I:%M %p") }}
+                                {% else %}
+                                    Time unavailable
+                                {% endif %}
+                            </span>
+
+                        </div>
+
+                        <span class="priority-badge
+                                     {% if request_item.priority == 'Prompt Follow-Up' %}
+                                         priority-prompt
+                                     {% elif request_item.priority == 'Soon' %}
+                                         priority-soon
+                                     {% else %}
+                                         priority-routine
+                                     {% endif %}">
+                            {{ request_item.priority }}
+                        </span>
+
+                        <p>
+                            {% if request_item.message %}
+                                {{ request_item.message }}
+                            {% else %}
+                                Voluntary welfare support request submitted.
+                            {% endif %}
+                        </p>
+
+                        <div class="request-meta">
+
+                            <span class="meta-tag">
+                                {{ request_item.support_category }}
+                            </span>
+
+                            <span class="meta-tag">
+                                {{ request_item.contact_method }}
+                            </span>
+
+                            <span class="meta-tag
+                                         {% if request_item.status == 'Closed' %}
+                                             status-closed
+                                         {% elif request_item.status == 'In Progress' %}
+                                             status-progress
+                                         {% else %}
+                                             status-open
+                                         {% endif %}">
+                                {{ request_item.status }}
+                            </span>
+
+                        </div>
+
+                        <div class="request-actions">
+
+                            <a href="{{ url_for('welfare_officer_case_review') }}"
+                               class="action-btn primary-btn">
+                                View Support Context
+                            </a>
+
+                            <div class="status-action-group">
+
+                                {% if request_item.status == "Open" %}
+
+                                <button type="button"
+                                        class="action-btn secondary-btn status-action-btn"
+                                        data-request-id="{{ request_item.id }}"
+                                        data-next-status="In Progress">
+                                    Mark In Progress
+                                </button>
+
+                                {% elif request_item.status == "In Progress" %}
+
+                                <button type="button"
+                                        class="action-btn secondary-btn status-action-btn"
+                                        data-request-id="{{ request_item.id }}"
+                                        data-next-status="Closed">
+                                    Close Request
+                                </button>
+
+                                {% else %}
+
+                                <button type="button"
+                                        class="action-btn secondary-btn"
+                                        disabled>
+                                    Closed
+                                </button>
+
+                                {% endif %}
+
+                            </div>
+
+                            <div class="request-status-message"
+                                 id="status-message-{{ request_item.id }}"></div>
+
+                        </div>
+
+                    </div>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <div class="request-empty">
+                        <strong>No support requests are currently stored.</strong><br>
+                        New voluntary personnel requests will appear here after
+                        successful database submission.
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+            <div class="filter-empty-message"
+                 id="support-filter-empty">
+                <strong>No matching support requests found.</strong><br>
+                Try a different Personnel ID or status filter.
+            </div>
+
+
+            <div class="support-note">
+                Support requests are voluntary and remain independent of the
+                welfare-attention level. A Low assessment never blocks a
+                personnel member from requesting human support. Requests should
+                be handled confidentially using only the minimum information
+                necessary. VeerPulse does not make automatic medical,
+                disciplinary or operational decisions.
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<script>
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            const searchInput =
+                document.getElementById(
+                    "support-search"
+                );
+
+            const statusFilter =
+                document.getElementById(
+                    "support-status-filter"
+                );
+
+            const requestCards =
+                Array.from(
+                    document.querySelectorAll(
+                        ".request-card"
+                    )
+                );
+
+            const emptyMessage =
+                document.getElementById(
+                    "support-filter-empty"
+                );
+
+
+            function applySupportFilters() {
+
+                const searchTerm =
+                    (searchInput?.value || "")
+                        .trim()
+                        .toLowerCase();
+
+                const selectedStatus =
+                    statusFilter?.value || "all";
+
+                let visibleCount = 0;
+
+
+                requestCards.forEach(
+                    function (card) {
+
+                        const searchableText = [
+                            card.dataset.personnelId || "",
+                            card.dataset.category || "",
+                            card.dataset.contact || "",
+                            card.dataset.message || ""
+                        ].join(" ");
+
+                        const matchesSearch =
+                            !searchTerm
+                            || searchableText.includes(
+                                searchTerm
+                            );
+
+                        const matchesStatus =
+                            selectedStatus === "all"
+                            || card.dataset.status ===
+                                selectedStatus;
+
+                        const shouldShow =
+                            matchesSearch
+                            && matchesStatus;
+
+                        card.style.display =
+                            shouldShow
+                            ? ""
+                            : "none";
+
+                        if (shouldShow) {
+                            visibleCount += 1;
+                        }
+                    }
+                );
+
+
+                if (emptyMessage) {
+                    emptyMessage.style.display =
+                        requestCards.length > 0
+                        && visibleCount === 0
+                        ? "block"
+                        : "none";
+                }
+            }
+
+
+            if (searchInput) {
+                searchInput.addEventListener(
+                    "input",
+                    applySupportFilters
+                );
+            }
+
+
+            if (statusFilter) {
+                statusFilter.addEventListener(
+                    "change",
+                    applySupportFilters
+                );
+            }
+
+
+            applySupportFilters();
+
+
+            // --------------------------------------------------
+            // SUPPORT REQUEST STATUS UPDATE
+            // --------------------------------------------------
+            // Event delegation is used so the buttons continue to
+            // work reliably even after page refreshes or dynamic
+            // request-list changes.
+
+            document.addEventListener(
+                "click",
+                async function (event) {
+
+                    const button =
+                        event.target.closest(
+                            ".status-action-btn"
+                        );
+
+                    if (!button) {
+                        return;
+                    }
+
+                    event.preventDefault();
+
+                    const requestId =
+                        button.dataset.requestId;
+
+                    const nextStatus =
+                        button.dataset.nextStatus;
+
+                    const messageBox =
+                        document.getElementById(
+                            "status-message-" + requestId
+                        );
+
+                    if (
+                        !requestId
+                        || !nextStatus
+                    ) {
+
+                        if (messageBox) {
+                            messageBox.textContent =
+                                "Could not read the request status action.";
+                        }
+
+                        return;
+                    }
+
+                    button.disabled = true;
+
+                    if (messageBox) {
+                        messageBox.textContent =
+                            "Updating...";
+                    }
+
+                    try {
+
+                        const response =
+                            await fetch(
+                                "/api/welfare-officer/support-request/"
+                                + requestId
+                                + "/status",
+                                {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type":
+                                            "application/json"
+                                    },
+                                    body: JSON.stringify({
+                                        status: nextStatus
+                                    })
+                                }
+                            );
+
+                        const result =
+                            await response.json();
+
+                        if (
+                            !response.ok
+                            || !result.success
+                        ) {
+
+                            throw new Error(
+                                result.message
+                                || "Update failed."
+                            );
+                        }
+
+                        if (messageBox) {
+                            messageBox.textContent =
+                                result.message;
+                        }
+
+                        setTimeout(
+                            function () {
+                                window.location.reload();
+                            },
+                            500
+                        );
+
+                    }
+
+                    catch (error) {
+
+                        button.disabled = false;
+
+                        if (messageBox) {
+                            messageBox.textContent =
+                                error.message
+                                || "Could not update the support request.";
+                        }
+                    }
+                }
+            );
+
+
+            // --------------------------------------------------
+            // AUTO-CHECK FOR NEW SUPPORT REQUESTS
+            // --------------------------------------------------
+            // Uses the existing page route only. No backend/API
+            // changes are required. The page reloads only when a
+            // new request is detected, so normal searching and
+            // filtering are not interrupted unnecessarily.
+
+            let knownRequestCount =
+                requestCards.length;
+
+            let supportRequestCheckRunning =
+                false;
+
+            setInterval(
+                async function () {
+
+                    if (
+                        document.hidden
+                        || supportRequestCheckRunning
+                    ) {
+                        return;
+                    }
+
+                    supportRequestCheckRunning =
+                        true;
+
+                    try {
+
+                        const response =
+                            await fetch(
+                                window.location.href,
+                                {
+                                    method: "GET",
+                                    cache: "no-store"
+                                }
+                            );
+
+                        if (!response.ok) {
+                            return;
+                        }
+
+                        const pageHtml =
+                            await response.text();
+
+                        const parser =
+                            new DOMParser();
+
+                        const freshDocument =
+                            parser.parseFromString(
+                                pageHtml,
+                                "text/html"
+                            );
+
+                        const freshRequestCount =
+                            freshDocument.querySelectorAll(
+                                ".request-card"
+                            ).length;
+
+                        if (
+                            freshRequestCount
+                            > knownRequestCount
+                        ) {
+                            window.location.reload();
+                        }
+
+                    }
+
+                    catch (error) {
+                        // Keep the current page working even if
+                        // one background check temporarily fails.
+                    }
+
+                    finally {
+                        supportRequestCheckRunning =
+                            false;
+                    }
+                },
+                5000
+            );
+
+        }
+    );
+</script>
+
+{% include 'partials/welfare_veerassist.html' %}
+
+</body>
+</html>

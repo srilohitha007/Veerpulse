@@ -1,0 +1,105 @@
+<aside class="dashboard-sidebar">
+
+    <div class="sidebar-brand">
+        <h2>VeerPulse</h2>
+        <p>Welfare Officer Portal</p>
+    </div>
+
+    <nav class="sidebar-menu">
+
+        <a href="{{ url_for('welfare_officer_dashboard') }}"
+           class="{% if request.endpoint == 'welfare_officer_dashboard' %}active{% endif %}">
+            Dashboard
+        </a>
+
+        <a href="{{ url_for('welfare_officer_personnel_overview') }}"
+           class="{% if request.endpoint == 'welfare_officer_personnel_overview' %}active{% endif %}">
+            Personnel Management
+        </a>
+
+        <a href="{{ url_for('welfare_officer_leave_management') }}"
+           class="{% if request.endpoint == 'welfare_officer_leave_management' %}active{% endif %}">
+            Leave Management
+        </a>
+
+        <a href="{{ url_for('welfare_officer_alerts') }}"
+           class="{% if request.endpoint == 'welfare_officer_alerts' %}active{% endif %}">
+            Welfare Alerts
+        </a>
+
+        <a href="{{ url_for('welfare_officer_support_requests') }}"
+           class="{% if request.endpoint == 'welfare_officer_support_requests' %}active{% endif %}">
+            Support Requests
+        </a>
+
+        <a href="{{ url_for('welfare_officer_case_review') }}"
+           class="{% if request.endpoint == 'welfare_officer_case_review' %}active{% endif %}">
+            Case Review
+        </a>
+
+        <a href="{{ url_for('welfare_officer_priority_review') }}"
+           class="{% if request.endpoint == 'welfare_officer_priority_review' %}active{% endif %}">
+            Priority Review
+        </a>
+
+        <div class="sidebar-link"
+             style="cursor:default; opacity:0.72;">
+            VeerPulse Analysis
+            <small style="display:block; font-size:8px; margin-top:2px;">
+                Open from selected personnel
+            </small>
+        </div>
+
+        <a href="{{ url_for('welfare_officer_operational_review') }}"
+           class="{% if request.endpoint == 'welfare_officer_operational_review' %}active{% endif %}">
+            Operational Review
+        </a>
+
+        <a href="{{ url_for('welfare_officer_intervention_recommendations') }}"
+           class="{% if request.endpoint == 'welfare_officer_intervention_recommendations' %}active{% endif %}">
+            Intervention & Recommendations
+        </a>
+
+        <a href="{{ url_for('welfare_officer_unit_insights') }}"
+           class="{% if request.endpoint == 'welfare_officer_unit_insights' %}active{% endif %}">
+            Unit Insights
+        </a>
+
+        <a href="{{ url_for('welfare_officer_hrms_integration') }}"
+           class="{% if request.endpoint == 'welfare_officer_hrms_integration' %}active{% endif %}">
+            HRMS & Data Integration
+        </a>
+
+        <a href="{{ url_for('welfare_officer_duty_upload') }}"
+           class="{% if request.endpoint == 'welfare_officer_duty_upload' %}active{% endif %}">
+            Duty Data Upload
+        </a>
+
+        <a href="{{ url_for('welfare_officer_reports') }}"
+           class="{% if request.endpoint == 'welfare_officer_reports' %}active{% endif %}">
+            Reports
+        </a>
+
+        <a href="{{ url_for('welfare_officer_notifications') }}"
+           class="{% if request.endpoint == 'welfare_officer_notifications' %}active{% endif %}">
+            Notifications
+        </a>
+
+        <a href="{{ url_for('welfare_officer_privacy_audit') }}"
+           class="{% if request.endpoint == 'welfare_officer_privacy_audit' %}active{% endif %}">
+            Privacy & Audit
+        </a>
+
+        <a href="{{ url_for('welfare_officer_settings') }}"
+           class="{% if request.endpoint == 'welfare_officer_settings' %}active{% endif %}">
+            Settings
+        </a>
+
+    </nav>
+
+    <a href="{{ url_for('logout') }}"
+       class="sidebar-logout">
+        Logout
+    </a>
+
+</aside>

@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duty Upload | VeerPulse</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        .upload-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .upload-summary-card,
+        .upload-panel {
+            background: white;
+            border: 1px solid #e6ebef;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.05);
+        }
+
+        .upload-summary-card span {
+            display: block;
+            color: #7c8996;
+            font-size: 11px;
+            margin-bottom: 7px;
+        }
+
+        .upload-summary-card strong {
+            display: block;
+            color: #163b65;
+            font-size: 23px;
+        }
+
+        .upload-summary-card p {
+            margin: 6px 0 0;
+            color: #8c97a2;
+            font-size: 10px;
+        }
+
+        .upload-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 18px;
+        }
+
+        .upload-panel h2 {
+            margin: 0;
+            color: #163b65;
+            font-size: 18px;
+        }
+
+        .upload-panel > p {
+            margin: 6px 0 18px;
+            color: #7a8794;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .upload-zone {
+            border: 2px dashed #cfd8df;
+            border-radius: 12px;
+            background: #f9fbfc;
+            padding: 30px 20px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .upload-zone strong {
+            display: block;
+            color: #34495e;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .upload-zone p {
+            margin: 0 0 14px;
+            color: #7c8996;
+            font-size: 10px;
+        }
+
+        .file-input {
+            width: 100%;
+            font-size: 10px;
+        }
+
+        .upload-actions {
+            display: flex;
+            gap: 9px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
+        .upload-btn {
+            border: none;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .primary-btn {
+            background: #163b65;
+            color: white;
+        }
+
+        .secondary-btn {
+            background: #eef3f6;
+            color: #34495e;
+        }
+
+        .requirements-list {
+            display: flex;
+            flex-direction: column;
+            gap: 11px;
+        }
+
+        .requirement-item {
+            padding: 12px;
+            border: 1px solid #e8edf1;
+            background: #fbfcfd;
+            border-radius: 9px;
+        }
+
+        .requirement-item strong {
+            display: block;
+            color: #34495e;
+            font-size: 11px;
+            margin-bottom: 4px;
+        }
+
+        .requirement-item span {
+            display: block;
+            color: #7e8995;
+            font-size: 10px;
+            line-height: 1.6;
+        }
+
+        .upload-history {
+            margin-top: 18px;
+        }
+
+        .history-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 0;
+            border-bottom: 1px solid #edf0f2;
+        }
+
+        .history-row:last-child {
+            border-bottom: none;
+        }
+
+        .history-row strong {
+            display: block;
+            color: #455563;
+            font-size: 10px;
+        }
+
+        .history-row span {
+            display: block;
+            color: #8a95a1;
+            font-size: 9px;
+            margin-top: 3px;
+        }
+
+        .status-badge {
+            padding: 5px 8px;
+            border-radius: 20px;
+            background: #eaf5f3;
+            color: #26756f;
+            font-size: 9px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .upload-note {
+            margin-top: 18px;
+            padding: 14px 15px;
+            border-left: 4px solid #16858c;
+            background: #eef6f6;
+            border-radius: 9px;
+            color: #536b70;
+            font-size: 11px;
+            line-height: 1.7;
+        }
+
+        .upload-result {
+            display: none;
+            margin-top: 14px;
+            padding: 12px 14px;
+            border-radius: 9px;
+            font-size: 10px;
+            line-height: 1.6;
+        }
+
+        .upload-result.show {
+            display: block;
+        }
+
+        .upload-result.success {
+            background: #eef8f3;
+            border: 1px solid #cce7d8;
+            color: #2f7150;
+        }
+
+        .upload-result.error {
+            background: #fff1f1;
+            border: 1px solid #efcaca;
+            color: #9b4444;
+        }
+
+        @media (max-width: 900px) {
+            .upload-summary-grid,
+            .upload-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body class="dashboard-page">
+
+<div class="dashboard-layout">
+
+    {% include 'partials/welfare_officer_sidebar.html' %}
+
+    <main class="dashboard-main">
+
+        <header class="dashboard-header">
+
+            <div>
+                <p class="dashboard-label">
+                    Authorized Duty Data Import
+                </p>
+
+                <h1>
+                    Duty Upload
+                </h1>
+            </div>
+
+            <div class="officer-profile">
+
+                <div class="profile-circle">
+                    WO
+                </div>
+
+                <div>
+                    <strong>Welfare Officer</strong>
+                    <p>Authorized Access</p>
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <section class="upload-summary-grid">
+
+            <div class="upload-summary-card">
+                <span>Valid Imported Records</span>
+                <strong>{{ integration_summary.valid_record_count }}</strong>
+                <p>Validated operational records stored in PostgreSQL</p>
+            </div>
+
+            <div class="upload-summary-card">
+                <span>Personnel Covered</span>
+                <strong>{{ integration_summary.personnel_covered }}</strong>
+                <p>Personnel represented by imported duty records</p>
+            </div>
+
+            <div class="upload-summary-card">
+                <span>Import Events</span>
+                <strong>{{ integration_summary.import_event_count }}</strong>
+                <p>
+                    {% if integration_summary.latest_import_time %}
+                        Last import {{ integration_summary.latest_import_time.strftime('%d %b %Y %I:%M %p') }}
+                    {% else %}
+                        No recorded import yet
+                    {% endif %}
+                </p>
+            </div>
+
+        </section>
+
+
+        <section class="upload-grid">
+
+            <div class="upload-panel">
+
+                <h2>Upload Duty Records</h2>
+
+                <p>
+                    Import authorized duty, rest, deployment, training and leave-context
+                    data for VeerPulse operational analysis.
+                </p>
+
+                <form id="duty-upload-form">
+
+                    <div class="upload-zone">
+
+                        <strong>
+                            Select Duty Data CSV
+                        </strong>
+
+                        <p>
+                            Use the VeerPulse operational CSV format.
+                        </p>
+
+                        <input
+                            id="duty-file"
+                            name="file"
+                            type="file"
+                            class="file-input"
+                            accept=".csv"
+                            required>
+                    </div>
+
+                    <div class="upload-actions">
+
+                        <button
+                            id="import-duty-btn"
+                            type="submit"
+                            class="upload-btn primary-btn">
+                            Import Duty Records
+                        </button>
+
+                        <a
+                            href="{{ url_for('download_hrms_operational_template') }}"
+                            class="upload-btn secondary-btn">
+                            Download CSV Template
+                        </a>
+
+                        <button
+                            type="button"
+                            class="upload-btn secondary-btn"
+                            onclick="clearDutyUpload()">
+                            Clear
+                        </button>
+
+                    </div>
+
+                    <div
+                        id="duty-upload-result"
+                        class="upload-result">
+                    </div>
+
+                </form>
+
+            </div>
+
+
+            <div class="upload-panel">
+
+                <h2>Expected Data Fields</h2>
+
+                <p>
+                    Invalid rows are rejected instead of creating fabricated values.
+                </p>
+
+                <div class="requirements-list">
+
+                    <div class="requirement-item">
+                        <strong>Required Fields</strong>
+                        <span>
+                            personnel_id, record_date, context_type, source_record_id
+                        </span>
+                    </div>
+
+                    <div class="requirement-item">
+                        <strong>Operational Fields</strong>
+                        <span>
+                            duty_hours, rest_hours, deployment_active,
+                            training_hours, leave_status
+                        </span>
+                    </div>
+
+                    <div class="requirement-item">
+                        <strong>Duplicate Handling</strong>
+                        <span>
+                            Existing source records are updated rather than duplicated.
+                        </span>
+                    </div>
+
+                    <div class="requirement-item">
+                        <strong>Database Storage</strong>
+                        <span>
+                            Valid imported records are written to PostgreSQL and become
+                            available to the operational-review and analysis workflow.
+                        </span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section class="upload-panel upload-history">
+
+            <h2>Recent Import Activity</h2>
+
+            <p>
+                Recorded operational import events from the audit trail.
+            </p>
+
+            {% if recent_import_events %}
+
+                {% for event in recent_import_events %}
+
+                    <div class="history-row">
+
+                        <div>
+                            <strong>{{ event.event_summary }}</strong>
+                            <span>
+                                {{ event.created_at.strftime('%d %b %Y · %I:%M %p') }}
+                                · {{ event.actor_id or 'authorized officer' }}
+                            </span>
+                        </div>
+
+                        <div class="status-badge">
+                            Imported
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="history-row">
+                    <div>
+                        <strong>No duty import has been recorded yet.</strong>
+                    </div>
+                </div>
+
+            {% endif %}
+
+        </section>
+
+
+        <div class="upload-note">
+            Duty Upload uses the same validated operational-import engine as
+            HRMS &amp; Data Integration. Valid records are stored in PostgreSQL,
+            duplicate source records are updated, invalid rows are rejected,
+            and the import is recorded in the audit trail.
+        </div>
+
+    </main>
+
+</div>
+
+
+<script>
+    const dutyForm = document.getElementById('duty-upload-form');
+    const dutyFile = document.getElementById('duty-file');
+    const dutyButton = document.getElementById('import-duty-btn');
+    const dutyResult = document.getElementById('duty-upload-result');
+
+    dutyForm.addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        if (!dutyFile.files.length) {
+            showDutyResult('Please select a CSV file.', false);
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', dutyFile.files[0]);
+
+        dutyButton.disabled = true;
+        dutyButton.textContent = 'Importing...';
+
+        try {
+            const response = await fetch(
+                "{{ url_for('import_hrms_operational_records') }}",
+                {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    body: formData
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                let message = data.message || 'Duty import failed.';
+
+                if (Array.isArray(data.rejected_rows) && data.rejected_rows.length) {
+                    message += ' Rejected rows: ' + data.rejected_rows
+                        .map(item => 'Row ' + item.row + ': ' + item.reason)
+                        .join(' | ');
+                }
+
+                throw new Error(message);
+            }
+
+            showDutyResult(
+                data.message || 'Duty records imported successfully.',
+                true
+            );
+
+            setTimeout(function() {
+                window.location.reload();
+            }, 900);
+
+        } catch (error) {
+            showDutyResult(
+                error.message || 'Duty import failed.',
+                false
+            );
+        } finally {
+            dutyButton.disabled = false;
+            dutyButton.textContent = 'Import Duty Records';
+        }
+    });
+
+    function showDutyResult(message, success) {
+        dutyResult.textContent = message;
+        dutyResult.className =
+            'upload-result show ' + (success ? 'success' : 'error');
+    }
+
+    function clearDutyUpload() {
+        dutyForm.reset();
+        dutyResult.textContent = '';
+        dutyResult.className = 'upload-result';
+    }
+</script>
+
+{% include 'partials/welfare_veerassist.html' %}
+
+</body>
+</html>

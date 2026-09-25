@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Unit Insights | VeerPulse</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body.dashboard-page {
+            margin: 0;
+            background: #f4f7f9;
+            color: #24394f;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .dashboard-layout {
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .dashboard-main {
+            flex: 1;
+            min-width: 0;
+            min-height: 100vh;
+            padding: 28px 32px 70px;
+            background: #f4f7f9;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .dashboard-label {
+            margin: 0 0 6px;
+            color: #16858c;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .dashboard-header h1 {
+            margin: 0;
+            color: #163b65;
+            font-size: 28px;
+        }
+
+        .officer-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 13px;
+            background: white;
+            border: 1px solid #e1e7ec;
+            border-radius: 12px;
+        }
+
+        .profile-circle {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            background: #163b65;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .officer-profile strong {
+            display: block;
+            color: #24394f;
+            font-size: 11px;
+        }
+
+        .officer-profile p {
+            margin: 3px 0 0;
+            color: #82909c;
+            font-size: 9px;
+        }
+
+        .insights-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .insight-card {
+            background: white;
+            border: 1px solid #e6ebef;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.05);
+        }
+
+        .insight-card span {
+            display: block;
+            color: #7c8996;
+            font-size: 10px;
+            margin-bottom: 7px;
+        }
+
+        .insight-card strong {
+            display: block;
+            color: #163b65;
+            font-size: 23px;
+        }
+
+        .insight-card p {
+            margin: 6px 0 0;
+            color: #8c97a2;
+            font-size: 9px;
+            line-height: 1.5;
+        }
+
+        .insights-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+
+        .insight-panel {
+            background: white;
+            border: 1px solid #e6ebef;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.05);
+        }
+
+        .panel-label {
+            margin: 0 0 5px;
+            color: #16858c;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+        }
+
+        .insight-panel h2 {
+            margin: 0;
+            color: #163b65;
+            font-size: 18px;
+        }
+
+        .insight-panel > p:not(.panel-label) {
+            margin: 5px 0 16px;
+            color: #7a8794;
+            font-size: 10px;
+            line-height: 1.6;
+        }
+
+        .trend-item {
+            margin-bottom: 15px;
+        }
+
+        .trend-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .trend-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 7px;
+        }
+
+        .trend-top strong {
+            font-size: 10px;
+            color: #455563;
+        }
+
+        .trend-top span {
+            font-size: 9px;
+            color: #73818d;
+        }
+
+        .trend-bar {
+            height: 9px;
+            border-radius: 20px;
+            background: #eef2f4;
+            overflow: hidden;
+        }
+
+        .trend-fill {
+            height: 100%;
+            border-radius: 20px;
+            background: #16858c;
+        }
+
+        .factor-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .factor-item {
+            padding: 12px;
+            background: #f8fafb;
+            border: 1px solid #e5eaee;
+            border-radius: 9px;
+        }
+
+        .factor-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 6px;
+        }
+
+        .factor-row strong {
+            color: #34495e;
+            font-size: 10px;
+        }
+
+        .factor-row span {
+            color: #16858c;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .factor-item p {
+            margin: 0;
+            color: #7e8995;
+            font-size: 9px;
+            line-height: 1.5;
+        }
+
+        .planning-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .planning-card {
+            padding: 15px;
+            background: #f8fafb;
+            border: 1px solid #e5eaee;
+            border-radius: 10px;
+        }
+
+        .planning-card h3 {
+            margin: 0 0 8px;
+            color: #294761;
+            font-size: 11px;
+        }
+
+        .planning-card p {
+            margin: 0;
+            color: #697b89;
+            font-size: 9px;
+            line-height: 1.65;
+        }
+
+        .privacy-panel {
+            margin-top: 18px;
+            background: white;
+            border: 1px solid #e6ebef;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.05);
+        }
+
+        .privacy-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .privacy-item {
+            padding: 12px;
+            background: #f8fafb;
+            border: 1px solid #e5eaee;
+            border-radius: 9px;
+            color: #5e7180;
+            font-size: 9px;
+            line-height: 1.6;
+        }
+
+        .insight-note {
+            margin-top: 18px;
+            padding: 14px 15px;
+            border-left: 4px solid #16858c;
+            background: #eef6f6;
+            border-radius: 9px;
+            color: #536b70;
+            font-size: 10px;
+            line-height: 1.7;
+        }
+
+        .privacy-gate-box {
+            padding: 18px;
+            background: #f8fafb;
+            border: 1px solid #e5eaee;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .privacy-gate-box strong {
+            display: block;
+            margin-bottom: 7px;
+            color: #294761;
+            font-size: 12px;
+        }
+
+        .privacy-gate-box p {
+            margin: 0;
+            color: #6f7f8b;
+            font-size: 9px;
+            line-height: 1.7;
+        }
+
+        .privacy-gate-meta {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .privacy-gate-tag {
+            padding: 6px 9px;
+            border-radius: 20px;
+            background: white;
+            border: 1px solid #dfe6eb;
+            color: #5f7180;
+            font-size: 8px;
+            font-weight: 700;
+        }
+
+        .hidden-until-available {
+            display: none;
+        }
+
+        @media (max-width: 950px) {
+
+            .insights-summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .insights-grid,
+            .planning-grid,
+            .privacy-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 550px) {
+
+            .dashboard-layout {
+                display: block;
+            }
+
+            .dashboard-main {
+                padding: 18px 14px 70px;
+            }
+
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .insights-summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body class="dashboard-page">
+
+<div class="dashboard-layout">
+
+    {% include 'partials/welfare_officer_sidebar.html' %}
+
+    <main class="dashboard-main">
+
+
+        <header class="dashboard-header">
+
+            <div>
+
+                <p class="dashboard-label">
+                    Privacy-Protected Aggregate Analytics
+                </p>
+
+                <h1>
+                    Unit Insights
+                </h1>
+
+            </div>
+
+
+            <div class="officer-profile">
+
+                <div class="profile-circle">
+                    WO
+                </div>
+
+                <div>
+                    <strong>Welfare Officer</strong>
+                    <p>Authorized Aggregate View</p>
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <section class="insights-summary-grid">
+
+            <div class="insight-card">
+                <span>Aggregate Data Status</span>
+                <strong id="unit-data-status">
+                    Loading...
+                </strong>
+                <p>
+                    Privacy-gated unit-level analytics
+                </p>
+            </div>
+
+            <div class="insight-card">
+                <span>Available Personnel</span>
+                <strong id="unit-personnel-count">
+                    —
+                </strong>
+                <p>
+                    Current assessments available for aggregation
+                </p>
+            </div>
+
+            <div class="insight-card">
+                <span>Minimum Group Size</span>
+                <strong id="unit-minimum-group-size">
+                    —
+                </strong>
+                <p>
+                    Required before distribution percentages are shown
+                </p>
+            </div>
+
+            <div class="insight-card">
+                <span>Individual Ranking</span>
+                <strong>
+                    Disabled
+                </strong>
+                <p>
+                    Unit analytics remain aggregate-only
+                </p>
+            </div>
+
+        </section>
+
+
+        <section class="insights-grid">
+
+            <div class="insight-panel">
+
+                <p class="panel-label">
+                    Welfare Distribution
+                </p>
+
+                <h2>
+                    Unit-Level Attention Pattern
+                </h2>
+
+                <p>
+                    Aggregate values are shown only when the privacy-preserving
+                    minimum group size is satisfied.
+                </p>
+
+                <div id="unit-privacy-gate"
+                     class="privacy-gate-box">
+
+                    <strong>
+                        Checking aggregate-data eligibility...
+                    </strong>
+
+                    <p>
+                        VeerPulse will not display unit percentages from an
+                        undersized group.
+                    </p>
+
+                </div>
+
+                <div id="unit-distribution"
+                     class="hidden-until-available">
+
+                    <div class="trend-item">
+                        <div class="trend-top">
+                            <strong>Low</strong>
+                            <span id="unit-low-value">—</span>
+                        </div>
+                        <div class="trend-bar">
+                            <div class="trend-fill"
+                                 id="unit-low-bar"
+                                 style="width:0%;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="trend-item">
+                        <div class="trend-top">
+                            <strong>Moderate</strong>
+                            <span id="unit-moderate-value">—</span>
+                        </div>
+                        <div class="trend-bar">
+                            <div class="trend-fill"
+                                 id="unit-moderate-bar"
+                                 style="width:0%;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="trend-item">
+                        <div class="trend-top">
+                            <strong>Elevated</strong>
+                            <span id="unit-elevated-value">—</span>
+                        </div>
+                        <div class="trend-bar">
+                            <div class="trend-fill"
+                                 id="unit-elevated-bar"
+                                 style="width:0%;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="trend-item">
+                        <div class="trend-top">
+                            <strong>Insufficient Data</strong>
+                            <span id="unit-insufficient-value">—</span>
+                        </div>
+                        <div class="trend-bar">
+                            <div class="trend-fill"
+                                 id="unit-insufficient-bar"
+                                 style="width:0%;">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="insight-panel">
+
+                <p class="panel-label">
+                    Privacy Controls
+                </p>
+
+                <h2>
+                    Why Some Unit Insights May Be Withheld
+                </h2>
+
+                <p>
+                    VeerPulse does not infer or fabricate aggregate contributors
+                    when the current database does not contain enough personnel.
+                </p>
+
+                <div class="factor-list">
+
+                    <div class="factor-item">
+                        <div class="factor-row">
+                            <strong>Minimum Group Gate</strong>
+                            <span>Enabled</span>
+                        </div>
+                        <p>
+                            Distribution percentages are withheld until at least
+                            five current personnel assessments are available.
+                        </p>
+                    </div>
+
+                    <div class="factor-item">
+                        <div class="factor-row">
+                            <strong>Individual Ranking</strong>
+                            <span>Disabled</span>
+                        </div>
+                        <p>
+                            The aggregate endpoint does not return a personnel ranking.
+                        </p>
+                    </div>
+
+                    <div class="factor-item">
+                        <div class="factor-row">
+                            <strong>Unsupported Contributors</strong>
+                            <span>Not Shown</span>
+                        </div>
+                        <p>
+                            Reduced-rest, duty, deployment or training percentages
+                            are not displayed unless supported by real aggregate data.
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+
+        <section class="insight-panel">
+            <p class="panel-label">Current Stored Context</p>
+            <h2>Operational & Welfare Workflow Context</h2>
+            <p>Values below come from the same privacy-gated aggregate endpoint and are shown only when aggregate data is available.</p>
+            <div class="planning-grid">
+                <div class="planning-card"><h3>7-Day Operational Coverage</h3><p id="unit-operational-coverage">Loading...</p></div>
+                <div class="planning-card"><h3>Average Duty / Record</h3><p id="unit-average-duty">Loading...</p></div>
+                <div class="planning-card"><h3>Average Rest / Record</h3><p id="unit-average-rest">Loading...</p></div>
+                <div class="planning-card"><h3>Current Priority Cases</h3><p id="unit-priority-cases">Loading...</p></div>
+                <div class="planning-card"><h3>Open Support Requests</h3><p id="unit-support-requests">Loading...</p></div>
+                <div class="planning-card"><h3>Follow-Up Actions</h3><p id="unit-follow-up-actions">Loading...</p></div>
+            </div>
+        </section>
+
+        <section class="insight-panel">
+
+            <p class="panel-label">
+                Welfare Planning
+            </p>
+
+            <h2>
+                Suggested Unit-Level Planning Areas
+            </h2>
+
+            <p>
+                These are planning prompts for authorized human review
+                and are not automatic operational decisions.
+            </p>
+
+
+            <div class="planning-grid">
+
+
+                <div class="planning-card">
+
+                    <h3>
+                        Recovery Planning
+                    </h3>
+
+                    <p>
+                        Review areas where reduced rest patterns remain
+                        sustained and consider appropriate recovery
+                        opportunities where operationally possible.
+                    </p>
+
+                </div>
+
+
+                <div class="planning-card">
+
+                    <h3>
+                        Workload Balancing
+                    </h3>
+
+                    <p>
+                        Identify persistent high-load patterns and consider
+                        redistribution of non-critical workload subject to
+                        command requirements.
+                    </p>
+
+                </div>
+
+
+                <div class="planning-card">
+
+                    <h3>
+                        Deployment Planning
+                    </h3>
+
+                    <p>
+                        Use aggregated deployment-duration trends to support
+                        welfare-aware planning without exposing unnecessary
+                        individual details.
+                    </p>
+
+                </div>
+
+
+                <div class="planning-card">
+
+                    <h3>
+                        Training Scheduling
+                    </h3>
+
+                    <p>
+                        Review training periods that repeatedly overlap
+                        high-duty periods and consider timing adjustments
+                        where authorized.
+                    </p>
+
+                </div>
+
+
+                <div class="planning-card">
+
+                    <h3>
+                        Welfare Support Capacity
+                    </h3>
+
+                    <p>
+                        Use aggregate trends to plan counselling,
+                        welfare conversations and support availability.
+                    </p>
+
+                </div>
+
+
+                <div class="planning-card">
+
+                    <h3>
+                        Follow-Up Monitoring
+                    </h3>
+
+                    <p>
+                        Review whether unit-level patterns improve after
+                        authorized welfare interventions and recovery actions.
+                    </p>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+        <section class="privacy-panel">
+
+            <p class="panel-label">
+                Privacy Safeguards
+            </p>
+
+            <h2>
+                Aggregate Insights Without Unnecessary Exposure
+            </h2>
+
+
+            <div class="privacy-list">
+
+                <div class="privacy-item">
+                    Unit analytics should use aggregated, minimum-necessary
+                    information wherever possible.
+                </div>
+
+                <div class="privacy-item">
+                    Individual wellness details should remain restricted to
+                    authorized roles and legitimate welfare review.
+                </div>
+
+                <div class="privacy-item">
+                    Unit-level statistics must not be used to rank personnel
+                    or automatically generate disciplinary decisions.
+                </div>
+
+                <div class="privacy-item">
+                    Final welfare and operational decisions remain with
+                    authorized human officers or commanders.
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <div class="insight-note">
+
+            <strong>
+                Privacy-Protected Aggregate View.
+            </strong>
+
+            Unit-level percentages are produced only from stored current
+            assessments after the minimum group-size rule is met. When the
+            database contains too few personnel, VeerPulse shows
+            “Insufficient Aggregate Data” instead of displaying sample or
+            fabricated percentages.
+
+        </div>
+
+
+    </main>
+
+</div>
+
+<script>
+    document.addEventListener(
+        "DOMContentLoaded",
+        async function () {
+
+            const statusEl =
+                document.getElementById(
+                    "unit-data-status"
+                );
+
+            const countEl =
+                document.getElementById(
+                    "unit-personnel-count"
+                );
+
+            const minimumEl =
+                document.getElementById(
+                    "unit-minimum-group-size"
+                );
+
+            const gateEl =
+                document.getElementById(
+                    "unit-privacy-gate"
+                );
+
+            const distributionEl =
+                document.getElementById(
+                    "unit-distribution"
+                );
+
+            const operationalCoverageEl = document.getElementById("unit-operational-coverage");
+            const averageDutyEl = document.getElementById("unit-average-duty");
+            const averageRestEl = document.getElementById("unit-average-rest");
+            const priorityCasesEl = document.getElementById("unit-priority-cases");
+            const supportRequestsEl = document.getElementById("unit-support-requests");
+            const followUpActionsEl = document.getElementById("unit-follow-up-actions");
+
+            function setContextUnavailable(message) {
+                [operationalCoverageEl, averageDutyEl, averageRestEl, priorityCasesEl, supportRequestsEl, followUpActionsEl].forEach(function(el){
+                    if (el) el.textContent = message;
+                });
+            }
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/welfare-officer/unit-insights"
+                    );
+
+                const data =
+                    await response.json();
+
+                if (
+                    !response.ok
+                    || !data.success
+                ) {
+                    throw new Error(
+                        data.message
+                        || "Unit insights could not be loaded."
+                    );
+                }
+
+                statusEl.textContent =
+                    data.data_status;
+
+                countEl.textContent =
+                    data.available_personnel_count;
+
+                minimumEl.textContent =
+                    data.minimum_group_size;
+
+                if (
+                    data.data_status
+                    === "Insufficient Aggregate Data"
+                ) {
+
+                    gateEl.innerHTML =
+                        "<strong>Insufficient Aggregate Data</strong>"
+                        + "<p>"
+                        + data.message
+                        + "</p>"
+                        + "<div class='privacy-gate-meta'>"
+                        + "<span class='privacy-gate-tag'>Available: "
+                        + data.available_personnel_count
+                        + "</span>"
+                        + "<span class='privacy-gate-tag'>Required: "
+                        + data.minimum_group_size
+                        + "</span>"
+                        + "</div>";
+
+                    distributionEl.style.display =
+                        "none";
+
+                    setContextUnavailable("Insufficient Aggregate Data");
+                    return;
+                }
+
+                const distribution =
+                    data.attention_distribution;
+
+                const mappings = [
+                    ["Low", "unit-low"],
+                    ["Moderate", "unit-moderate"],
+                    ["Elevated", "unit-elevated"],
+                    ["Insufficient Data", "unit-insufficient"]
+                ];
+
+                mappings.forEach(
+                    function (item) {
+
+                        const label = item[0];
+                        const prefix = item[1];
+                        const entry = distribution[label];
+
+                        document.getElementById(
+                            prefix + "-value"
+                        ).textContent =
+                            entry.percentage + "% (" + entry.count + ")";
+
+                        document.getElementById(
+                            prefix + "-bar"
+                        ).style.width =
+                            entry.percentage + "%";
+                    }
+                );
+
+                const operational = data.operational_context || {};
+                const workflow = data.workflow_context || {};
+
+                if (operationalCoverageEl) {
+                    operationalCoverageEl.textContent =
+                        (operational.personnel_with_records ?? 0) + " of "
+                        + data.available_personnel_count + " personnel ("
+                        + (operational.coverage_percentage ?? 0) + "%) · "
+                        + (operational.period_start || "—") + " to "
+                        + (operational.period_end || "—");
+                }
+                if (averageDutyEl) {
+                    averageDutyEl.textContent = operational.average_duty_hours_per_record == null
+                        ? "Not recorded"
+                        : operational.average_duty_hours_per_record + " hrs";
+                }
+                if (averageRestEl) {
+                    averageRestEl.textContent = operational.average_rest_hours_per_record == null
+                        ? "Not recorded"
+                        : operational.average_rest_hours_per_record + " hrs";
+                }
+                if (priorityCasesEl) priorityCasesEl.textContent = workflow.current_priority_cases ?? 0;
+                if (supportRequestsEl) supportRequestsEl.textContent = workflow.open_support_requests ?? 0;
+                if (followUpActionsEl) followUpActionsEl.textContent = workflow.follow_up_actions ?? 0;
+
+                gateEl.style.display =
+                    "none";
+
+                distributionEl.style.display =
+                    "block";
+
+            }
+
+            catch (error) {
+
+                statusEl.textContent =
+                    "Unavailable";
+
+                gateEl.innerHTML =
+                    "<strong>Unit Insights Unavailable</strong>"
+                    + "<p>"
+                    + error.message
+                    + "</p>";
+
+                distributionEl.style.display =
+                    "none";
+
+                setContextUnavailable("Unavailable");
+            }
+        }
+    );
+</script>
+
+{% include 'partials/welfare_veerassist.html' %}
+
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Personnel Login | VeerPulse</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body class="login-page">
+
+    <div class="login-wrapper">
+
+        <!-- LEFT PANEL -->
+        <div class="login-left">
+
+            <a href="/" class="back-home">
+                ← Back to Home
+            </a>
+
+            <div class="login-brand">
+                <h1>VeerPulse</h1>
+                <p>Personnel Welfare Portal</p>
+            </div>
+
+            <div class="login-message">
+
+                <span class="login-badge">
+                    Secure Personnel Access
+                </span>
+
+                <h2>
+                    Welcome Back
+                </h2>
+
+                <p>
+                    Access your duty, leave, workload, wellness trends
+                    and confidential support features securely.
+                </p>
+
+            </div>
+
+            <div class="login-security-note">
+
+                <strong>Privacy First</strong>
+
+                <p>
+                    Your welfare information is used only for authorized
+                    personnel support and human-reviewed welfare assistance.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- RIGHT PANEL -->
+        <div class="login-right">
+
+            <div class="login-card">
+
+                <div class="login-card-header">
+
+                    <h2>Personnel Login</h2>
+
+                    <p>
+                        Enter your Personnel ID and password to continue.
+                    </p>
+
+                </div>
+
+
+                <!-- LOGIN FORM -->
+                <form action="{{ url_for('personnel_login') }}" method="post">
+
+                    <div class="form-group">
+
+                        <label for="personnel-id">
+                            Personnel ID / Username
+                        </label>
+
+                        <input
+                            type="text"
+                            id="personnel-id"
+                            name="personnel_id"
+                            placeholder="Enter your Personnel ID"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="password">
+                            Password
+                        </label>
+
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Enter your password"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-options">
+
+                        <label class="remember-me">
+
+                            <input type="checkbox">
+
+                            <span>Remember me</span>
+
+                        </label>
+
+                        <a href="#">
+                            Forgot Password?
+                        </a>
+
+                    </div>
+
+
+                    {% if error %}
+                    <p style="color: #b23b3b; font-size: 13px; margin-bottom: 14px;">
+                        {{ error }}
+                    </p>
+                    {% endif %}
+
+
+                    <button type="submit" class="login-submit">
+                        Login to Personnel Portal
+                    </button>
+
+                </form>
+
+
+                <!-- FUTURE AUTH -->
+                <div class="future-auth">
+
+                    <p>
+                        Future Secure Authentication
+                    </p>
+
+                    <div class="future-auth-options">
+
+                        <span>
+                            Face Authentication
+                        </span>
+
+                        <span>
+                            Fingerprint
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- FOOTER NOTE -->
+                <div class="login-footer-note">
+
+                    <p>
+                        VeerPulse does not provide medical diagnosis.
+                        Welfare alerts are reviewed by authorized human officers.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

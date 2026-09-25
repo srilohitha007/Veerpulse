@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Personnel Dashboard | VeerPulse</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body.dashboard-page {
+            margin: 0;
+            background: #f4f7f9;
+            color: #24394f;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .dashboard-layout {
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .dashboard-main {
+            flex: 1;
+            min-width: 0;
+            min-height: 100vh;
+            margin-left: 0 !important;
+            padding: 28px 32px 70px;
+            background: #f4f7f9;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .dashboard-label {
+            margin: 0 0 6px;
+            color: #16858c;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .dashboard-header h1 {
+            margin: 0;
+            color: #163b65;
+            font-size: 28px;
+        }
+
+        .personnel-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 13px;
+            background: white;
+            border: 1px solid #e1e7ec;
+            border-radius: 12px;
+        }
+
+        .profile-circle {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: #163b65;
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .personnel-profile strong {
+            display: block;
+            color: #24394f;
+            font-size: 12px;
+        }
+
+        .personnel-profile p {
+            margin: 3px 0 0;
+            color: #81909d;
+            font-size: 9px;
+        }
+
+        /* =========================
+           SUMMARY CARDS
+        ========================= */
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .summary-card {
+            background: white;
+            border: 1px solid #e4e9ee;
+            border-radius: 13px;
+            padding: 18px;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.05);
+        }
+
+        .summary-card span {
+            display: block;
+            margin-bottom: 8px;
+            color: #788694;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .summary-card strong {
+            display: block;
+            color: #163b65;
+            font-size: 23px;
+        }
+
+        .summary-card p {
+            margin: 6px 0 0;
+            color: #8a96a1;
+            font-size: 10px;
+            line-height: 1.5;
+        }
+
+        .summary-card.attention {
+            background: #fffaf0;
+            border-color: #eedeb2;
+        }
+
+        .summary-card.attention strong {
+            color: #a27014;
+        }
+
+        /* =========================
+           PANELS
+        ========================= */
+
+        .dashboard-panel {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            margin-bottom: 22px;
+            padding: 22px;
+            background: white;
+            border: 1px solid #e3e9ee;
+            border-radius: 14px;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.04);
+        }
+
+        .panel-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .panel-label {
+            margin: 0 0 5px;
+            color: #16858c;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+        }
+
+        .panel-heading h2 {
+            margin: 0;
+            color: #203c59;
+            font-size: 17px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 7px 12px;
+            border-radius: 20px;
+            font-size: 9px;
+            font-weight: 700;
+        }
+
+        .status-high {
+            background: #fff1d3;
+            color: #956913;
+        }
+
+        .status-moderate {
+            background: #fff1d3;
+            color: #956913;
+        }
+
+        /* =========================
+           OPERATIONAL SNAPSHOT
+        ========================= */
+
+        .operational-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .operational-card {
+            padding: 16px;
+            background: #f8fafb;
+            border: 1px solid #e5eaee;
+            border-radius: 11px;
+        }
+
+        .operational-card span {
+            display: block;
+            margin-bottom: 7px;
+            color: #7b8895;
+            font-size: 10px;
+        }
+
+        .operational-card strong {
+            display: block;
+            color: #163b65;
+            font-size: 17px;
+        }
+
+        .operational-card p {
+            margin: 6px 0 0;
+            color: #87939f;
+            font-size: 10px;
+            line-height: 1.5;
+        }
+
+        /* =========================
+           OPERATIONAL LOAD
+        ========================= */
+
+        .factor-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .factor-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 14px;
+            background: #f8fafb;
+            border: 1px solid #e6ebef;
+            border-radius: 9px;
+        }
+
+        .factor-icon {
+            min-width: 25px;
+            height: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #fff2d8;
+            color: #9a6c15;
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .factor-item strong {
+            display: block;
+            color: #334b61;
+            font-size: 11px;
+        }
+
+        .factor-item p {
+            margin: 3px 0 0;
+            color: #7d8995;
+            font-size: 10px;
+            line-height: 1.5;
+        }
+
+        /* =========================
+           BASELINE
+        ========================= */
+
+        .baseline-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .baseline-item {
+            padding: 14px;
+            background: #f8fafb;
+            border: 1px solid #e5eaee;
+            border-radius: 10px;
+        }
+
+        .baseline-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .baseline-top span {
+            color: #70808f;
+            font-size: 10px;
+        }
+
+        .baseline-top strong {
+            color: #263f56;
+            font-size: 10px;
+        }
+
+        .baseline-bar {
+            height: 7px;
+            background: #e9eef2;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .baseline-fill {
+            height: 100%;
+            background: #d69a27;
+            border-radius: 20px;
+        }
+
+        /* =========================
+           EXPLAIN WHY
+        ========================= */
+
+        .explanation-box {
+            padding: 16px 18px;
+            background: #eef7f7;
+            border-left: 4px solid #16858c;
+            border-radius: 9px;
+            color: #536b70;
+            font-size: 11px;
+            line-height: 1.8;
+        }
+
+        .explanation-box strong {
+            color: #31535a;
+        }
+
+        /* =========================
+           QUICK ACTIONS
+        ========================= */
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .action-card {
+            display: block;
+            padding: 16px;
+            text-decoration: none;
+            background: #f8fafb;
+            border: 1px solid #e4e9ee;
+            border-radius: 11px;
+            transition: 0.2s ease;
+        }
+
+        .action-card:hover {
+            transform: translateY(-2px);
+            background: #f0f7f8;
+            border-color: #cbdfe1;
+        }
+
+        .action-icon {
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            background: #e8f3f4;
+            color: #16858c;
+            border-radius: 9px;
+            font-size: 16px;
+        }
+
+        .action-card strong {
+            display: block;
+            color: #163b65;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .action-card span {
+            color: #7d8996;
+            font-size: 10px;
+            line-height: 1.5;
+        }
+
+        /* =========================
+           NOTICE
+        ========================= */
+
+        .prototype-note {
+            padding: 14px 16px;
+            background: #fffaf0;
+            border: 1px solid #eee0ba;
+            border-left: 4px solid #d89a24;
+            border-radius: 9px;
+            color: #71664d;
+            font-size: 10px;
+            line-height: 1.7;
+        }
+
+        /* =========================
+           RESPONSIVE
+        ========================= */
+
+        @media (max-width: 1100px) {
+
+            .summary-grid,
+            .operational-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .action-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+
+        @media (max-width: 900px) {
+
+            .dashboard-main {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .factor-list,
+            .baseline-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+
+        @media (max-width: 600px) {
+
+            .dashboard-header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .summary-grid,
+            .operational-grid,
+            .action-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-main {
+                padding: 16px 14px 80px;
+            }
+        }
+
+    </style>
+
+</head>
+
+<body class="dashboard-page">
+
+<div class="dashboard-layout">
+
+    {% include 'partials/personnel_sidebar.html' %}
+
+
+    <main class="dashboard-main">
+
+        <header class="dashboard-header">
+
+            <div>
+
+                <p class="dashboard-label">
+                    Personnel Welfare Overview
+                </p>
+
+                <h1>
+                    My Dashboard
+                </h1>
+
+            </div>
+
+
+            <div class="personnel-profile">
+
+                <div class="profile-circle">
+                    VP
+                </div>
+
+                <div>
+
+                    <strong>
+                        Personnel
+                        {{ personnel.personnel_id if personnel else session.get("personnel_id") }}
+                    </strong>
+
+                    <p>
+                        {% if personnel and personnel.full_name %}
+                            {{ personnel.full_name }}
+                        {% else %}
+                            Secure Personal Access
+                        {% endif %}
+                    </p>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- LIVE SUMMARY -->
+        <section class="summary-grid">
+
+            <div class="summary-card">
+
+                <span>
+                    Duty Hours · Last 7 Days
+                </span>
+
+                <strong>
+                    {% if dashboard_summary.duty_total is not none %}
+                        {{ dashboard_summary.duty_total }} hrs
+                    {% else %}
+                        —
+                    {% endif %}
+                </strong>
+
+                <p>
+                    {{ dashboard_summary.record_count }}
+                    valid operational record(s)
+                </p>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <span>
+                    Recovery Days · Last 7 Days
+                </span>
+
+                <strong>
+                    {{ dashboard_summary.recovery_days }}
+                </strong>
+
+                <p>
+                    Days with stored duty hours equal to zero
+                </p>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <span>
+                    Current Operational Context
+                </span>
+
+                <strong style="font-size:17px;">
+                    {{ dashboard_summary.current_context }}
+                </strong>
+
+                <p>
+                    {% if dashboard_summary.rest_average is not none %}
+                        Avg. stored rest:
+                        {{ dashboard_summary.rest_average }} hrs
+                    {% else %}
+                        Rest data unavailable
+                    {% endif %}
+                </p>
+
+            </div>
+
+
+            <div class="summary-card attention">
+
+                <span>
+                    Current Welfare Attention
+                </span>
+
+                <strong>
+                    {{ dashboard_summary.attention_level }}
+                </strong>
+
+                <p>
+                    {% if dashboard_summary.assessment_version %}
+                        Assessment v{{ dashboard_summary.assessment_version }}
+                        · {{ dashboard_summary.evidence_status }}
+                    {% else %}
+                        No current assessment stored
+                    {% endif %}
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- VEERPULSE BRAIN RESULT -->
+        <section class="dashboard-panel">
+
+            <div class="panel-heading">
+
+                <div>
+                    <p class="panel-label">
+                        VeerPulse Early-Warning Engine
+                    </p>
+
+                    <h2>
+                        Current Analysis
+                    </h2>
+                </div>
+
+                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                    <a href="{{ url_for('personnel_wellness_scan') }}"
+                       class="panel-link">
+                        Wellness Scan
+                    </a>
+
+                    <a href="{{ url_for('personnel_analysis_page') }}"
+                       class="panel-link">
+                        Open Full Analysis
+                    </a>
+                </div>
+
+            </div>
+
+            {% if current_analysis %}
+
+                <div class="summary-grid">
+
+                    <div class="summary-card">
+                        <span>Early-Warning Score</span>
+                        <strong>
+                            {% if current_analysis.overall_score is not none %}
+                                {{ "%.1f"|format(current_analysis.overall_score) }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </strong>
+                        <p>
+                            {{ current_analysis.attention_level }}
+                        </p>
+                    </div>
+
+                    <div class="summary-card">
+                        <span>Trend</span>
+                        <strong style="font-size:14px;">
+                            {{ current_analysis.trend_direction or "Unavailable" }}
+                        </strong>
+                        <p>
+                            {{ current_analysis.trend_strength or "Insufficient history" }}
+                        </p>
+                    </div>
+
+                    <div class="summary-card">
+                        <span>Signal Agreement</span>
+                        <strong style="font-size:14px;">
+                            {{ current_analysis.signal_agreement or "Unavailable" }}
+                        </strong>
+                        <p>
+                            Confidence:
+                            {{ current_analysis.confidence or "Unavailable" }}
+                        </p>
+                    </div>
+
+                    <div class="summary-card">
+                        <span>Rules Version</span>
+                        <strong style="font-size:14px;">
+                            {{ current_analysis.rules_version }}
+                        </strong>
+                        <p>
+                            Stored PostgreSQL analysis
+                        </p>
+                    </div>
+
+                </div>
+
+            {% else %}
+
+                <div class="prototype-note">
+                    No stored VeerPulse brain result is available yet.
+                    A new assessment will create the database analysis.
+                </div>
+
+            {% endif %}
+
+        </section>
+
+
+        <!-- CURRENT PERSONNEL CONTEXT -->
+        <section class="dashboard-panel">
+
+            <div class="panel-heading">
+
+                <div>
+
+                    <p class="panel-label">
+                        Operational Snapshot
+                    </p>
+
+                    <h2>
+                        Current Personnel Context
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="operational-grid">
+
+                <div class="operational-card">
+
+                    <span>
+                        Stored Window
+                    </span>
+
+                    <strong>
+                        {{ dashboard_summary.period_start.strftime("%d %b") }}
+                        –
+                        {{ dashboard_summary.period_end.strftime("%d %b %Y") }}
+                    </strong>
+
+                    <p>
+                        Seven-day current review window
+                    </p>
+
+                </div>
+
+
+                <div class="operational-card">
+
+                    <span>
+                        Deployment Context
+                    </span>
+
+                    <strong>
+                        {{ dashboard_summary.deployment_days }}
+                        day(s)
+                    </strong>
+
+                    <p>
+                        Days marked deployment-active in this window
+                    </p>
+
+                </div>
+
+
+                <div class="operational-card">
+
+                    <span>
+                        Training Load
+                    </span>
+
+                    <strong>
+                        {% if dashboard_summary.training_total is not none %}
+                            {{ dashboard_summary.training_total }} hrs
+                        {% else %}
+                            —
+                        {% endif %}
+                    </strong>
+
+                    <p>
+                        Stored training hours in current window
+                    </p>
+
+                </div>
+
+
+                <div class="operational-card">
+
+                    <span>
+                        Leave Context
+                    </span>
+
+                    <strong style="font-size:13px;">
+                        {{ dashboard_summary.latest_leave_context }}
+                    </strong>
+
+                    <p>
+                        Supporting context only; not an automatic welfare trigger
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- CURRENT OPERATIONAL LOAD -->
+        <section class="dashboard-panel">
+
+            <div class="panel-heading">
+
+                <div>
+
+                    <p class="panel-label">
+                        Multi-Factor Operational Context
+                    </p>
+
+                    <h2>
+                        Current Operational Load
+                    </h2>
+
+                </div>
+
+                <span class="status-badge
+                    {% if dashboard_summary.attention_level == 'Elevated' %}
+                        status-high
+                    {% else %}
+                        status-moderate
+                    {% endif %}">
+                    {{ dashboard_summary.attention_level | upper }}
+                </span>
+
+            </div>
+
+
+            <div class="factor-list">
+
+                {% for factor in operational_factors %}
+
+                    <div class="factor-item">
+
+                        <div class="factor-icon">
+                            {{ loop.index }}
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                {{ factor.title }}
+                            </strong>
+
+                            <p>
+                                {{ factor.detail }}
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="factor-item">
+
+                        <div class="factor-icon">
+                            —
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Insufficient Operational Data
+                            </strong>
+
+                            <p>
+                                No valid operational records are stored for the
+                                current seven-day window. VeerPulse does not
+                                fabricate operational values.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+
+                <div class="factor-item">
+
+                    <div class="factor-icon">
+                        ✓
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            Multi-Factor Assessment
+                        </strong>
+
+                        <p>
+                            No single duty, leave, Check-In or camera measurement
+                            independently determines welfare attention.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- BASELINE COMPARISON -->
+        <section class="dashboard-panel">
+
+            <div class="panel-heading">
+
+                <div>
+
+                    <p class="panel-label">
+                        Personal Baseline
+                    </p>
+
+                    <h2>
+                        Baseline vs Current Pattern
+                    </h2>
+
+                </div>
+
+                <span class="status-badge status-moderate">
+                    {{ baseline_summary.status | upper }}
+                </span>
+
+            </div>
+
+
+            {% if baseline_summary.status == "Available" %}
+
+                <div class="baseline-grid">
+
+                    <div class="baseline-item">
+
+                        <div class="baseline-top">
+
+                            <span>
+                                Duty Hours
+                            </span>
+
+                            <strong>
+                                {{ baseline_summary.baseline_duty_total if baseline_summary.baseline_duty_total is not none else "—" }}
+                                hrs
+                                →
+                                {{ baseline_summary.current_duty_total if baseline_summary.current_duty_total is not none else "—" }}
+                                hrs
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="baseline-item">
+
+                        <div class="baseline-top">
+
+                            <span>
+                                Average Rest
+                            </span>
+
+                            <strong>
+                                {{ baseline_summary.baseline_rest_average if baseline_summary.baseline_rest_average is not none else "—" }}
+                                hrs
+                                →
+                                {{ baseline_summary.current_rest_average if baseline_summary.current_rest_average is not none else "—" }}
+                                hrs
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="baseline-item">
+
+                        <div class="baseline-top">
+
+                            <span>
+                                Recovery Days
+                            </span>
+
+                            <strong>
+                                {{ baseline_summary.baseline_recovery_days }}
+                                →
+                                {{ baseline_summary.current_recovery_days }}
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="baseline-item">
+
+                        <div class="baseline-top">
+
+                            <span>
+                                Training Hours
+                            </span>
+
+                            <strong>
+                                {{ baseline_summary.baseline_training_total if baseline_summary.baseline_training_total is not none else "—" }}
+                                hrs
+                                →
+                                {{ baseline_summary.current_training_total if baseline_summary.current_training_total is not none else "—" }}
+                                hrs
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            {% else %}
+
+                <div class="explanation-box">
+
+                    <strong>
+                        Insufficient comparable baseline data.
+                    </strong>
+
+                    <br><br>
+
+                    {{ baseline_summary.reason }}
+
+                    <br><br>
+
+                    Current records:
+                    {{ baseline_summary.current_record_count }}
+                    · Comparable historical records:
+                    {{ baseline_summary.baseline_record_count }}
+
+                </div>
+
+            {% endif %}
+
+        </section>
+
+
+        <!-- LATEST WELLNESS CONTEXT -->
+        <section class="dashboard-panel">
+
+            <div class="panel-heading">
+
+                <div>
+
+                    <p class="panel-label">
+                        Voluntary Supporting Context
+                    </p>
+
+                    <h2>
+                        Latest Wellness Context
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="operational-grid">
+
+                <div class="operational-card">
+
+                    <span>
+                        Wellness Check-In
+                    </span>
+
+                    {% if latest_wellness_context.checkin %}
+
+                        <strong style="font-size:13px;">
+                            {{ latest_wellness_context.checkin.summary_label }}
+                        </strong>
+
+                        <p>
+                            {{ latest_wellness_context.checkin.submitted_at.strftime("%d %b %Y, %I:%M %p") }}
+                            · Supporting context only
+                        </p>
+
+                    {% else %}
+
+                        <strong>No Check-In</strong>
+
+                        <p>
+                            No voluntary Check-In is stored yet
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="operational-card">
+
+                    <span>
+                        Wellness Scan
+                    </span>
+
+                    {% if latest_wellness_context.scan %}
+
+                        <strong style="font-size:13px;">
+                            HR
+                            {{ latest_wellness_context.scan.heart_rate if latest_wellness_context.scan.heart_rate is not none else "—" }}
+                            BPM
+                            · BR
+                            {{ latest_wellness_context.scan.breathing_rate if latest_wellness_context.scan.breathing_rate is not none else "—" }}
+                            / min
+                        </strong>
+
+                        <p>
+                            {{ latest_wellness_context.scan.signal_quality }}
+                            · {{ latest_wellness_context.scan.confidence }}
+                            · Experimental, non-medical
+                        </p>
+
+                    {% else %}
+
+                        <strong>No Saved Scan</strong>
+
+                        <p>
+                            No voluntary camera measurement is stored yet
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="operational-card">
+
+                    <span>
+                        Latest Support Request
+                    </span>
+
+                    {% if latest_wellness_context.support %}
+
+                        <strong>
+                            {{ latest_wellness_context.support.status }}
+                        </strong>
+
+                        <p>
+                            {{ latest_wellness_context.support.support_category }}
+                            · {{ latest_wellness_context.support.priority }}
+                        </p>
+
+                    {% else %}
+
+                        <strong>No Request</strong>
+
+                        <p>
+                            No welfare-support request is stored
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="operational-card">
+
+                    <span>
+                        Latest Leave Request
+                    </span>
+
+                    {% if latest_wellness_context.leave %}
+
+                        <strong>
+                            {{ latest_wellness_context.leave.status }}
+                        </strong>
+
+                        <p>
+                            {{ latest_wellness_context.leave.leave_type }}
+                            ·
+                            {{ latest_wellness_context.leave.start_date.strftime("%d %b %Y") }}
+                        </p>
+
+                    {% else %}
+
+                        <strong>No Request</strong>
+
+                        <p>
+                            No leave request is stored
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- EXPLAIN WHY -->
+        <section class="dashboard-panel">
+
+            <div class="panel-heading">
+
+                <div>
+
+                    <p class="panel-label">
+                        Explainable Welfare Insight
+                    </p>
+
+                    <h2>
+                        Why did my welfare attention change?
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="explanation-box">
+
+                {% if current_assessment %}
+
+                    Your current welfare-attention level is
+                    <strong>
+                        {{ current_assessment.attention_level }}
+                    </strong>.
+
+                    <br><br>
+
+                    {% if current_assessment.explanation_summary %}
+                        {{ current_assessment.explanation_summary }}
+                    {% else %}
+                        No additional explanation is stored for this assessment.
+                    {% endif %}
+
+                {% else %}
+
+                    <strong>
+                        Insufficient Data.
+                    </strong>
+
+                    <br><br>
+
+                    No current welfare assessment is stored.
+                    VeerPulse does not invent a welfare-attention category.
+
+                {% endif %}
+
+                <br><br>
+
+                This is a welfare-support indicator,
+                <strong>not a medical diagnosis</strong>.
+                Final welfare or operational decisions remain with
+                authorized human personnel.
+
+            </div>
+
+        </section>
+
+
+        <!-- QUICK ACTIONS -->
+        <section class="dashboard-panel">
+
+            <div class="panel-heading">
+
+                <div>
+
+                    <p class="panel-label">
+                        Quick Actions
+                    </p>
+
+                    <h2>
+                        My Welfare Tools
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="action-grid">
+
+                <a href="{{ url_for('personnel_duty_leave') }}"
+                   class="action-card">
+
+                    <div class="action-icon">
+                        ◫
+                    </div>
+
+                    <strong>
+                        Operational History
+                    </strong>
+
+                    <span>
+                        View your stored duty, leave, deployment and training context.
+                    </span>
+
+                </a>
+
+
+                <a href="{{ url_for('personnel_trends') }}"
+                   class="action-card">
+
+                    <div class="action-icon">
+                        ↗
+                    </div>
+
+                    <strong>
+                        My Trends
+                    </strong>
+
+                    <span>
+                        Review your current assessment and saved wellness history.
+                    </span>
+
+                </a>
+
+
+                <a href="{{ url_for('personnel_wellness_checkin') }}"
+                   class="action-card">
+
+                    <div class="action-icon">
+                        ✓
+                    </div>
+
+                    <strong>
+                        Wellness Check-In
+                    </strong>
+
+                    <span>
+                        Complete a voluntary personal wellness Check-In.
+                    </span>
+
+                </a>
+
+
+                <a href="{{ url_for('personnel_wellness_scan') }}"
+                   class="action-card">
+
+                    <div class="action-icon">
+                        ◉
+                    </div>
+
+                    <strong>
+                        Wellness Scan
+                    </strong>
+
+                    <span>
+                        Use the optional experimental camera-based measurement.
+                    </span>
+
+                </a>
+
+
+                <a href="{{ url_for('personnel_support') }}"
+                   class="action-card">
+
+                    <div class="action-icon">
+                        ♡
+                    </div>
+
+                    <strong>
+                        Request Support
+                    </strong>
+
+                    <span>
+                        Request confidential welfare follow-up from authorized personnel.
+                    </span>
+
+                </a>
+
+
+                <a href="{{ url_for('personnel_privacy') }}"
+                   class="action-card">
+
+                    <div class="action-icon">
+                        ◇
+                    </div>
+
+                    <strong>
+                        Privacy & Consent
+                    </strong>
+
+                    <span>
+                        Review consent, privacy and authorized wellness-data use.
+                    </span>
+
+                </a>
+
+            </div>
+
+        </section>
+
+
+        <div class="prototype-note">
+
+            <strong>
+                Live PostgreSQL Data
+            </strong>
+
+            <br>
+
+            This dashboard now reads the logged-in personnel member's stored
+            operational records, current welfare assessment, voluntary Check-In,
+            Wellness Scan, support request and leave workflow. Missing information
+            is displayed as unavailable rather than replaced with prototype values.
+
+        </div>
+
+    </main>
+
+</div>
+
+
+{% include 'partials/veerassist.html' %}
+
+</body>
+
+</html>

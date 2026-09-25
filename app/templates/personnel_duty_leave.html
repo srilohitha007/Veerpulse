@@ -1,0 +1,1701 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Operational History | VeerPulse</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        .leave-page {
+            color: #24394f;
+        }
+
+        .leave-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 15px;
+            margin-bottom: 22px;
+        }
+
+        .leave-summary-card,
+        .leave-card {
+            background: #ffffff;
+            border: 1px solid #e5eaee;
+            border-radius: 12px;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.05);
+        }
+
+        .leave-summary-card {
+            padding: 17px;
+        }
+
+        .leave-summary-card span {
+            display: block;
+            margin-bottom: 7px;
+            color: #7d8995;
+            font-size: 10px;
+        }
+
+        .leave-summary-card strong {
+            display: block;
+            color: #163b65;
+            font-size: 22px;
+        }
+
+        .leave-summary-card p {
+            margin: 6px 0 0;
+            color: #8a96a1;
+            font-size: 9px;
+            line-height: 1.5;
+        }
+
+        .leave-main-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+            gap: 18px;
+            align-items: start;
+            margin-bottom: 20px;
+        }
+
+        .leave-card {
+            padding: 20px;
+        }
+
+        .leave-card h2 {
+            margin: 0;
+            color: #163b65;
+            font-size: 18px;
+        }
+
+        .leave-card > p {
+            margin: 6px 0 17px;
+            color: #778594;
+            font-size: 10px;
+            line-height: 1.65;
+        }
+
+        .section-label {
+            display: inline-block;
+            margin-bottom: 10px;
+            padding: 5px 8px;
+            border-radius: 20px;
+            background: #eaf5f3;
+            color: #25766b;
+            font-size: 8px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.45px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 13px;
+        }
+
+        .form-group {
+            min-width: 0;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #536577;
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .required {
+            color: #b25151;
+        }
+
+        .form-control {
+            width: 100%;
+            border: 1px solid #d8e0e6;
+            border-radius: 8px;
+            background: #ffffff;
+            color: #34495e;
+            padding: 10px 11px;
+            font: inherit;
+            font-size: 10px;
+            outline: none;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 82px;
+            line-height: 1.6;
+        }
+
+        .form-control:focus {
+            border-color: #16858c;
+            box-shadow: 0 0 0 3px rgba(22, 133, 140, 0.08);
+        }
+
+        .field-help {
+            margin: 5px 0 0;
+            color: #8b97a2;
+            font-size: 8px;
+            line-height: 1.45;
+        }
+
+        .duration-box {
+            min-height: 37px;
+            display: flex;
+            align-items: center;
+            padding: 9px 11px;
+            border: 1px solid #dfe5e9;
+            border-radius: 8px;
+            background: #f7f9fb;
+            color: #496174;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .form-actions {
+            margin-top: 15px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .primary-btn,
+        .secondary-btn,
+        .cancel-btn {
+            border: 0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 9px;
+            font-weight: 800;
+        }
+
+        .primary-btn {
+            padding: 10px 14px;
+            background: #163b65;
+            color: #ffffff;
+        }
+
+        .primary-btn:disabled,
+        .cancel-btn:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        .secondary-btn {
+            padding: 9px 12px;
+            background: #eef3f7;
+            color: #31536e;
+        }
+
+        .notice {
+            display: none;
+            margin-bottom: 14px;
+            padding: 11px 13px;
+            border-radius: 8px;
+            font-size: 9px;
+            line-height: 1.5;
+        }
+
+        .notice.success {
+            display: block;
+            background: #eaf5f0;
+            color: #26705c;
+            border: 1px solid #cfe7dc;
+        }
+
+        .notice.error {
+            display: block;
+            background: #fdeeee;
+            color: #a54848;
+            border: 1px solid #f2cece;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .metric-item {
+            padding: 13px;
+            border: 1px solid #e7ebee;
+            border-radius: 9px;
+            background: #f9fbfc;
+        }
+
+        .metric-item span {
+            display: block;
+            color: #7c8995;
+            font-size: 8px;
+            margin-bottom: 5px;
+        }
+
+        .metric-item strong {
+            color: #163b65;
+            font-size: 17px;
+        }
+
+        .metric-note {
+            margin-top: 13px;
+            padding: 12px 13px;
+            border-left: 4px solid #16858c;
+            border-radius: 8px;
+            background: #eef6f6;
+            color: #536b70;
+            font-size: 9px;
+            line-height: 1.6;
+        }
+
+
+        .operational-context-card {
+            margin-bottom: 20px;
+        }
+
+        .operational-context-grid strong {
+            font-size: 14px;
+            line-height: 1.35;
+            overflow-wrap: anywhere;
+        }
+
+        .history-card {
+            background: #ffffff;
+            border: 1px solid #e5eaee;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.05);
+        }
+
+        .history-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 14px;
+            margin-bottom: 15px;
+        }
+
+        .history-heading h2 {
+            margin: 0;
+            color: #163b65;
+            font-size: 18px;
+        }
+
+        .history-heading p {
+            margin: 5px 0 0;
+            color: #7b8794;
+            font-size: 10px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border: 1px solid #edf0f2;
+            border-radius: 10px;
+        }
+
+        .leave-table {
+            width: 100%;
+            min-width: 1050px;
+            border-collapse: collapse;
+        }
+
+        .leave-table th {
+            padding: 11px 10px;
+            text-align: left;
+            border-bottom: 1px solid #e5eaee;
+            background: #f7f9fb;
+            color: #6d7b89;
+            font-size: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.35px;
+        }
+
+        .leave-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #edf0f2;
+            color: #46596a;
+            font-size: 9px;
+            vertical-align: top;
+        }
+
+        .leave-table tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .request-code {
+            color: #163b65;
+            font-weight: 800;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 8px;
+            border-radius: 20px;
+            font-size: 8px;
+            font-weight: 800;
+        }
+
+        .status-pending {
+            background: #fff4d8;
+            color: #916d13;
+        }
+
+        .status-approved {
+            background: #e8f5ee;
+            color: #26705c;
+        }
+
+        .status-denied {
+            background: #fdecec;
+            color: #a34646;
+        }
+
+        .status-cancelled {
+            background: #eef1f4;
+            color: #64717d;
+        }
+
+        .decision-text {
+            max-width: 240px;
+            line-height: 1.55;
+        }
+
+        .cancel-btn {
+            padding: 7px 9px;
+            background: #f6eeee;
+            color: #984c4c;
+            border: 1px solid #ead0d0;
+        }
+
+        .empty-state,
+        .loading-state {
+            padding: 28px 18px !important;
+            text-align: center;
+            color: #7e8a95 !important;
+            font-size: 10px !important;
+        }
+
+        .privacy-note {
+            margin-top: 17px;
+            padding: 13px 14px;
+            background: #f6f8fa;
+            border: 1px solid #e6eaed;
+            border-radius: 9px;
+            color: #657583;
+            font-size: 9px;
+            line-height: 1.65;
+        }
+
+        @media (max-width: 1050px) {
+            .leave-summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .leave-main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 650px) {
+            .leave-summary-grid,
+            .form-grid,
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group.full {
+                grid-column: auto;
+            }
+
+            .history-heading {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body class="dashboard-page leave-page">
+
+<div class="dashboard-layout">
+
+    {% include 'partials/personnel_sidebar.html' %}
+
+    <main class="dashboard-main">
+
+        <header class="dashboard-header">
+            <div>
+                <p class="dashboard-label">
+                    Personal Operational Context
+                </p>
+
+                <h1>
+                    Operational History & Leave
+                </h1>
+            </div>
+
+            <div class="officer-profile">
+                <div class="profile-circle">
+                    VP
+                </div>
+
+                <div>
+                    <strong>
+                        {{ personnel.full_name }}
+                    </strong>
+                    <p>
+                        Personnel {{ personnel.personnel_id }} · Secure Personal Access
+                    </p>
+                </div>
+            </div>
+        </header>
+
+        <div id="page-notice"
+             class="notice"></div>
+
+        <section class="leave-summary-grid">
+
+            <div class="leave-summary-card">
+                <span>Recent Duty Hours</span>
+                <strong id="summary-duty">—</strong>
+                <p>Available duty records from the recent operational window</p>
+            </div>
+
+            <div class="leave-summary-card">
+                <span>Average Rest</span>
+                <strong id="summary-rest">—</strong>
+                <p>Average recorded recovery time in the same period</p>
+            </div>
+
+            <div class="leave-summary-card">
+                <span>Training Hours</span>
+                <strong id="summary-training">—</strong>
+                <p>Recorded training load in the recent operational window</p>
+            </div>
+
+            <div class="leave-summary-card">
+                <span>Deployment Status</span>
+                <strong id="summary-deployment">—</strong>
+                <p>Current operational context from the latest valid record</p>
+            </div>
+
+        </section>
+
+        <section class="history-card operational-context-card">
+            <div class="history-heading">
+                <div>
+                    <span class="section-label">Operational Context</span>
+                    <h2>Recent Operational History</h2>
+                    <p>Duty, recovery, training, deployment and leave activity are reviewed as context over time. A single transfer, deployment or leave event is not treated as evidence of stress by itself.</p>
+                </div>
+            </div>
+
+            <div class="metrics-grid operational-context-grid">
+                <div class="metric-item">
+                    <span>Review Period</span>
+                    <strong id="op-period">—</strong>
+                </div>
+
+                <div class="metric-item">
+                    <span>Current Context</span>
+                    <strong id="op-context">—</strong>
+                </div>
+
+                <div class="metric-item">
+                    <span>Available Records</span>
+                    <strong id="op-record-count">—</strong>
+                </div>
+
+                <div class="metric-item">
+                    <span>Data Source</span>
+                    <strong id="op-source">—</strong>
+                </div>
+            </div>
+
+            <div class="metric-note" id="operational-context-note">
+                Operational history provides context for welfare review. It is not a medical diagnosis or an automatic decision about a personnel member.
+            </div>
+        </section>
+
+
+        <section class="leave-main-grid">
+
+            <!-- LEAVE MANAGEMENT -->
+            <div class="leave-card">
+
+                <span class="section-label">
+                    Leave Management
+                </span>
+
+                <h2>
+                    Apply for Leave
+                </h2>
+
+                <p>
+                    Submit a leave request for authorized officer review.
+                    Approval is a human decision and is not made automatically
+                    from wellness or physiological data.
+                </p>
+
+                <div id="leave-form-notice"
+                     class="notice"></div>
+
+                <form id="leave-request-form">
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+                            <label>
+                                Leave Type
+                                <span class="required">*</span>
+                            </label>
+
+                            <select id="leave-type"
+                                    class="form-control"
+                                    required>
+                                <option value="">
+                                    Select leave type
+                                </option>
+                                <option value="Annual Leave">
+                                    Annual Leave
+                                </option>
+                                <option value="Casual Leave">
+                                    Casual Leave
+                                </option>
+                                <option value="Medical Leave">
+                                    Medical Leave
+                                </option>
+                                <option value="Emergency Leave">
+                                    Emergency Leave
+                                </option>
+                                <option value="Compensatory Leave">
+                                    Compensatory Leave
+                                </option>
+                                <option value="Other">
+                                    Other
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                Reason Category
+                                <span class="required">*</span>
+                            </label>
+
+                            <select id="reason-category"
+                                    class="form-control"
+                                    required>
+                                <option value="">
+                                    Select category
+                                </option>
+                                <option value="Personal">
+                                    Personal
+                                </option>
+                                <option value="Family">
+                                    Family
+                                </option>
+                                <option value="Medical">
+                                    Medical
+                                </option>
+                                <option value="Emergency">
+                                    Emergency
+                                </option>
+                                <option value="Official">
+                                    Official
+                                </option>
+                                <option value="Other">
+                                    Other
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                From Date
+                                <span class="required">*</span>
+                            </label>
+
+                            <input type="date"
+                                   id="start-date"
+                                   class="form-control"
+                                   required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                To Date
+                                <span class="required">*</span>
+                            </label>
+
+                            <input type="date"
+                                   id="end-date"
+                                   class="form-control"
+                                   required>
+                        </div>
+
+                        <div class="form-group full">
+                            <label>
+                                Duration
+                            </label>
+
+                            <div class="duration-box"
+                                 id="duration-box">
+                                Select leave dates
+                            </div>
+                        </div>
+
+                        <div class="form-group full">
+                            <label>
+                                Reason
+                                <span class="required">*</span>
+                            </label>
+
+                            <textarea id="leave-reason"
+                                      class="form-control"
+                                      maxlength="500"
+                                      required
+                                      placeholder="Provide a short reason for the leave request."></textarea>
+
+                            <p class="field-help">
+                                Keep the explanation relevant to the request.
+                                Detailed medical diagnosis or unnecessary private
+                                information is not required.
+                            </p>
+                        </div>
+
+                        <div class="form-group full">
+                            <label>
+                                Additional Note
+                                <span class="muted">(Optional)</span>
+                            </label>
+
+                            <textarea id="additional-note"
+                                      class="form-control"
+                                      maxlength="500"
+                                      placeholder="Any additional scheduling or operational note."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit"
+                                class="primary-btn"
+                                id="submit-leave-btn">
+                            Submit Leave Request
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+
+            <!-- LEAVE METRICS -->
+            <div class="leave-card">
+
+                <span class="section-label">
+                    Personal Leave Activity
+                </span>
+
+                <h2>
+                    Leave Metrics
+                </h2>
+
+                <p>
+                    Leave activity is shown as one part of the operational record for the last 90 days.
+                    These figures are context only and are not a stress diagnosis or personnel ranking.
+                </p>
+
+                <div class="metrics-grid">
+
+                    <div class="metric-item">
+                        <span>Pending</span>
+                        <strong id="metric-pending">—</strong>
+                    </div>
+
+                    <div class="metric-item">
+                        <span>Approved</span>
+                        <strong id="metric-approved">—</strong>
+                    </div>
+
+                    <div class="metric-item">
+                        <span>Denied</span>
+                        <strong id="metric-denied">—</strong>
+                    </div>
+
+                    <div class="metric-item">
+                        <span>Cancelled</span>
+                        <strong id="metric-cancelled">—</strong>
+                    </div>
+
+                    <div class="metric-item">
+                        <span>Applications / 30 Days</span>
+                        <strong id="metric-frequency">—</strong>
+                    </div>
+
+                    <div class="metric-item">
+                        <span>Average Gap</span>
+                        <strong id="metric-gap">—</strong>
+                    </div>
+
+                </div>
+
+                <div class="metric-note"
+                     id="metric-note">
+                    Leave activity is operational context only.
+                </div>
+
+                <div class="privacy-note">
+                    A high number of leave requests does not automatically mean
+                    high stress. VeerPulse keeps leave activity separate from
+                    automatic welfare or disciplinary decisions.
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- MY LEAVE REQUESTS -->
+        <section class="history-card">
+
+            <div class="history-heading">
+                <div>
+                    <h2>
+                        My Leave Requests
+                    </h2>
+
+                    <p>
+                        Track pending, approved, denied and cancelled requests.
+                    </p>
+                </div>
+
+                <button type="button"
+                        class="secondary-btn"
+                        id="refresh-history-btn">
+                    Refresh
+                </button>
+            </div>
+
+            <div class="table-wrap">
+                <table class="leave-table">
+                    <thead>
+                        <tr>
+                            <th>Request</th>
+                            <th>Leave Type</th>
+                            <th>Period</th>
+                            <th>Days</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Officer Decision</th>
+                            <th>Submitted</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="leave-history-body">
+                        <tr>
+                            <td colspan="9"
+                                class="loading-state">
+                                Loading leave requests...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="privacy-note">
+                Denied requests display the officer's recorded reason.
+                Pending requests can be cancelled by the personnel member
+                before an officer decision is recorded.
+            </div>
+        </section>
+
+    </main>
+</div>
+
+
+<script>
+(function () {
+    "use strict";
+
+    let leaveRequests = [];
+
+    const $ = (id) =>
+        document.getElementById(id);
+
+    function escapeHtml(value) {
+        return String(value ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    function showNotice(element, message, type) {
+        element.className =
+            "notice " + type;
+        element.textContent = message;
+    }
+
+    function clearNotice(element) {
+        element.className = "notice";
+        element.textContent = "";
+    }
+
+    async function readJson(response) {
+        let data;
+
+        try {
+            data = await response.json();
+        }
+        catch (error) {
+            throw new Error(
+                "The server returned an unreadable response."
+            );
+        }
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.message
+                || "The request could not be completed."
+            );
+        }
+
+        return data;
+    }
+
+    function formatDate(value) {
+        if (!value) {
+            return "Not recorded";
+        }
+
+        const date = new Date(
+            value.includes("T")
+                ? value
+                : value + "T00:00:00"
+        );
+
+        if (Number.isNaN(date.getTime())) {
+            return value;
+        }
+
+        return date.toLocaleDateString(
+            undefined,
+            {
+                day: "2-digit",
+                month: "short",
+                year: "numeric"
+            }
+        );
+    }
+
+    function formatDateTime(value) {
+        if (!value) {
+            return "Not recorded";
+        }
+
+        const date = new Date(value);
+
+        if (Number.isNaN(date.getTime())) {
+            return value;
+        }
+
+        return date.toLocaleString(
+            undefined,
+            {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+            }
+        );
+    }
+
+    function displayStoredValue(
+        value,
+        suffix = ""
+    ) {
+        if (
+            value === null
+            || value === undefined
+            || value === ""
+        ) {
+            return "Insufficient Data";
+        }
+
+        return String(value) + suffix;
+    }
+
+    function statusClass(status) {
+        const value =
+            String(status || "").toLowerCase();
+
+        if (value === "approved") {
+            return "status-approved";
+        }
+
+        if (value === "denied") {
+            return "status-denied";
+        }
+
+        if (value === "cancelled") {
+            return "status-cancelled";
+        }
+
+        if (value === "pending") {
+            return "status-pending";
+        }
+
+        return "";
+    }
+
+    function setMinimumDates() {
+        const today = new Date();
+
+        const localToday =
+            new Date(
+                today.getTime()
+                - today.getTimezoneOffset() * 60000
+            )
+            .toISOString()
+            .slice(0, 10);
+
+        $("start-date").min = localToday;
+        $("end-date").min = localToday;
+    }
+
+    function updateDuration() {
+        const startValue =
+            $("start-date").value;
+
+        const endValue =
+            $("end-date").value;
+
+        if (startValue) {
+            $("end-date").min =
+                startValue;
+        }
+
+        if (!startValue || !endValue) {
+            $("duration-box").textContent =
+                "Select leave dates";
+            return;
+        }
+
+        const start =
+            new Date(startValue + "T00:00:00");
+
+        const end =
+            new Date(endValue + "T00:00:00");
+
+        if (end < start) {
+            $("duration-box").textContent =
+                "End date cannot be before start date";
+            return;
+        }
+
+        const days =
+            Math.floor(
+                (end - start)
+                / 86400000
+            ) + 1;
+
+        if (days > 90) {
+            $("duration-box").textContent =
+                days
+                + " days — maximum is 90 days per request";
+            return;
+        }
+
+        $("duration-box").textContent =
+            days
+            + (days === 1 ? " day" : " days");
+    }
+
+    async function loadOperationalSummary() {
+        try {
+            const response = await fetch(
+                "/api/personnel/operational-summary",
+                {
+                    headers: {
+                        "Accept":
+                            "application/json"
+                    }
+                }
+            );
+
+            const data =
+                await readJson(response);
+
+            const summary =
+                data.summary || {};
+
+            $("summary-duty").textContent =
+                displayStoredValue(
+                    summary.total_duty_hours,
+                    " hrs"
+                );
+
+            $("summary-rest").textContent =
+                displayStoredValue(
+                    summary.average_rest_hours,
+                    " hrs"
+                );
+
+            $("summary-training").textContent =
+                displayStoredValue(
+                    summary.total_training_hours,
+                    " hrs"
+                );
+
+            $("summary-deployment").textContent =
+                summary.deployment_active === true
+                    ? "Active"
+                    : summary.deployment_active === false
+                        ? "Not Active"
+                        : "Insufficient Data";
+
+            const periodStart = summary.period_start
+                ? formatDate(summary.period_start)
+                : null;
+
+            const periodEnd = summary.period_end
+                ? formatDate(summary.period_end)
+                : null;
+
+            $("op-period").textContent =
+                periodStart && periodEnd
+                    ? periodStart + " → " + periodEnd
+                    : "Insufficient Data";
+
+            $("op-context").textContent =
+                displayStoredValue(summary.current_context);
+
+            $("op-record-count").textContent =
+                displayStoredValue(summary.record_count);
+
+            $("op-source").textContent =
+                Array.isArray(summary.source_types)
+                && summary.source_types.length
+                    ? summary.source_types.join(", ")
+                    : "Insufficient Data";
+
+            if (
+                summary.data_status
+                && summary.data_status !== "Available"
+            ) {
+                showNotice(
+                    $("page-notice"),
+                    "Operational history: "
+                    + summary.data_status
+                    + ". Missing records are shown as unavailable rather than being treated as zero.",
+                    "error"
+                );
+
+                $("operational-context-note").textContent =
+                    "There is not enough recent operational history to interpret this period reliably. Missing evidence is not treated as low concern.";
+            }
+        }
+        catch (error) {
+            [
+                "summary-duty",
+                "summary-rest",
+                "summary-training",
+                "summary-deployment",
+                "op-period",
+                "op-context",
+                "op-record-count",
+                "op-source"
+            ].forEach((id) => {
+                $(id).textContent = "Insufficient Data";
+            });
+
+            $("operational-context-note").textContent =
+                "Operational history could not be loaded. No missing value has been replaced with zero.";
+
+            showNotice(
+                $("page-notice"),
+                "Operational summary could not be loaded: "
+                + error.message,
+                "error"
+            );
+        }
+    }
+
+    async function loadMetrics() {
+        try {
+            const response = await fetch(
+                "/api/personnel/leave-metrics?days=90",
+                {
+                    headers: {
+                        "Accept":
+                            "application/json"
+                    }
+                }
+            );
+
+            const data =
+                await readJson(response);
+
+            const metrics =
+                data.metrics || {};
+
+            $("metric-pending")
+                .textContent =
+                displayStoredValue(
+                    metrics.pending
+                );
+
+            $("metric-approved")
+                .textContent =
+                displayStoredValue(
+                    metrics.approved
+                );
+
+            $("metric-denied")
+                .textContent =
+                displayStoredValue(
+                    metrics.denied
+                );
+
+            $("metric-cancelled")
+                .textContent =
+                displayStoredValue(
+                    metrics.cancelled
+                );
+
+            $("metric-frequency")
+                .textContent =
+                displayStoredValue(
+                    metrics.applications_per_30_days
+                );
+
+            $("metric-gap")
+                .textContent =
+                displayStoredValue(
+                    metrics.average_days_between_requests,
+                    " days"
+                );
+
+            $("metric-note").textContent =
+                metrics.interpretation_note
+                || "Leave activity is operational context only.";
+        }
+        catch (error) {
+            [
+                "metric-pending",
+                "metric-approved",
+                "metric-denied",
+                "metric-cancelled",
+                "metric-frequency",
+                "metric-gap"
+            ].forEach((id) => {
+                $(id).textContent =
+                    "Insufficient Data";
+            });
+
+            showNotice(
+                $("page-notice"),
+                "Leave metrics could not be loaded: "
+                + error.message,
+                "error"
+            );
+        }
+    }
+
+    function decisionText(item) {
+        if (item.status === "Denied") {
+            const reason =
+                item.decision_reason
+                || "Reason not recorded";
+
+            const note =
+                item.decision_note
+                ? " — " + item.decision_note
+                : "";
+
+            return reason + note;
+        }
+
+        if (item.status === "Approved") {
+            return item.decided_by
+                ? "Approved by "
+                  + item.decided_by
+                : "Approved";
+        }
+
+        if (item.status === "Cancelled") {
+            return "Cancelled before officer decision";
+        }
+
+        if (item.status === "Pending") {
+            return "Awaiting officer review";
+        }
+
+        return "Not recorded";
+    }
+
+    function renderHistory() {
+        const body =
+            $("leave-history-body");
+
+        if (!leaveRequests.length) {
+            body.innerHTML = `
+                <tr>
+                    <td colspan="9"
+                        class="empty-state">
+                        No leave requests have been submitted yet.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        body.innerHTML =
+            leaveRequests.map((item) => `
+                <tr>
+                    <td>
+                        <span class="request-code">
+                            ${escapeHtml(
+                                item.request_code
+                                || "Not recorded"
+                            )}
+                        </span>
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            item.leave_type || "Not recorded"
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            formatDate(item.start_date)
+                        )}
+                        →
+                        ${escapeHtml(
+                            formatDate(item.end_date)
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            item.requested_days
+                            ?? "Not recorded"
+                        )}
+                    </td>
+
+                    <td>
+                        <div class="decision-text">
+                            <strong>
+                                ${escapeHtml(
+                                    item.reason_category
+                                    || "Not recorded"
+                                )}
+                            </strong>
+                            <br>
+                            ${escapeHtml(
+                                item.reason
+                                || "Not recorded"
+                            )}
+                        </div>
+                    </td>
+
+                    <td>
+                        <span class="status-badge ${statusClass(item.status)}">
+                            ${escapeHtml(
+                                item.status
+                                || "Not recorded"
+                            )}
+                        </span>
+                    </td>
+
+                    <td>
+                        <div class="decision-text">
+                            ${escapeHtml(
+                                decisionText(item)
+                            )}
+
+                            ${
+                                item.decided_at
+                                    ? "<br><span class='muted'>"
+                                      + escapeHtml(
+                                          formatDateTime(
+                                              item.decided_at
+                                          )
+                                      )
+                                      + "</span>"
+                                    : ""
+                            }
+                        </div>
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            formatDateTime(
+                                item.created_at
+                            )
+                        )}
+                    </td>
+
+                    <td>
+                        ${
+                            item.status === "Pending"
+                                ? `
+                                    <button type="button"
+                                            class="cancel-btn"
+                                            data-cancel-id="${item.id}">
+                                        Cancel
+                                    </button>
+                                  `
+                                : "—"
+                        }
+                    </td>
+                </tr>
+            `).join("");
+    }
+
+    async function loadLeaveRequests() {
+        const body =
+            $("leave-history-body");
+
+        body.innerHTML = `
+            <tr>
+                <td colspan="9"
+                    class="loading-state">
+                    Loading leave requests...
+                </td>
+            </tr>
+        `;
+
+        try {
+            const response = await fetch(
+                "/api/personnel/leave-requests",
+                {
+                    headers: {
+                        "Accept":
+                            "application/json"
+                    }
+                }
+            );
+
+            const data =
+                await readJson(response);
+
+            leaveRequests =
+                Array.isArray(
+                    data.leave_requests
+                )
+                    ? data.leave_requests
+                    : [];
+
+            renderHistory();
+        }
+        catch (error) {
+            body.innerHTML = `
+                <tr>
+                    <td colspan="9"
+                        class="empty-state">
+                        ${escapeHtml(error.message)}
+                    </td>
+                </tr>
+            `;
+
+            showNotice(
+                $("page-notice"),
+                error.message,
+                "error"
+            );
+        }
+    }
+
+    function getLeavePayload() {
+        return {
+            leave_type:
+                $("leave-type").value,
+            start_date:
+                $("start-date").value,
+            end_date:
+                $("end-date").value,
+            reason_category:
+                $("reason-category").value,
+            reason:
+                $("leave-reason")
+                    .value
+                    .trim(),
+            additional_note:
+                $("additional-note")
+                    .value
+                    .trim()
+        };
+    }
+
+    async function submitLeaveRequest(event) {
+        event.preventDefault();
+
+        clearNotice(
+            $("leave-form-notice")
+        );
+
+        const payload =
+            getLeavePayload();
+
+        if (
+            !payload.leave_type
+            || !payload.reason_category
+            || !payload.start_date
+            || !payload.end_date
+            || payload.reason.length < 3
+        ) {
+            showNotice(
+                $("leave-form-notice"),
+                "Please complete all required leave fields.",
+                "error"
+            );
+            return;
+        }
+
+        const start =
+            new Date(
+                payload.start_date
+                + "T00:00:00"
+            );
+
+        const end =
+            new Date(
+                payload.end_date
+                + "T00:00:00"
+            );
+
+        const days =
+            Math.floor(
+                (end - start)
+                / 86400000
+            ) + 1;
+
+        if (days < 1) {
+            showNotice(
+                $("leave-form-notice"),
+                "End date cannot be before start date.",
+                "error"
+            );
+            return;
+        }
+
+        if (days > 90) {
+            showNotice(
+                $("leave-form-notice"),
+                "A single leave request cannot exceed 90 days.",
+                "error"
+            );
+            return;
+        }
+
+        const button =
+            $("submit-leave-btn");
+
+        button.disabled = true;
+        button.textContent =
+            "Submitting...";
+
+        try {
+            const response = await fetch(
+                "/api/personnel/leave-requests",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+                        "Accept":
+                            "application/json"
+                    },
+                    body: JSON.stringify(
+                        payload
+                    )
+                }
+            );
+
+            const data =
+                await readJson(response);
+
+            $("leave-request-form")
+                .reset();
+
+            setMinimumDates();
+            updateDuration();
+
+            showNotice(
+                $("leave-form-notice"),
+                data.message
+                || "Leave request submitted successfully.",
+                "success"
+            );
+
+            await Promise.all([
+                loadLeaveRequests(),
+                loadMetrics()
+            ]);
+        }
+        catch (error) {
+            showNotice(
+                $("leave-form-notice"),
+                error.message,
+                "error"
+            );
+        }
+        finally {
+            button.disabled = false;
+            button.textContent =
+                "Submit Leave Request";
+        }
+    }
+
+    async function cancelLeaveRequest(
+        leaveId,
+        button
+    ) {
+        const item =
+            leaveRequests.find(
+                (request) =>
+                    Number(request.id)
+                    === Number(leaveId)
+            );
+
+        if (!item) {
+            return;
+        }
+
+        const confirmed =
+            window.confirm(
+                "Cancel "
+                + (item.request_code
+                    || "this leave request")
+                + "? This can only be done while it is pending."
+            );
+
+        if (!confirmed) {
+            return;
+        }
+
+        button.disabled = true;
+        button.textContent =
+            "Cancelling...";
+
+        try {
+            const response = await fetch(
+                "/api/personnel/leave-requests/"
+                + encodeURIComponent(leaveId)
+                + "/cancel",
+                {
+                    method: "POST",
+                    headers: {
+                        "Accept":
+                            "application/json"
+                    }
+                }
+            );
+
+            const data =
+                await readJson(response);
+
+            showNotice(
+                $("page-notice"),
+                data.message
+                || "Leave request cancelled successfully.",
+                "success"
+            );
+
+            await Promise.all([
+                loadLeaveRequests(),
+                loadMetrics()
+            ]);
+        }
+        catch (error) {
+            button.disabled = false;
+            button.textContent = "Cancel";
+
+            showNotice(
+                $("page-notice"),
+                error.message,
+                "error"
+            );
+        }
+    }
+
+    $("start-date")
+        .addEventListener(
+            "change",
+            updateDuration
+        );
+
+    $("end-date")
+        .addEventListener(
+            "change",
+            updateDuration
+        );
+
+    $("leave-request-form")
+        .addEventListener(
+            "submit",
+            submitLeaveRequest
+        );
+
+    $("refresh-history-btn")
+        .addEventListener(
+            "click",
+            async function () {
+                await Promise.all([
+                    loadLeaveRequests(),
+                    loadMetrics(),
+                    loadOperationalSummary()
+                ]);
+            }
+        );
+
+    document.addEventListener(
+        "click",
+        function (event) {
+            const button =
+                event.target.closest(
+                    "[data-cancel-id]"
+                );
+
+            if (!button) {
+                return;
+            }
+
+            cancelLeaveRequest(
+                button.dataset.cancelId,
+                button
+            );
+        }
+    );
+
+    setMinimumDates();
+    updateDuration();
+
+    Promise.all([
+        loadOperationalSummary(),
+        loadLeaveRequests(),
+        loadMetrics()
+    ]);
+})();
+</script>
+
+{% include 'partials/veerassist.html' %}
+</body>
+</html>

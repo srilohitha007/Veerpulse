@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Welfare Officer Login | VeerPulse</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body class="login-page">
+
+    <div class="login-container">
+
+        <!-- LEFT PANEL -->
+        <section class="login-left officer-left">
+
+            <a href="{{ url_for('home') }}" class="back-home">
+                ← Back to Home
+            </a>
+
+            <div class="login-brand">
+                <h1>VeerPulse</h1>
+                <p>Guarding the Guardians</p>
+            </div>
+
+            <div class="login-message">
+
+                <span class="secure-badge">
+                    Authorized Welfare Access
+                </span>
+
+                <h2>Welfare Officer Portal</h2>
+
+                <p>
+                    Review personnel welfare trends, explainable alerts,
+                    support cases and aggregated unit insights through
+                    secure role-based access.
+                </p>
+
+            </div>
+
+            <div class="security-note">
+                Sensitive personnel information is visible only to
+                authorized welfare personnel.
+            </div>
+
+        </section>
+
+
+        <!-- RIGHT PANEL -->
+        <section class="login-right">
+
+            <div class="login-card">
+
+                <div class="login-heading">
+
+                    <h2>Welfare Officer Login</h2>
+
+                    <p>
+                        Enter your authorized Officer ID and password.
+                    </p>
+
+                </div>
+
+
+                <!-- LOGIN ERROR -->
+                {% if error %}
+
+                    <div style="
+                        background:#fdeaea;
+                        color:#a54848;
+                        border:1px solid #f1caca;
+                        padding:10px 12px;
+                        border-radius:8px;
+                        font-size:12px;
+                        margin-bottom:15px;
+                    ">
+                        {{ error }}
+                    </div>
+
+                {% endif %}
+
+
+                <!-- REAL LOGIN FORM -->
+                <form method="POST"
+                      action="{{ url_for('welfare_officer_login') }}">
+
+
+                    <div class="form-group">
+
+                        <label for="officer-id">
+                            Officer ID / Username
+                        </label>
+
+                        <input
+                            type="text"
+                            id="officer-id"
+                            name="officer_id"
+                            placeholder="Enter your Officer ID"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="officer-password">
+                            Password
+                        </label>
+
+                        <input
+                            type="password"
+                            id="officer-password"
+                            name="password"
+                            placeholder="Enter your password"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="login-options">
+
+                        <label class="remember-box">
+
+                            <input type="checkbox">
+
+                            <span>
+                                Remember me
+                            </span>
+
+                        </label>
+
+                        <a href="#">
+                            Forgot Password?
+                        </a>
+
+                    </div>
+
+
+                    <!-- REAL SUBMIT BUTTON -->
+                    <button
+                        type="submit"
+                        class="login-submit"
+                        style="
+                            width:100%;
+                            border:none;
+                            cursor:pointer;
+                        "
+                    >
+                        Login to Welfare Officer Portal
+                    </button>
+
+                </form>
+
+
+                <div class="future-auth">
+
+                    <p>
+                        Future Secure Authentication
+                    </p>
+
+                    <div class="future-auth-options">
+
+                        <div class="future-auth-item">
+                            Face Authentication
+                        </div>
+
+                        <div class="future-auth-item">
+                            Fingerprint
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="login-privacy">
+
+                    <p>
+                        Access is restricted to authorized welfare personnel.
+                        Personnel welfare information is intended only for
+                        confidential support and human review.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </div>
+
+</body>
+
+</html>

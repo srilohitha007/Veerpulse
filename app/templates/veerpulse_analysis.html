@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>
+        VeerPulse Analysis
+    </title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css', v='vp-sidebar-20260916') }}">
+
+    <style>
+
+        /* Reuse the dashboard shell and sidebar from static/css/style.css.
+           Sidebar markup/routes remain in the existing role-specific partials.
+           Keep analysis-specific sizing scoped to the content area. */
+        .analysis-main,
+        .analysis-main * {
+            box-sizing: border-box;
+        }
+
+        .analysis-main {
+            min-width: 0;
+            padding: 26px;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .page-label {
+            margin: 0 0 6px;
+            font-size: 10px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #738291;
+            font-weight: 700;
+        }
+
+        .page-header h1 {
+            margin: 0;
+            color: #163b65;
+            font-size: 26px;
+        }
+
+        .identity-card {
+            background: white;
+            border: 1px solid #e2e8ed;
+            border-radius: 12px;
+            padding: 12px 14px;
+            min-width: 220px;
+        }
+
+        .identity-card strong {
+            display: block;
+            color: #163b65;
+            font-size: 12px;
+        }
+
+        .identity-card span {
+            display: block;
+            color: #7a8793;
+            margin-top: 4px;
+            font-size: 9px;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .hero-card,
+        .panel {
+            background: white;
+            border: 1px solid #e4e9ed;
+            border-radius: 14px;
+            box-shadow: 0 6px 20px rgba(27, 52, 76, 0.04);
+        }
+
+        .hero-card {
+            padding: 16px;
+        }
+
+        .hero-card span {
+            display: block;
+            color: #7a8793;
+            font-size: 9px;
+            margin-bottom: 8px;
+        }
+
+        .hero-card strong {
+            display: block;
+            color: #163b65;
+            font-size: 22px;
+            line-height: 1.2;
+        }
+
+        .hero-card p {
+            margin: 7px 0 0;
+            color: #85919c;
+            font-size: 8px;
+            line-height: 1.5;
+        }
+
+        .panel {
+            padding: 18px;
+            margin-bottom: 18px;
+        }
+
+        .panel-label {
+            margin: 0 0 6px;
+            color: #768593;
+            font-size: 9px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .panel h2 {
+            margin: 0;
+            color: #24445f;
+            font-size: 17px;
+        }
+
+        .panel-subtitle {
+            margin: 7px 0 0;
+            color: #80909d;
+            font-size: 9px;
+            line-height: 1.55;
+        }
+
+        .score-flow {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
+            align-items: center;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .flow-box {
+            background: #f8fafb;
+            border: 1px solid #e4eaee;
+            border-radius: 10px;
+            padding: 14px;
+            text-align: center;
+            min-height: 92px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .flow-box span {
+            color: #7b8894;
+            font-size: 8px;
+        }
+
+        .flow-box strong {
+            display: block;
+            color: #163b65;
+            font-size: 18px;
+            margin-top: 6px;
+        }
+
+        .flow-box small {
+            display: block;
+            color: #89949d;
+            margin-top: 5px;
+            font-size: 7px;
+            line-height: 1.4;
+        }
+
+        .flow-arrow {
+            color: #83909c;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .domain-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .domain-card {
+            background: #f8fafb;
+            border: 1px solid #e5eaee;
+            border-radius: 10px;
+            padding: 13px;
+        }
+
+        .domain-card span {
+            display: block;
+            color: #7f8b96;
+            font-size: 8px;
+            margin-bottom: 7px;
+        }
+
+        .domain-card strong {
+            display: block;
+            color: #24445f;
+            font-size: 17px;
+        }
+
+        .domain-card p {
+            margin: 5px 0 0;
+            color: #8b969f;
+            font-size: 7px;
+            line-height: 1.45;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .status-list {
+            display: grid;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 11px 12px;
+            border: 1px solid #e5eaee;
+            border-radius: 9px;
+            background: #f8fafb;
+        }
+
+        .status-row span {
+            color: #7d8994;
+            font-size: 9px;
+        }
+
+        .status-row strong {
+            color: #24445f;
+            font-size: 10px;
+            text-align: right;
+        }
+
+        .reason-box,
+        .recommendation-box,
+        .empty-box {
+            margin-top: 14px;
+            padding: 14px;
+            border-radius: 10px;
+            line-height: 1.65;
+            font-size: 10px;
+        }
+
+        .reason-box {
+            background: #f8fafb;
+            border-left: 4px solid #527491;
+            color: #536779;
+        }
+
+        .recommendation-box {
+            background: #eef7f3;
+            border-left: 4px solid #4f8a72;
+            color: #476a5b;
+        }
+
+        .empty-box {
+            background: #fff8e8;
+            border-left: 4px solid #caa95b;
+            color: #715f38;
+        }
+
+        .factor-table-wrap {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+
+        .factor-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+
+        .factor-table th,
+        .factor-table td {
+            padding: 10px 9px;
+            border-bottom: 1px solid #e8edf0;
+            vertical-align: top;
+            font-size: 8px;
+            text-align: left;
+        }
+
+        .factor-table th {
+            color: #667786;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            background: #f8fafb;
+        }
+
+        .factor-table td {
+            color: #536879;
+        }
+
+        .factor-table strong {
+            color: #28465f;
+        }
+
+        .guardrail {
+            padding: 13px 14px;
+            background: #f4f7f9;
+            border: 1px solid #e1e7eb;
+            border-radius: 10px;
+            color: #697987;
+            font-size: 9px;
+            line-height: 1.6;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 9px;
+            margin-top: 16px;
+        }
+
+        .action-btn {
+            display: inline-block;
+            padding: 9px 12px;
+            border-radius: 8px;
+            background: #163b65;
+            color: white;
+            text-decoration: none;
+            font-size: 9px;
+            font-weight: 700;
+        }
+
+        .action-btn.secondary {
+            background: #edf2f5;
+            color: #3f566a;
+        }
+
+        @media (max-width: 1050px) {
+            .hero-grid,
+            .domain-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .score-flow {
+                grid-template-columns: 1fr;
+            }
+
+            .flow-arrow {
+                transform: rotate(90deg);
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 760px) {
+
+            .analysis-main {
+                padding: 16px;
+            }
+
+            .page-header,
+            .two-column {
+                grid-template-columns: 1fr;
+                display: grid;
+            }
+
+            .hero-grid,
+            .domain-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .identity-card {
+                min-width: 0;
+            }
+        }
+
+
+        /* Dashboard shell is also local: navigation remains styled if the
+           shared stylesheet is stale or temporarily unavailable. Values below
+           come from the supplied working dashboard stylesheet. */
+        body.vp-analysis-page {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f7f9;
+            color: #24394f;
+        }
+        body.vp-analysis-page > .dashboard-layout {
+            display: grid;
+            grid-template-columns: 250px minmax(0, 1fr);
+            min-height: 100vh;
+            width: 100%;
+        }
+        body.vp-analysis-page .dashboard-sidebar,
+        body.vp-analysis-page .dashboard-sidebar * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+body.vp-analysis-page .dashboard-sidebar {
+    background: #102b4f;
+    color: white;
+
+    padding: 28px 20px;
+
+    display: flex;
+    flex-direction: column;
+}
+
+body.vp-analysis-page .sidebar-brand {
+    margin-bottom: 32px;
+}
+
+body.vp-analysis-page .sidebar-brand h2 {
+    margin: 0;
+    font-size: 26px;
+}
+
+body.vp-analysis-page .sidebar-brand p {
+    margin-top: 5px;
+    color: #b9c9db;
+    font-size: 12px;
+}
+
+body.vp-analysis-page .sidebar-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+body.vp-analysis-page .sidebar-menu a {
+    color: #d7e0eb;
+    text-decoration: none;
+
+    padding: 11px 13px;
+
+    border-radius: 8px;
+
+    font-size: 14px;
+
+    transition: 0.2s;
+}
+
+body.vp-analysis-page .sidebar-menu a:hover,
+body.vp-analysis-page .sidebar-menu a.active {
+    background: #1c477a;
+    color: white;
+}
+
+body.vp-analysis-page .sidebar-logout {
+    margin-top: auto;
+
+    color: #d7e0eb;
+    text-decoration: none;
+
+    padding: 11px 13px;
+
+    border-top: 1px solid rgba(255,255,255,0.12);
+}
+
+
+
+        body.vp-analysis-page .dashboard-sidebar {
+            width: 250px;
+            min-width: 0;
+            min-height: 100vh;
+            position: static;
+        }
+        body.vp-analysis-page .sidebar-menu a {
+            display: block;
+            line-height: normal;
+        }
+        body.vp-analysis-page .sidebar-menu a:focus-visible,
+        body.vp-analysis-page .sidebar-logout:focus-visible {
+            outline: 2px solid #b9c9db;
+            outline-offset: 2px;
+        }
+        body.vp-analysis-page .dashboard-main {
+            min-width: 0;
+            width: auto;
+            margin-left: 0 !important;
+            display: block;
+        }
+        body.vp-analysis-page .hero-card strong {
+            overflow-wrap: anywhere;
+        }
+        @media (max-width: 850px) {
+            body.vp-analysis-page > .dashboard-layout {
+                grid-template-columns: minmax(0, 1fr);
+            }
+            body.vp-analysis-page .dashboard-sidebar {
+                display: flex;
+                width: 100%;
+                min-height: 0;
+            }
+            body.vp-analysis-page .sidebar-logout {
+                margin-top: 24px;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body class="dashboard-page vp-analysis-page">
+
+<div class="dashboard-layout">
+
+    {% if viewer_role == "welfare_officer" %}
+        {% include 'partials/welfare_officer_sidebar.html' %}
+    {% else %}
+        {% include 'partials/personnel_sidebar.html' %}
+    {% endif %}
+
+
+    <main class="dashboard-main analysis-main">
+        {% set supplied_analysis = analysis %}
+        {% set analysis_matches = analysis and personnel and current_assessment and analysis.personnel_id == personnel.personnel_id and current_assessment.personnel_id == personnel.personnel_id and analysis.assessment_id == current_assessment.id %}
+        {% if not analysis_matches %}{% set analysis = none %}{% endif %}
+        {% if analysis %}
+            {% set factors = factors|selectattr('analysis_result_id', 'equalto', analysis.id)|list %}
+            {% if signal_agreement_factor and signal_agreement_factor.analysis_result_id != analysis.id %}{% set signal_agreement_factor = none %}{% endif %}
+            {% if trend_factor and trend_factor.analysis_result_id != analysis.id %}{% set trend_factor = none %}{% endif %}
+        {% endif %}
+
+
+        <header class="page-header">
+
+            <div>
+                <p class="page-label">
+                    VeerPulse Early-Warning Engine
+                </p>
+
+                <h1>
+                    VeerPulse Analysis
+                </h1>
+            </div>
+
+
+            <div class="identity-card">
+
+                <strong>
+                    {{ personnel.personnel_id if personnel else "Personnel" }}
+                </strong>
+
+                <span>
+                    {{ personnel.full_name if personnel and personnel.full_name else "Name unavailable" }}
+                </span>
+
+                <span>
+                    {{ personnel.unit if personnel and personnel.unit else "Unit not recorded" }}
+                </span>
+
+            </div>
+
+        </header>
+
+
+        {% if analysis %}
+
+            <p class="panel-subtitle">Assessment v{{ analysis.assessment_version }} · Assessed: {{ current_assessment.assessment_time.strftime('%d %b %Y, %H:%M') if current_assessment.assessment_time else 'Time unavailable' }} · Analysis stored: {{ analysis.created_at.strftime('%d %b %Y, %H:%M') if analysis.created_at else 'Time unavailable' }}</p>
+            <section class="hero-grid">
+
+                <div class="hero-card">
+                    <span>Overall Early-Warning Score</span>
+                    <strong>
+                        {% if analysis.overall_score is not none %}
+                            {{ "%.1f"|format(analysis.overall_score) }} / 100
+                        {% else %}
+                            —
+                        {% endif %}
+                    </strong>
+                    <p>
+                        Stored result · {{ analysis.rules_version }}
+                    </p>
+                </div>
+
+                <div class="hero-card">
+                    <span>Welfare Attention</span>
+                    <strong>
+                        {{ analysis.attention_level }}
+                    </strong>
+                    <p>
+                        Welfare-support category, not diagnosis
+                    </p>
+                </div>
+
+                <div class="hero-card">
+                    <span>Trend</span>
+                    <strong style="font-size:16px;">
+                        {{ analysis.trend_direction or "Unavailable" }}
+                    </strong>
+                    <p>
+                        {{ analysis.trend_strength or "Strength unavailable" }}
+                    </p>
+                </div>
+
+                <div class="hero-card">
+                    <span>Signal Agreement</span>
+                    <strong style="font-size:16px;">
+                        {{ analysis.signal_agreement or "Unavailable" }}
+                    </strong>
+                    <p>
+                        Confidence: {{ analysis.confidence or "Unavailable" }}
+                    </p>
+                </div>
+
+            </section>
+
+
+            <section class="panel">
+
+                <p class="panel-label">
+                    Stored Calculation Components
+                </p>
+
+                <h2>
+                    How VeerPulse Reached This Result
+                </h2>
+
+                <p class="panel-subtitle">
+                    These are stored score components, not a direct arithmetic sum.
+                    Refer to the explanation and rules version for their weighting. Scores are not probabilities of illness.
+                </p>
+
+
+                <div class="score-flow">
+
+                    <div class="flow-box">
+                        <span>Operational Pattern</span>
+                        <strong>
+                            {% if analysis.operational_score is not none %}
+                                {{ "%.1f"|format(analysis.operational_score) }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </strong>
+                        <small>
+                            Personal baseline deviation
+                        </small>
+                    </div>
+
+                    <div class="flow-arrow">+</div>
+
+                    <div class="flow-box">
+                        <span>Voluntary Check-In</span>
+                        <strong>
+                            {% if analysis.checkin_score is not none %}
+                                {{ "%.1f"|format(analysis.checkin_score) }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </strong>
+                        <small>
+                            Self-reported supporting evidence
+                        </small>
+                    </div>
+
+                    <div class="flow-arrow">→</div>
+
+                    <div class="flow-box">
+                        <span>Longitudinal Trend</span>
+                        <strong>
+                            {% if analysis.trend_score is not none %}
+                                {{ "%.1f"|format(analysis.trend_score) }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </strong>
+                        <small>
+                            Stored assessment versions; not necessarily separate days
+                        </small>
+                    </div>
+
+                    <div class="flow-arrow">→</div>
+
+                    <div class="flow-box">
+                        <span>Final Score</span>
+                        <strong>
+                            {% if analysis.overall_score is not none %}
+                                {{ "%.1f"|format(analysis.overall_score) }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </strong>
+                        <small>
+                            {{ analysis.attention_level }}
+                        </small>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <section class="panel">
+
+                <p class="panel-label">
+                    Voluntary Check-In Domains
+                </p>
+
+                <h2>
+                    Self-Reported Wellness Breakdown
+                </h2>
+
+                <div class="domain-grid">
+
+                    <div class="domain-card">
+                        <span>Workload / Adjustment</span>
+                        <strong>
+                            {% if analysis.workload_score is not none %}
+                                {{ "%.1f"|format(analysis.workload_score) }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </strong>
+                        <p>0 = lower concern · 100 = higher concern</p>
+                    </div>
+
+                    <div class="domain-card">
+                        <span>Recovery / Energy</span>
+                        <strong>
+                            {% if analysis.recovery_score is not none %}
+                                {{ "%.1f"|format(analysis.recovery_score) }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </strong>
+                        <p>Derived from voluntary Check-In responses</p>
+                    </div>
+
+                    <div class="domain-card">
+                        <span>Social / Family Connection</span>
+                        <strong>
+                            {% if analysis.connection_score is not none %}
+                                {{ "%.1f"|format(analysis.connection_score) }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </strong>
+                        <p>Supporting context only</p>
+                    </div>
+
+                    <div class="domain-card">
+                        <span>Cognitive / Mental Fatigue</span>
+                        <strong>
+                            {% if analysis.cognitive_score is not none %}
+                                {{ "%.1f"|format(analysis.cognitive_score) }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </strong>
+                        <p>Not a clinical psychological assessment</p>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <section class="two-column">
+
+                <div class="panel">
+
+                    <p class="panel-label">
+                        Longitudinal Analysis
+                    </p>
+
+                    <h2>
+                        Trend Interpretation
+                    </h2>
+
+                    <div class="status-list">
+
+                        <div class="status-row">
+                            <span>Direction</span>
+                            <strong>
+                                {{ analysis.trend_direction or "Unavailable" }}
+                            </strong>
+                        </div>
+
+                        <div class="status-row">
+                            <span>Strength</span>
+                            <strong>
+                                {{ analysis.trend_strength or "Unavailable" }}
+                            </strong>
+                        </div>
+
+                        <div class="status-row">
+                            <span>Trend Score</span>
+                            <strong>
+                                {% if analysis.trend_score is not none %}
+                                    {{ "%.1f"|format(analysis.trend_score) }} / 100
+                                {% else %}
+                                    Insufficient history
+                                {% endif %}
+                            </strong>
+                        </div>
+
+                        {% if trend_factor %}
+
+                            <div class="status-row">
+                                <span>Stored Trend Evidence</span>
+                                <strong>
+                                    {{ trend_factor.explanation }}
+                                </strong>
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <div class="panel">
+
+                    <p class="panel-label">
+                        Evidence Consistency
+                    </p>
+
+                    <h2>
+                        Signal Agreement
+                    </h2>
+                    <p class="panel-subtitle">Agreement describes evidence consistency. It is not measured model accuracy or a probability that a person is stressed.</p>
+
+                    <div class="status-list">
+
+                        <div class="status-row">
+                            <span>Agreement</span>
+                            <strong>
+                                {{ analysis.signal_agreement or "Unavailable" }}
+                            </strong>
+                        </div>
+
+                        <div class="status-row">
+                            <span>Analysis Confidence</span>
+                            <strong>
+                                {{ analysis.confidence or "Unavailable" }}
+                            </strong>
+                        </div>
+
+                        {% if signal_agreement_factor %}
+
+                            <div class="status-row">
+                                <span>Agreement Index</span>
+                                <strong>
+                                    {% if signal_agreement_factor.factor_score is not none %}
+                                        {{ "%.1f"|format(signal_agreement_factor.factor_score) }} / 100
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </strong>
+                            </div>
+
+                            <div class="status-row">
+                                <span>Dominant Direction</span>
+                                <strong>
+                                    {{ signal_agreement_factor.direction or "Mixed" }}
+                                </strong>
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <section class="panel">
+
+                <p class="panel-label">
+                    Explain Why
+                </p>
+
+                <h2>
+                    Why Did VeerPulse Produce This Result?
+                </h2>
+
+                <div class="reason-box">
+                    {{ analysis.analysis_reason or "No analysis explanation is stored." }}
+                </div>
+
+                <div class="recommendation-box">
+                    <strong>System Recommendation:</strong>
+                    <br>
+                    {{ analysis.recommendation or "No recommendation is stored." }}
+                </div>
+
+            </section>
+
+
+            <section class="panel">
+
+                <p class="panel-label">
+                    Factor-Level Evidence
+                </p>
+
+                <h2>
+                    Stored Analysis Factors
+                </h2>
+
+                <p class="panel-subtitle">
+                    Current values, personal baseline values, deviations,
+                    scores and explanations are read from the
+                    <code>analysis_factors</code> table.
+                </p>
+
+
+                <div class="factor-table-wrap">
+
+                    <table class="factor-table">
+
+                        <thead>
+                            <tr>
+                                <th>Factor</th>
+                                <th>Source</th>
+                                <th>Current</th>
+                                <th>Baseline</th>
+                                <th>Deviation</th>
+                                <th>Score</th>
+                                <th>Severity</th>
+                                <th>Direction</th>
+                                <th>Explanation</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {% for factor in factors %}
+
+                                <tr>
+
+                                    <td>
+                                        <strong>
+                                            {{ factor.factor_label }}
+                                        </strong>
+                                    </td>
+
+                                    <td>
+                                        {{ factor.source_type }}
+                                    </td>
+
+                                    <td>
+                                        {% if factor.current_value is not none %}
+                                            {{ "%.1f"|format(factor.current_value) }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        {% if factor.baseline_value is not none %}
+                                            {{ "%.1f"|format(factor.baseline_value) }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        {% if factor.deviation_pct is not none %}
+                                            {{ "%+.1f"|format(factor.deviation_pct) }}%
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        {% if factor.factor_score is not none %}
+                                            {{ "%.1f"|format(factor.factor_score) }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        {{ factor.severity or "—" }}
+                                    </td>
+
+                                    <td>
+                                        {{ factor.direction or "—" }}
+                                    </td>
+
+                                    <td>
+                                        {{ factor.explanation or "—" }}
+                                    </td>
+
+                                </tr>
+
+                            {% else %}
+
+                                <tr>
+                                    <td colspan="9">
+                                        No stored factor-level analysis is available.
+                                    </td>
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+
+            <section class="panel">
+
+                <p class="panel-label">
+                    Traceability
+                </p>
+
+                <h2>
+                    Evidence & Version Linkage
+                </h2>
+
+                <div class="status-list">
+
+                    <div class="status-row">
+                        <span>Assessment</span>
+                        <strong>
+                            v{{ analysis.assessment_version }}
+                            · ID {{ analysis.assessment_id }}
+                        </strong>
+                    </div>
+
+                    <div class="status-row">
+                        <span>Operational Snapshot</span>
+                        <strong>
+                            {{ analysis.operational_snapshot_id or "Not linked" }}
+                        </strong>
+                    </div>
+
+                    <div class="status-row">
+                        <span>Check-In Evidence</span>
+                        <strong>
+                            {{ analysis.checkin_evidence_id or "Not linked" }}
+                        </strong>
+                    </div>
+
+                    <div class="status-row">
+                        <span>Camera Evidence</span>
+                        <strong>
+                            {{ analysis.scan_evidence_id or "Not linked" }}
+                        </strong>
+                    </div>
+
+                    <div class="status-row">
+                        <span>Rules Version</span>
+                        <strong>
+                            {{ analysis.rules_version }}
+                        </strong>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <div class="guardrail">
+
+                <strong>
+                    Interpretation Guardrail:
+                </strong>
+
+                VeerPulse produces an explainable welfare-support
+                early-warning indicator. It is not a medical diagnosis.
+                Camera-derived HR / breathing measurements remain experimental
+                supplementary context. The system does not automatically make
+                disciplinary, leave, posting, deployment, training or
+                employment decisions.
+
+            </div>
+
+
+            <div class="actions">
+
+                {% if viewer_role == "welfare_officer" %}
+
+                    <a class="action-btn"
+                       href="{{ url_for('welfare_officer_case_review', personnel_id=personnel.personnel_id) }}">
+                        Open Case Review
+                    </a>
+
+                    <a class="action-btn secondary"
+                       href="{{ url_for('welfare_officer_operational_review', personnel_id=personnel.personnel_id) }}">
+                        Operational Review
+                    </a>
+
+                    <a class="action-btn secondary"
+                       href="{{ url_for('welfare_officer_priority_review') }}">
+                        Back to Priority Review
+                    </a>
+
+                {% else %}
+
+                    <a class="action-btn"
+                       href="{{ url_for('personnel_trends') }}">
+                        My Trends
+                    </a>
+
+                    <a class="action-btn secondary"
+                       href="{{ url_for('personnel_dashboard') }}">
+                        Dashboard
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+
+        {% else %}
+
+            <section class="panel">
+
+                <p class="panel-label">
+                    Analysis Status
+                </p>
+
+                <h2>
+                    {{ 'Analysis Linkage Requires Review' if supplied_analysis else 'No Current Analysis Available' }}
+                </h2>
+
+                <div class="empty-box">
+
+                    {% if supplied_analysis %}
+                        A stored analysis was supplied, but it does not match the selected person and current assessment. Its scores are withheld to avoid displaying an unrelated or outdated result as current.
+                    {% else %}
+                        No analysis was supplied for this person's current assessment. This does not establish that the database is empty or that welfare attention is low.
+                    {% endif %}
+                    <br><br>Ask an authorised officer to review the assessment and its linked analysis. No values are fabricated here.
+
+                </div>
+
+                <div class="actions">
+
+                    {% if viewer_role == "welfare_officer" %}
+
+                        <a class="action-btn secondary"
+                           href="{{ url_for('welfare_officer_priority_review') }}">
+                            Back to Priority Review
+                        </a>
+
+                    {% else %}
+
+                        <a class="action-btn"
+                           href="{{ url_for('personnel_dashboard') }}">
+                            Dashboard
+                        </a>
+
+                    {% endif %}
+
+                </div>
+
+            </section>
+
+        {% endif %}
+
+    </main>
+
+</div>
+
+</body>
+</html>

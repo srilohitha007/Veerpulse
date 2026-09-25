@@ -1,0 +1,62 @@
+<aside class="dashboard-sidebar">
+
+    <nav class="sidebar-menu">
+
+        <a href="{{ url_for('personnel_dashboard') }}"
+           class="{% if request.endpoint == 'personnel_dashboard' %}active{% endif %}">
+            Dashboard
+        </a>
+
+        <a href="{{ url_for('personnel_profile') }}"
+           class="{% if request.endpoint == 'personnel_profile' %}active{% endif %}">
+            My Profile
+        </a>
+
+        <a href="{{ url_for('personnel_duty_leave') }}"
+           class="{% if request.endpoint == 'personnel_duty_leave' %}active{% endif %}">
+            Duty & Leave
+        </a>
+
+        <a href="{{ url_for('personnel_trends') }}"
+           class="{% if request.endpoint == 'personnel_trends' %}active{% endif %}">
+            My Trends
+        </a>
+
+        <a href="{{ url_for('personnel_analysis_page') }}"
+           class="{% if request.endpoint == 'personnel_analysis_page' %}active{% endif %}">
+            VeerPulse Analysis
+        </a>
+
+        <a href="{{ url_for('personnel_wellness_checkin') }}"
+           class="{% if request.endpoint == 'personnel_wellness_checkin' %}active{% endif %}">
+            Wellness Check-In
+        </a>
+
+        <a href="{{ url_for('personnel_wellness_scan') }}"
+           class="{% if request.endpoint == 'personnel_wellness_scan' %}active{% endif %}">
+            Wellness Scan
+        </a>
+
+        <a href="{{ url_for('personnel_support') }}"
+           class="{% if request.endpoint == 'personnel_support' %}active{% endif %}">
+            Support
+        </a>
+
+        <a href="{{ url_for('personnel_notifications') }}"
+           class="{% if request.endpoint == 'personnel_notifications' %}active{% endif %}">
+            Notifications
+        </a>
+
+        <a href="{{ url_for('personnel_privacy') }}"
+           class="{% if request.endpoint == 'personnel_privacy' %}active{% endif %}">
+            Privacy & Consent
+        </a>
+
+    </nav>
+
+    <a href="{{ url_for('logout') }}"
+       class="sidebar-logout">
+        Logout
+    </a>
+
+</aside>

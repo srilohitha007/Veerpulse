@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Notifications | VeerPulse</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        .notification-layout {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 22px;
+        }
+
+        .notification-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .notification-card {
+            background: white;
+            border: 1px solid #e6ebef;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.05);
+        }
+
+        .notification-card.unread {
+            border-left: 4px solid #16858c;
+            background: #fbfefe;
+        }
+
+        .notification-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 8px;
+        }
+
+        .notification-top strong {
+            color: #24394f;
+            font-size: 13px;
+        }
+
+        .notification-time {
+            color: #8995a1;
+            font-size: 10px;
+            white-space: nowrap;
+        }
+
+        .notification-card p {
+            margin: 0;
+            color: #6f7d8c;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .notification-tag {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 5px 9px;
+            border-radius: 20px;
+            background: #eef6f6;
+            color: #26756f;
+            font-size: 9px;
+            font-weight: 700;
+        }
+
+        .notification-side-card {
+            background: white;
+            border: 1px solid #e6ebef;
+            border-radius: 12px;
+            padding: 18px;
+            height: fit-content;
+            box-shadow: 0 5px 18px rgba(31, 55, 80, 0.05);
+        }
+
+        .notification-side-card h2 {
+            margin: 0 0 8px;
+            color: #163b65;
+            font-size: 18px;
+        }
+
+        .notification-side-card p {
+            color: #7a8794;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .notification-setting {
+            padding: 12px 0;
+            border-bottom: 1px solid #edf0f2;
+        }
+
+        .notification-setting:last-child {
+            border-bottom: none;
+        }
+
+        .notification-setting strong {
+            display: block;
+            color: #2d4054;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .notification-setting span {
+            color: #87929d;
+            font-size: 10px;
+        }
+
+        @media (max-width: 900px) {
+            .notification-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body class="dashboard-page">
+
+<div class="dashboard-layout">
+
+    {% include 'partials/personnel_sidebar.html' %}
+
+
+    <main class="dashboard-main">
+
+        <header class="dashboard-header">
+
+            <div>
+
+                <p class="dashboard-label">
+                    Personal Welfare Updates
+                </p>
+
+                <h1>
+                    Notifications
+                </h1>
+
+            </div>
+
+
+            <div class="officer-profile">
+
+                <div class="profile-circle">
+                    VP
+                </div>
+
+                <div>
+
+                    <strong>
+                        Personnel {{ session.get("personnel_id") }}
+                    </strong>
+
+                    <p>
+                        Secure Personal Access
+                    </p>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <section class="notification-layout">
+
+            <div class="notification-list">
+
+                <div class="notification-card"
+                     style="background:#f8fafb;">
+
+                    <div class="notification-top">
+                        <strong>
+                            Notification Summary
+                        </strong>
+                    </div>
+
+                    <p>
+                        Unread:
+                        <strong id="personnel-unread-count">
+                            {{ notification_summary.unread }}
+                        </strong>
+                        · Assessment updates:
+                        {{ notification_summary.assessment_updates }}
+                        · Support updates:
+                        {{ notification_summary.support_updates }}
+                        · Leave updates:
+                        {{ notification_summary.leave_updates }}
+                    </p>
+
+                </div>
+
+
+                {% for notification in notification_items %}
+
+                    <div class="notification-card
+                                {% if not notification.is_read %}
+                                    unread
+                                {% endif %}"
+                         data-event-key="{{ notification.event_key }}">
+
+                        <div class="notification-top">
+
+                            <strong>
+                                {{ notification.title }}
+                            </strong>
+
+                            <span class="notification-time">
+                                {{ notification.time_label }}
+                            </span>
+
+                        </div>
+
+
+                        <p>
+                            {{ notification.message }}
+                        </p>
+
+
+                        <span class="notification-tag">
+                            {{ notification.tag }}
+                        </span>
+
+
+                        <div style="
+                            display:flex;
+                            gap:8px;
+                            flex-wrap:wrap;
+                            margin-top:12px;
+                        ">
+
+                            <a href="{{ notification.action_url }}"
+                               style="
+                                   display:inline-block;
+                                   padding:8px 11px;
+                                   border-radius:7px;
+                                   background:#163b65;
+                                   color:white;
+                                   text-decoration:none;
+                                   font-size:9px;
+                                   font-weight:700;
+                               ">
+                                {{ notification.action_label }}
+                            </a>
+
+                            {% if not notification.is_read %}
+
+                                <button type="button"
+                                        onclick="markPersonnelNotificationRead(this)"
+                                        style="
+                                            padding:8px 11px;
+                                            border:1px solid #d7e0e7;
+                                            border-radius:7px;
+                                            background:white;
+                                            color:#42576b;
+                                            font-size:9px;
+                                            font-weight:700;
+                                            cursor:pointer;
+                                        ">
+                                    Mark Read
+                                </button>
+
+                            {% else %}
+
+                                <span class="notification-tag">
+                                    Read
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="notification-card">
+
+                        <div class="notification-top">
+
+                            <strong>
+                                No notifications yet
+                            </strong>
+
+                        </div>
+
+                        <p>
+                            Assessment updates, support-request status,
+                            leave-workflow updates and welfare follow-up
+                            messages for your own Personnel ID will appear here.
+                        </p>
+
+                        <span class="notification-tag">
+                            Live PostgreSQL Feed
+                        </span>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+
+            <div class="notification-side-card">
+
+                <h2>
+                    What Appears Here?
+                </h2>
+
+                <p>
+                    This page shows only updates belonging to your logged-in
+                    Personnel ID. It does not expose another person's case data
+                    or internal officer notes.
+                </p>
+
+
+                <div class="notification-setting">
+
+                    <strong>
+                        Assessment Updates
+                    </strong>
+
+                    <span>
+                        Current
+                    </span>
+
+                </div>
+
+
+                <div class="notification-setting">
+
+                    <strong>
+                        Support Status
+                    </strong>
+
+                    <span>
+                        Current
+                    </span>
+
+                </div>
+
+
+                <div class="notification-setting">
+
+                    <strong>
+                        Leave Status
+                    </strong>
+
+                    <span>
+                        Current
+                    </span>
+
+                </div>
+
+
+                <div class="notification-setting">
+
+                    <strong>
+                        Welfare Follow-Up
+                    </strong>
+
+                    <span>
+                        Generic Update Only
+                    </span>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<script>
+
+    async function markPersonnelNotificationRead(
+        button
+    ) {
+
+        const card =
+            button.closest(
+                ".notification-card"
+            );
+
+        if (!card) {
+            return;
+        }
+
+        const eventKey =
+            card.dataset.eventKey;
+
+        if (!eventKey) {
+            return;
+        }
+
+        button.disabled = true;
+        button.textContent =
+            "Saving...";
+
+        try {
+
+            const response =
+                await fetch(
+                    "/api/personnel/notifications/read",
+                    {
+                        method:
+                            "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json",
+                            "Accept":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify({
+                                event_key:
+                                    eventKey
+                            })
+                    }
+                );
+
+            const data =
+                await response.json();
+
+            if (
+                !response.ok
+                || !data.success
+            ) {
+
+                throw new Error(
+                    data.message
+                    || "Unable to mark notification as read."
+                );
+            }
+
+            card.classList.remove(
+                "unread"
+            );
+
+            const count =
+                document.getElementById(
+                    "personnel-unread-count"
+                );
+
+            if (count) {
+
+                const current =
+                    Number(
+                        count.textContent.trim()
+                    ) || 0;
+
+                count.textContent =
+                    Math.max(
+                        0,
+                        current - 1
+                    );
+            }
+
+            const readTag =
+                document.createElement(
+                    "span"
+                );
+
+            readTag.className =
+                "notification-tag";
+
+            readTag.textContent =
+                "Read";
+
+            button.replaceWith(
+                readTag
+            );
+
+        }
+
+        catch (error) {
+
+            button.disabled =
+                false;
+
+            button.textContent =
+                "Mark Read";
+
+            alert(
+                error.message
+            );
+        }
+    }
+
+</script>
+{% include 'partials/veerassist.html' %}
+</body>
+
+</html>
