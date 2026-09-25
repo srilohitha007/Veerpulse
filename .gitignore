@@ -1,0 +1,10 @@
+# Local/private files
+.env
+.env.*
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.backup
+.DS_Store
